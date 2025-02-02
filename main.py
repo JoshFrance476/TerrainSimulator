@@ -1,40 +1,25 @@
 import pygame
 import sys
 import config
-from stage_1_generator import generate_stage_1
-from stage_2_generator import generate_stage_2
-from stage_3_generator import generate_stage_3
-from stage_4_generator import generate_stage_4
-from stage_5_generator import generate_stage_5
-from stage_6_generator import generate_stage_6
 import numpy as np 
-import time
-import logging
+from generator_main import generate
 
-logging.basicConfig(level=logging.DEBUG)
-
-font_path = "fonts\OldNewspaperTypes.ttf"
+font_path = "fonts/OldNewspaperTypes.ttf"
 
 # Initialize Pygame
 pygame.init()
 font = pygame.font.Font(font_path, 24)
-screen = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
+screen = pygame.display.set_mode((config.WIDTH, config.HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Terrain Generation")
 
-def draw_terrain(display_map, screen):
-    """
-    Draw the terrain grid with the selected filter applied.
-    
-    Args:
-        terrain (list): The terrain grid.
-        current_filter (str): The type of filter to apply when displaying.
-    """
-    for r in range(config.ROWS):
-        for c in range(config.COLS):
-            colour = display_map[r][c]
-            pygame.draw.rect(screen, colour, (c * config.CELL_SIZE, r * config.CELL_SIZE, config.CELL_SIZE, config.CELL_SIZE))
-    pygame.display.flip()
-
+# Zoom and Pan settings
+zoom_level = 1.0  # 1.0 = normal zoom, < 1 = zoomed out, > 1 = zoomed in
+x_offset, y_offset = 0, 0  # Pan offsets
+ZOOM_STEP = 0.1  # Zoom increment step
+PAN_STEP = 5    # Pan speed in pixels
+LOD_THRESHOLD = 4  # Threshold for switching LOD mode
+max_zoom = 10
+min_zoom = 1
 
 def label_cities(city_map, city_names, cell_size):
     city_count = 0
@@ -53,78 +38,79 @@ def label_cities(city_map, city_names, cell_size):
 
                 screen.blit(text_surface, text_rect)
 
+def generate_low_res_map(display_map):
+    """Creates a low-resolution map surface."""
+    rows, cols = len(display_map), len(display_map[0])
+    low_res_surface = pygame.Surface((cols * config.CELL_SIZE, rows * config.CELL_SIZE))
+    for r in range(rows):
+        for c in range(cols):
+            pygame.draw.rect(low_res_surface, display_map[r][c], 
+                             (c * config.CELL_SIZE, r * config.CELL_SIZE, config.CELL_SIZE, config.CELL_SIZE))
+    return low_res_surface
+
+def draw_terrain(display_map, screen, zoom_level, x_offset, y_offset, low_res_surface):
+    """Draws terrain ensuring seamless tile alignment at all zoom levels."""
+    if zoom_level > LOD_THRESHOLD:
+        # High-detail mode (render individual cells)
+        cell_size = config.CELL_SIZE * zoom_level  # Compute scaled tile size
+
+        # Ensure integer-aligned offsets to prevent jittering
+        x_offset_int = round(x_offset)
+        y_offset_int = round(y_offset)
+
+        for r in range(config.ROWS):
+            for c in range(config.COLS):
+                colour = display_map[r][c]
+
+                # Convert grid position to screen position with integer alignment
+                x = round(c * cell_size - x_offset_int)
+                y = round(r * cell_size - y_offset_int)
+
+                # Only render visible cells
+                if -cell_size < x < config.WIDTH and -cell_size < y < config.HEIGHT:
+                  pygame.draw.rect(screen, colour, (x, y, round(cell_size + 0.5), round(cell_size + 0.5)))
+    else:
+        # Low-detail mode (render entire surface)
+        scaled_surface = pygame.transform.smoothscale(
+            low_res_surface, (int(config.WIDTH * zoom_level), int(config.HEIGHT * zoom_level))
+        )
+        screen.blit(scaled_surface, (-x_offset, -y_offset))
 
 
-def draw_text_with_outline(screen, text, font, position, base_color, outline_color, outline_thickness=0.0):
-    """
-    Draw text with an outline effect.
 
-    Args:
-        screen (pygame.Surface): The screen to render the text on.
-        text (str): The text to render.
-        font (pygame.font.Font): Pygame font object.
-        position (tuple): (x, y) position of the text.
-        base_color (tuple): RGB color of the main text.
-        outline_color (tuple): RGB color of the outline.
-        outline_thickness (int): Thickness of the outline effect.
-    """
-    x, y = position
-    x+=5
-    y+=5
 
-    # Render the outline by drawing multiple copies of the text
-    for dx in [-outline_thickness, 0, outline_thickness]:
-        for dy in [-outline_thickness, 0, outline_thickness]:
-            if dx != 0 or dy != 0:  # Avoid center overlap
-                outline_surface = font.render(text, True, outline_color)
-                screen.blit(outline_surface, (x + dx, y + dy))
 
-    # Render the main text (base color)
-    text_surface = font.render(text, True, base_color)
-    screen.blit(text_surface, (x, y))
+def clamp_pan(x_offset, y_offset, zoom_level):
+    """Clamp pan offset to ensure the terrain does not move out of bounds."""
+    max_x = max(0, config.COLS * config.CELL_SIZE * zoom_level - config.WIDTH)
+    max_y = max(0, config.ROWS * config.CELL_SIZE * zoom_level - config.HEIGHT)
 
+    x_offset = max(0, min(x_offset, max_x))
+    y_offset = max(0, min(y_offset, max_y))
+
+    return x_offset, y_offset
 
 def main():
-    """
-    Main function to run the terrain visualization.
-    """
-    start_time = time.time()
-    elevation_map, rainfall_map, temperature_map = generate_stage_1(config.ROWS, config.COLS, config.SCALE, config.SEED)
-    logging.debug(f"Stage 1 generation took {time.time() - start_time:.2f} seconds")
+    """Main function to run the terrain visualization."""
+    global zoom_level, x_offset, y_offset  # Allow modification inside function
 
-    start_time = time.time()
-    river_map, sea_map, steepness_map = generate_stage_2(config.ROWS, config.COLS, config.NUMBER_OF_RIVERS, config.SEA_LEVEL, elevation_map, config.RIVER_SOURCE_MIN_ELEVATION)
-    logging.debug(f"Stage 2 generation took {time.time() - start_time:.2f} seconds")
-    
-    start_time = time.time()
-    river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map, colour_map, desiribility_map = generate_stage_3(config.ROWS, config.COLS, river_map, sea_map, elevation_map, temperature_map, rainfall_map, steepness_map, config.REGION_CONDITIONS, config.REGION_COLORS, config.REGIONS_TO_BLEND)
-    logging.debug(f"Stage 3 generation took {time.time() - start_time:.2f} seconds")
-
-    start_time = time.time()
-    population_map = generate_stage_4(desiribility_map)
-    logging.debug(f"Stage 4 generation took {time.time() - start_time:.2f} seconds")
-    
-    start_time = time.time()
-    cities_map, cities_list = generate_stage_5(population_map, config.NUMBER_OF_CITIES)
-    logging.debug(f"Stage 5 generation took {time.time() - start_time:.2f} seconds")
-    
-    start_time = time.time()
-    traversal_cost_multiplier_map, colour_map_with_paths = generate_stage_6(cities_list, traversal_cost_map, colour_map)
-    logging.debug(f"Stage 6 generation took {time.time() - start_time:.2f} seconds")
-
-    colour_map_with_paths[cities_map] = (0,0,0)
-
-    display_map = colour_map_with_paths
+    display_map, cities_map = generate()
+    low_res_surface = generate_low_res_map(display_map)  # Pre-rendered low-res map
 
     clock = pygame.time.Clock()
 
     city_names = [f"City {i+1}" for i in range(config.NUMBER_OF_CITIES)]
 
     needs_update = True
-
     show_city_labels = True
 
+    # Track dragging state
+    dragging = False
+    drag_start_x, drag_start_y = 0, 0
+
     while True:
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -132,18 +118,76 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
                     show_city_labels = not show_city_labels
+                elif event.key == pygame.K_LEFT:  # Pan left
+                    x_offset -= PAN_STEP
+                elif event.key == pygame.K_RIGHT:  # Pan right
+                    x_offset += PAN_STEP
+                elif event.key == pygame.K_UP:  # Pan up
+                    y_offset -= PAN_STEP
+                elif event.key == pygame.K_DOWN:  # Pan down
+                    y_offset += PAN_STEP
                 needs_update = True
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    dragging = True
+                    drag_start_x, drag_start_y = pygame.mouse.get_pos()
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:  # Left mouse button released
+                    dragging = False
+
+            elif event.type == pygame.MOUSEMOTION:
+                if dragging:
+                    # Get current mouse position
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+
+                    # Calculate movement delta
+                    dx = mouse_x - drag_start_x
+                    dy = mouse_y - drag_start_y
+
+                    # Adjust offsets
+                    x_offset -= dx
+                    y_offset -= dy
+
+                    # Update last mouse position
+                    drag_start_x, drag_start_y = mouse_x, mouse_y
+
+                    needs_update = True
+
+            elif event.type == pygame.MOUSEWHEEL:
+                # Determine new zoom level while clamping within range
+                zoom_amount = ZOOM_STEP * event.y
+                new_zoom = min(max_zoom, max(min_zoom, zoom_level + zoom_amount))  # Keep zoom within bounds
+
+                if new_zoom != zoom_level:
+                    # Get world position before zoom
+                    world_x_before = (mouse_x + x_offset) / zoom_level
+                    world_y_before = (mouse_y + y_offset) / zoom_level
+
+                    # Apply new zoom level
+                    zoom_level = new_zoom
+
+                    # Compute new offsets to keep the view stable
+                    x_offset = world_x_before * zoom_level - mouse_x
+                    y_offset = world_y_before * zoom_level - mouse_y
+
+                    needs_update = True
+
+
+
+        # Clamp panning to prevent moving out of the map bounds
+        x_offset, y_offset = clamp_pan(x_offset, y_offset, zoom_level)
 
         if needs_update:
             screen.fill((0, 0, 0))  # Clear screen only when necessary
-            draw_terrain(display_map, screen)
-            if show_city_labels:
-                label_cities(cities_map, city_names, config.CELL_SIZE)
+            draw_terrain(display_map, screen, zoom_level, x_offset, y_offset, low_res_surface)
+            if show_city_labels and zoom_level > LOD_THRESHOLD:
+                label_cities(cities_map, city_names, int(config.CELL_SIZE * zoom_level))
             pygame.display.flip()
             needs_update = False  # Reset update flag
 
-        clock.tick(2)
-
+        clock.tick(60)  # Maintain performance
 
 if __name__ == "__main__":
     main()
