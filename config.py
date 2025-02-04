@@ -18,6 +18,12 @@ CITIES_MIN_DISTANCE = 14
 CITY_PROSPERITY_RANGE = (50,120)
 CITY_MAX_TERRITORY = 120
 
+LOD_THRESHOLD = 2.2  # Zoom threshold for switching LOD mode
+ZOOM_STEP = 0.1  # Zoom increment step
+PAN_STEP = 5    # Pan speed in pixels
+MAX_ZOOM = 10
+MIN_ZOOM = 1
+
 REGION_CONDITIONS = [
     {"condition": lambda e, t, r, rp: e > 0.35, "color": "snowy peaks"},
     {"condition": lambda e, t, r, rp: e > 0.25, "color": "mountains"},
