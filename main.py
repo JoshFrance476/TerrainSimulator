@@ -3,6 +3,7 @@ import sys
 import config
 import numpy as np 
 from simulator_main import simulate_init, simulate_loop
+from ui_generator import draw_sidebar
 
 font_path = "fonts/OldNewspaperTypes.ttf"
 
@@ -116,6 +117,8 @@ def main():
     dragging = False
     drag_start_x, drag_start_y = 0, 0
 
+    tick = 0
+
     
 
     while True:
@@ -194,9 +197,16 @@ def main():
         # Clamp panning to prevent moving out of the map bounds
         x_offset, y_offset = clamp_pan(x_offset, y_offset, zoom_level)
 
+        tick = (tick + 1) % 20
+
+        if tick == 0:
+            sim_update = True
+
+
         if sim_update:
             display_map = simulate_loop(filter)
             surface_to_render = generate_low_res_map(display_map)  # Pre-rendered low-res map
+            render_update = True
             sim_update = False
 
         if render_update:
