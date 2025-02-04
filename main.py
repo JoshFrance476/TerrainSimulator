@@ -4,6 +4,7 @@ import config
 import numpy as np 
 from simulator_main import simulate_init, simulate_loop
 from ui_generator import draw_sidebar
+from drawing_logic import get_hovered_cell, draw_hover_highlight, draw_terrain
 
 font_path = "fonts/OldNewspaperTypes.ttf"
 
@@ -16,28 +17,8 @@ pygame.display.set_caption("Terrain Generation")
 # Zoom and Pan settings
 zoom_level = 1.0  # 1.0 = normal zoom, < 1 = zoomed out, > 1 = zoomed in
 x_offset, y_offset = 0, 0  # Pan offsets
-ZOOM_STEP = 0.1  # Zoom increment step
-PAN_STEP = 5    # Pan speed in pixels
-LOD_THRESHOLD = 4  # Threshold for switching LOD mode
-max_zoom = 10
-min_zoom = 1
 
-def label_cities(city_map, city_names, cell_size):
-    city_count = 0
-    for row in range(city_map.shape[0]):
-        for col in range(city_map.shape[1]):
-            if city_map[row][col]:  # If city exists at this location
-                city_name = city_names[city_count % len(city_names)]
-                city_count += 1
 
-                # Render city name text
-                text_surface = font.render(city_name, True, (0, 0, 0))
-                text_rect = text_surface.get_rect(center=(
-                    (col * cell_size + cell_size // 2) + 30,
-                    (row * cell_size + cell_size // 2) + 18
-                ))
-
-                screen.blit(text_surface, text_rect)
 
 def generate_low_res_map(display_map):
     """Creates a low-resolution map surface."""
@@ -49,33 +30,6 @@ def generate_low_res_map(display_map):
                              (c * config.CELL_SIZE, r * config.CELL_SIZE, config.CELL_SIZE, config.CELL_SIZE))
     return low_res_surface
 
-def draw_terrain(display_map, screen, zoom_level, x_offset, y_offset, low_res_surface):
-    """Draws terrain ensuring seamless tile alignment at all zoom levels."""
-    if zoom_level > LOD_THRESHOLD:
-        # High-detail mode (render individual cells)
-        cell_size = config.CELL_SIZE * zoom_level  # Compute scaled tile size
-
-        # Ensure integer-aligned offsets to prevent jittering
-        x_offset_int = round(x_offset)
-        y_offset_int = round(y_offset)
-
-        for r in range(config.ROWS):
-            for c in range(config.COLS):
-                colour = display_map[r][c]
-
-                # Convert grid position to screen position with integer alignment
-                x = round(c * cell_size - x_offset_int)
-                y = round(r * cell_size - y_offset_int)
-
-                # Only render visible cells
-                if -cell_size < x < config.WIDTH and -cell_size < y < config.HEIGHT:
-                  pygame.draw.rect(screen, colour, (x, y, round(cell_size + 0.5), round(cell_size + 0.5)))
-    else:
-        # Low-detail mode (render entire surface)
-        scaled_surface = pygame.transform.smoothscale(
-            low_res_surface, (int(config.WIDTH * zoom_level), int(config.HEIGHT * zoom_level))
-        )
-        screen.blit(scaled_surface, (-x_offset, -y_offset))
 
 
 
@@ -97,7 +51,7 @@ def main():
 
     filter = 0
 
-    simulate_init()
+    terrain_data = simulate_init()
     display_map = simulate_loop(filter)
     low_res_display_map = generate_low_res_map(display_map)  # Pre-rendered low-res map
     
@@ -119,7 +73,9 @@ def main():
 
     tick = 0
 
-    
+    cell_clicked = False
+
+    selected_cell = (0,0)
 
     while True:
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -135,17 +91,18 @@ def main():
                     filter += 1
                     sim_update = True
                 elif event.key == pygame.K_LEFT:  # Pan left
-                    x_offset -= PAN_STEP
+                    x_offset -= config.PAN_STEP
                 elif event.key == pygame.K_RIGHT:  # Pan right
-                    x_offset += PAN_STEP
+                    x_offset += config.PAN_STEP
                 elif event.key == pygame.K_UP:  # Pan up
-                    y_offset -= PAN_STEP
+                    y_offset -= config.PAN_STEP
                 elif event.key == pygame.K_DOWN:  # Pan down
-                    y_offset += PAN_STEP
+                    y_offset += config.PAN_STEP
                 render_update = True
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
+                    cell_clicked = True
                     dragging = True
                     drag_start_x, drag_start_y = pygame.mouse.get_pos()
 
@@ -173,8 +130,8 @@ def main():
 
             elif event.type == pygame.MOUSEWHEEL:
                 # Determine new zoom level while clamping within range
-                zoom_amount = ZOOM_STEP * event.y
-                new_zoom = min(max_zoom, max(min_zoom, zoom_level + zoom_amount))  # Keep zoom within bounds
+                zoom_amount = config.ZOOM_STEP * event.y
+                new_zoom = min(config.MAX_ZOOM, max(config.MIN_ZOOM, zoom_level + zoom_amount))  # Keep zoom within bounds
 
                 if new_zoom != zoom_level:
                     # Get world position before zoom
@@ -188,11 +145,17 @@ def main():
                     x_offset = world_x_before * zoom_level - mouse_x
                     y_offset = world_y_before * zoom_level - mouse_y
 
-                    render_update = True
-        
-        
+                    
         
 
+        mouse_x, mouse_y = pygame.mouse.get_pos()  # Get mouse position on the screen
+        hovered_cell = get_hovered_cell(mouse_x, mouse_y, zoom_level, x_offset, y_offset, config.CELL_SIZE)
+
+        if cell_clicked:
+            selected_cell = hovered_cell
+
+            cell_clicked = False
+        
 
         # Clamp panning to prevent moving out of the map bounds
         x_offset, y_offset = clamp_pan(x_offset, y_offset, zoom_level)
@@ -201,6 +164,8 @@ def main():
 
         if tick == 0:
             sim_update = True
+        
+        render_update = True
 
 
         if sim_update:
@@ -214,6 +179,9 @@ def main():
             draw_terrain(display_map, screen, zoom_level, x_offset, y_offset, surface_to_render)
             #if show_city_labels and zoom_level > LOD_THRESHOLD:
                 #label_cities(cities_map, city_names, int(config.CELL_SIZE * zoom_level))
+            draw_hover_highlight(screen, hovered_cell, x_offset, y_offset, zoom_level, config.CELL_SIZE, (255,255,255, 50))
+
+            draw_sidebar(screen, selected_cell, terrain_data)
             pygame.display.flip()
             render_update = False  # Reset update flag
 
