@@ -23,6 +23,15 @@ def simulate_init():
     population_display = apply_heatmap_overlay(population_map, outline_display, "inferno")
     desiribility_display = apply_heatmap_overlay(desiribility_map, outline_display, "inferno")
 
+    terrain_data = {
+        "elevation": elevation_map,
+        "desirability": desiribility_map,
+        "population": population_map,
+        "traversal cost": traversal_cost_map
+    }
+
+    return terrain_data
+
     
  
 
