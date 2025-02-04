@@ -40,40 +40,7 @@ def generate_coastline_map(elevation_map):
 
 import numpy as np
 
-def population_filter(population_map, coastline_map):
-    """
-    Generates a population density overlay on top of the coastline map.
-    
-    - Uses a red gradient: light red for low population, dark red for high.
-    - Areas with 0 population remain unchanged (transparent mask effect).
-    - Works as a layer over the existing coastline map.
 
-    Args:
-        population_map (2D array): A numerical map where higher values indicate more population.
-        coastline_map (3D NumPy array): The base map with coastlines.
-
-    Returns:
-        3D NumPy array: A colorized map with a population heatmap overlay.
-    """
-    population_array = np.array(population_map, dtype=np.float32)  # Convert input to NumPy array
-    coastline_overlay = coastline_map.copy()  # Copy coastline map to overlay the filter
-
-    # Normalize population values between 0 and 1
-    max_population = np.max(population_array)
-    if max_population > 0:
-        normalized_population = population_array / max_population
-    else:
-        normalized_population = np.zeros_like(population_array)  # Avoid division by zero
-
-    rows, cols = population_array.shape
-
-    for r in range(rows):
-        for c in range(cols):
-            if population_array[r][c] > 0:  # Apply red gradient only where population exists
-                red_intensity = int(180 - (180 * (1 - normalized_population[r][c])))  # Scale red
-                coastline_overlay[r, c] = (255, red_intensity, red_intensity)  # RGB: Darker red for high population
-
-    return coastline_overlay
 
 
 import numpy as np
@@ -121,3 +88,43 @@ def apply_heatmap_overlay(data_map, coastline_map, colormap="viridis", alpha=0.6
                 ).astype(np.uint8)
 
     return output_map
+
+
+
+def generate_territory_overlay(display_map, territory_map, cities_list, alpha=0.6):
+    """
+    Applies a color overlay to display_map based on territory ownership.
+
+    Args:
+        display_map (numpy array): 3D array representing the terrain image (rows, cols, RGB).
+        territory_map (numpy array): 2D array where each cell contains a city UID or 0 for unclaimed.
+        cities_list (list of City objects): List of City objects, each with a UID and a color.
+        alpha (float): Blending factor (0 = no change, 1 = full city color).
+
+    Returns:
+        numpy array: The modified display map with territories overlaid.
+    """
+
+    # Step 1: Create a UID-to-Color mapping from cities_list
+    city_colors = {city.uid: np.array(city.colour) for city in cities_list}
+
+    # Step 2: Initialize an overlay with the same shape as display_map
+    overlay = display_map.copy()
+
+    # Step 3: Iterate over the territory_map and apply colors
+    rows, cols = territory_map.shape
+    for i in range(rows):
+        for j in range(cols):
+            uid = territory_map[i, j]
+            if uid == -1:
+                #Location is city
+                overlay[i,j] = [0,0,0]
+            elif uid in city_colors:  # If the cell belongs to a city
+                city_color = city_colors[uid]
+
+                # Blend city color with display_map color
+                overlay[i, j] = (
+                    (1 - alpha) * overlay[i, j] + alpha * city_color
+                ).astype(np.uint8)
+
+    return overlay
