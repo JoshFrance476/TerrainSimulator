@@ -4,7 +4,7 @@ SEA_LEVEL = 0
 NUMBER_OF_RIVERS = 10
 RIVER_SOURCE_MIN_ELEVATION = 0.2
 WIDTH, HEIGHT = 1400, 800
-CELL_SIZE = 2 # Decreasing this by one increases generation time 4 fold
+CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
 SCALE = 70 #Steepness is not synced with scale, will not be as obvious at more zoomed in levels
 ELEVATION_IMPACT_ON_TEMP = 1
 
@@ -13,7 +13,9 @@ SEED = random.randint(0,10000)
 
 ROWS, COLS = HEIGHT // CELL_SIZE, WIDTH // CELL_SIZE
 
-NUMBER_OF_CITIES = 5
+NUMBER_OF_CITIES = 20
+CITIES_MIN_DISTANCE = 14
+CITY_PROSPERITY_RANGE = (50,150)
 
 REGION_CONDITIONS = [
     {"condition": lambda e, t, r, rp: e > 0.35, "color": "snowy peaks"},

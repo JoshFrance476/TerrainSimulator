@@ -34,7 +34,7 @@ def generate_stage_3(rows, cols, river_map, sea_map, elevation_map, temperature_
 
 
 def calculate_traversal_cost(region, steepness, sea, river):
-    return REGION_BASE_TRAVERSAL_COST[region] + (steepness*10)
+    return REGION_BASE_TRAVERSAL_COST[region] + (steepness*200)
 
 
 def calculate_desirability(fertility, temperature, proximity_to_water, sea, river, water_threshold=5):

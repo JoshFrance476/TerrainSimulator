@@ -21,7 +21,7 @@ def generate_noise_map(rows, cols, scale, seed, normalised=False):
     """
     Generate a noise map using Perlin noise.
     """
-    noise_map = [[0 for _ in range(cols)] for _ in range(rows)]
+    noise_map = np.zeros((rows, cols), dtype=float)
     for r in range(rows):
         for c in range(cols):
             noise_value = pnoise2((r + seed) / scale, (c + seed) / scale, octaves=5, persistence=0.5, lacunarity=2.2)

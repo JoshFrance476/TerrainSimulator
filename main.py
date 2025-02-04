@@ -2,7 +2,7 @@ import pygame
 import sys
 import config
 import numpy as np 
-from generator_main import generate
+from simulator_main import simulate_init, simulate_loop
 
 font_path = "fonts/OldNewspaperTypes.ttf"
 
@@ -94,19 +94,29 @@ def main():
     """Main function to run the terrain visualization."""
     global zoom_level, x_offset, y_offset  # Allow modification inside function
 
-    display_map, cities_map = generate()
-    low_res_surface = generate_low_res_map(display_map)  # Pre-rendered low-res map
+    filter = 0
+
+    simulate_init()
+    display_map = simulate_loop(filter)
+    low_res_display_map = generate_low_res_map(display_map)  # Pre-rendered low-res map
+    
+
+    surface_to_render = low_res_display_map
 
     clock = pygame.time.Clock()
 
     city_names = [f"City {i+1}" for i in range(config.NUMBER_OF_CITIES)]
 
-    needs_update = True
+    render_update = True
+    sim_update = True
+
     show_city_labels = True
 
     # Track dragging state
     dragging = False
     drag_start_x, drag_start_y = 0, 0
+
+    
 
     while True:
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -118,6 +128,9 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
                     show_city_labels = not show_city_labels
+                elif event.key == pygame.K_2:
+                    filter += 1
+                    sim_update = True
                 elif event.key == pygame.K_LEFT:  # Pan left
                     x_offset -= PAN_STEP
                 elif event.key == pygame.K_RIGHT:  # Pan right
@@ -126,7 +139,7 @@ def main():
                     y_offset -= PAN_STEP
                 elif event.key == pygame.K_DOWN:  # Pan down
                     y_offset += PAN_STEP
-                needs_update = True
+                render_update = True
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
@@ -153,7 +166,7 @@ def main():
                     # Update last mouse position
                     drag_start_x, drag_start_y = mouse_x, mouse_y
 
-                    needs_update = True
+                    render_update = True
 
             elif event.type == pygame.MOUSEWHEEL:
                 # Determine new zoom level while clamping within range
@@ -172,22 +185,29 @@ def main():
                     x_offset = world_x_before * zoom_level - mouse_x
                     y_offset = world_y_before * zoom_level - mouse_y
 
-                    needs_update = True
-
+                    render_update = True
+        
+        
+        
 
 
         # Clamp panning to prevent moving out of the map bounds
         x_offset, y_offset = clamp_pan(x_offset, y_offset, zoom_level)
 
-        if needs_update:
-            screen.fill((0, 0, 0))  # Clear screen only when necessary
-            draw_terrain(display_map, screen, zoom_level, x_offset, y_offset, low_res_surface)
-            if show_city_labels and zoom_level > LOD_THRESHOLD:
-                label_cities(cities_map, city_names, int(config.CELL_SIZE * zoom_level))
-            pygame.display.flip()
-            needs_update = False  # Reset update flag
+        if sim_update:
+            display_map = simulate_loop(filter)
+            surface_to_render = generate_low_res_map(display_map)  # Pre-rendered low-res map
+            sim_update = False
 
-        clock.tick(60)  # Maintain performance
+        if render_update:
+            screen.fill((0, 0, 0))  # Clear screen only when necessary
+            draw_terrain(display_map, screen, zoom_level, x_offset, y_offset, surface_to_render)
+            #if show_city_labels and zoom_level > LOD_THRESHOLD:
+                #label_cities(cities_map, city_names, int(config.CELL_SIZE * zoom_level))
+            pygame.display.flip()
+            render_update = False  # Reset update flag
+
+        clock.tick(20)  # Maintain performance
 
 if __name__ == "__main__":
     main()
