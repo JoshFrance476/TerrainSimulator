@@ -7,6 +7,7 @@ WIDTH, HEIGHT = 1400, 800
 CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
 SCALE = 70 #Steepness is not synced with scale, will not be as obvious at more zoomed in levels
 ELEVATION_IMPACT_ON_TEMP = 1
+STEEPNESS_MULTIPLIER = 50
 
 
 SEED = random.randint(0,10000)
@@ -16,7 +17,7 @@ ROWS, COLS = HEIGHT // CELL_SIZE, WIDTH // CELL_SIZE
 NUMBER_OF_CITIES = 30
 CITIES_MIN_DISTANCE = 14
 CITY_PROSPERITY_RANGE = (50,120)
-CITY_MAX_TERRITORY = 120
+CITY_MAX_TERRITORY = 200
 
 LOD_THRESHOLD = 2.2  # Zoom threshold for switching LOD mode
 ZOOM_STEP = 0.1  # Zoom increment step
@@ -37,7 +38,7 @@ REGION_CONDITIONS = [
 ]
 
 REGION_COLORS = {
-    "water": (0, 0, 255),
+    "water": (0, 0, 180),
     "snowy peaks": (226, 226, 226),
     "mountains": (130, 130, 130),
     "desert": (194, 140, 70),
