@@ -8,15 +8,18 @@ FONT_SIZE = 20
 def draw_sidebar(screen, selected_cell, terrain_data):
     """ Draws a sidebar with information about the selected cell. """
     sidebar_x = config.WIDTH - SIDEBAR_WIDTH
-    pygame.draw.rect(screen, (40, 40, 40), (sidebar_x, 0, SIDEBAR_WIDTH, config.HEIGHT))  # Sidebar background
-
-    font = pygame.font.Font(None, FONT_SIZE)
     
-    # Display title
-    title_text = font.render("Cell Info", True, (255, 255, 255))
-    screen.blit(title_text, (sidebar_x + 10, 20))
+    # Draw sidebar background
+    pygame.draw.rect(screen, (220, 220, 220), (sidebar_x, 0, SIDEBAR_WIDTH, config.HEIGHT))  
 
-    #for city in city_list
+    # Draw sidebar border (Black, 3px thickness)
+    pygame.draw.rect(screen, (80, 80, 80), (sidebar_x, 0, SIDEBAR_WIDTH, config.HEIGHT), 3)
+
+    font = pygame.font.Font("fonts\VCR_OSD_MONO_1.001.ttf", FONT_SIZE)
+
+    # Display title
+    title_text = font.render("Cell Info", True, (30, 30, 30))
+    screen.blit(title_text, (sidebar_x + 10, 20))
 
     if selected_cell:
         r, c = selected_cell  # Selected cell coordinates
@@ -25,6 +28,8 @@ def draw_sidebar(screen, selected_cell, terrain_data):
         elevation = terrain_data["elevation"][r, c]
         desirability = terrain_data["desirability"][r, c]
         population = terrain_data["population"][r, c]
+        steepness = terrain_data["steepness"][r, c]
+        traversal_cost = terrain_data["traversal cost"][r, c]
 
         # List of text entries to display
         info_lines = [
@@ -32,9 +37,11 @@ def draw_sidebar(screen, selected_cell, terrain_data):
             f"Elevation: {elevation:.2f}",
             f"Desirability: {desirability:.2f}",
             f"Population: {population:.2f}",
+            f"steepness: {steepness:.2f}",
+            f"traversal cost: {traversal_cost:.2f}",
         ]
 
         # Render and display each line
         for i, line in enumerate(info_lines):
-            text_surface = font.render(line, True, (255, 255, 255))
+            text_surface = font.render(line, True, (30, 30, 30))
             screen.blit(text_surface, (sidebar_x + 10, 50 + i * 25))
