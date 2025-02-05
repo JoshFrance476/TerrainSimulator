@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
 from colour_generator import generate_color_map
-from config import REGION_BASE_TRAVERSAL_COST
+from config import REGION_BASE_TRAVERSAL_COST, STEEPNESS_MULTIPLIER
 import logging
 import time
 
@@ -34,7 +34,7 @@ def generate_stage_3(rows, cols, river_map, sea_map, elevation_map, temperature_
 
 
 def calculate_traversal_cost(region, steepness, sea, river):
-    return REGION_BASE_TRAVERSAL_COST[region] + (steepness*200)
+    return REGION_BASE_TRAVERSAL_COST[region] + (steepness*STEEPNESS_MULTIPLIER)
 
 
 def calculate_desirability(fertility, temperature, proximity_to_water, sea, river, water_threshold=5):
