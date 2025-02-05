@@ -23,7 +23,7 @@ def generate_color_map(elevation_map, steepness_map, region_map, region_colours,
 
             if (region == "water"):
                 blend_factor = (elevation + 1) / 2  # Normalize to 0-1 range for water
-                final_color = blend_colors(final_color, (255, 255, 255), blend_factor)
+                final_color = blend_colors(final_color, (190, 190, 255), blend_factor)
             elif variation_toggle:
                 final_color = blend_colors(final_color, (0,0,0), steepness*1.4)
                 final_color = blend_colors(final_color, (0,0,0), elevation/2)
