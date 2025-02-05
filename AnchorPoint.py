@@ -1,6 +1,7 @@
 from collections import deque
 import numpy as np
 import config
+from heapq import heappop, heappush
 
 class AnchorPoint:
     """Represents region anchors in the simulation with location, prosperity, and territory."""
@@ -10,6 +11,8 @@ class AnchorPoint:
     traversal_cost_map = None
     sea_map = None
     river_map = None
+    population_map = None
+    can_expand = True
     anchor_uid_map = np.zeros((config.ROWS, config.COLS), dtype=int)  # Territory ownership map
 
     # Shared color palette for anchors
@@ -25,13 +28,12 @@ class AnchorPoint:
     ]
     colour_index = 0  # Tracks assigned colors
 
-    def __init__(self, location, territory_size, uid, name="Unknown"):
+    def __init__(self, location, uid, name="Unknown"):
         """Initializes a anchor with a location, territory_size, and a unique ID."""
         self.location = location  # (row, col) tuple
         self.name = name
         self.uid = uid
-        self.territory_size = territory_size
-        self.territory = self.generate_territory(self.location, self.territory_size)  # List of (row, col) coordinates representing the anchor's territory
+        self.territory = []
         self.colour = self.assign_unique_colour()
         self.type = 1
 
@@ -80,9 +82,13 @@ class AnchorPoint:
     
     def update_territory_size(self):
         """Increases the anchor's territory size by 1."""
-        if self.territory_size < config.CITY_MAX_TERRITORY:
-            self.territory_size += 1
-            self.territory = self.generate_territory(self.location, self.territory_size)
+        if self.can_expand:
+            lowest_neighbouring_cell = self.find_lowest_cost_unclaimed_cell(self.location)
+            if lowest_neighbouring_cell and len(self.territory) < config.CITY_MAX_TERRITORY:
+                self.territory.append(lowest_neighbouring_cell)
+            else:
+                self.can_expand = False
+
 
     # ───────────────────────────────────── #
     #        TERRITORY & MAP LOGIC          #
@@ -114,40 +120,36 @@ class AnchorPoint:
         AnchorPoint.colour_index += 1
         return color
 
-    def generate_territory(self, location, territory_size):
-        """
-        Assigns a 'territory' to this anchor based on the traversal cost map.
 
-        Args:
-            traversal_cost_map (numpy array): Movement cost for each cell.
-            sea_map (numpy array): Boolean map of water locations.
-            river_map (numpy array): Boolean map of river locations.
-        """
+    def find_lowest_cost_unclaimed_cell(self, location):
+        """Finds the lowest traversal cost unclaimed cell from the given location."""
         rows, cols = AnchorPoint.traversal_cost_map.shape
         start_r, start_c = location
 
+        min_heap = [(AnchorPoint.traversal_cost_map[start_r, start_c], start_r, start_c)]  # (cost, row, col)
         visited = set()
-        queue = deque([(start_r, start_c, 0)])  # (row, col, cost)
 
-        territory = []  # Initialise anchors's territory
+        while min_heap:
+            cost, r, c = heappop(min_heap)
 
-        while queue:
-            r, c, cost = queue.popleft()
-
-            # Skip if already visited, exceeds prosperity limit, or is water
-            if (r, c) in visited or cost > territory_size or AnchorPoint.sea_map[r][c] or AnchorPoint.river_map[r][c]:
+            if (r, c) in visited:
                 continue
-
             visited.add((r, c))
-            territory.append((r, c))  # Add valid cell to territory
 
-            # Explore 4 neighboring cells
-            for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols:  # Stay within bounds
-                    next_cost = cost + (AnchorPoint.traversal_cost_map[nr, nc] * 2)
-                    queue.append((nr, nc, next_cost))
-        
-        return territory
+            cell_uid = AnchorPoint.get_uid_map()[r][c]
+            # Check if this is an unclaimed cell
+            if cell_uid == 0 and AnchorPoint.sea_map[r][c] == False and AnchorPoint.river_map[r][c] == False:
+                return (r, c)  # Found the lowest-cost unclaimed cell
 
-    
+            #Only add neighbours if they are adjacent to city center or claimed cell
+            if cell_uid == self.get_uid() or cell_uid == -1:
+                # Add valid neighbors to the heap
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited:
+                        heappush(min_heap, (AnchorPoint.traversal_cost_map[nr, nc]+ cost, nr, nc))
+
+        return None  # No valid unclaimed cell found
+
+
+
