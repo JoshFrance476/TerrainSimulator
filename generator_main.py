@@ -38,4 +38,4 @@ def generate_initial_maps():
 
     #colour_map_with_paths[cities_map] = (0,0,0)
 
-    return colour_map, desiribility_map, elevation_map, traversal_cost_map, sea_map, river_map
+    return colour_map, desiribility_map, elevation_map, traversal_cost_map, sea_map, river_map, steepness_map
