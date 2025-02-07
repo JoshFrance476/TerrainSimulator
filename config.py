@@ -14,16 +14,26 @@ SEED = random.randint(0,10000)
 
 ROWS, COLS = HEIGHT // CELL_SIZE, WIDTH // CELL_SIZE
 
-NUMBER_OF_CITIES = 30
+NUMBER_OF_CITIES = 5
 CITIES_MIN_DISTANCE = 14
-CITY_PROSPERITY_RANGE = (50,120)
-CITY_MAX_TERRITORY = 200
+CITY_MAX_TERRITORY = 50
 
 LOD_THRESHOLD = 2.2  # Zoom threshold for switching LOD mode
 ZOOM_STEP = 0.1  # Zoom increment step
 PAN_STEP = 5    # Pan speed in pixels
 MAX_ZOOM = 10
 MIN_ZOOM = 1
+
+STATE_COLOUR_PALETTE = [
+    (0, 255, 0),   # Red
+    (0, 180, 0),   # Green
+    (0, 0, 180),   # Blue
+    (180, 180, 0), # Yellow
+    (180, 120, 0), # Orange
+    (80, 0, 80),   # Purple
+    (0, 180, 180), # Cyan
+    (180, 20, 100) # Pink
+]
 
 REGION_CONDITIONS = [
     {"condition": lambda e, t, r, rp: e > 0.35, "color": "snowy peaks"},
