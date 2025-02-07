@@ -23,7 +23,7 @@ def generate_stage_3(rows, cols, river_map, sea_map, elevation_map, temperature_
             region_map[r][c] = determine_region(region_conditions, elevation_map[r][c], temperature_map[r][c], rainfall_map[r][c], sea_proximity_map[r][c], river_proximity_map[r][c])
             fertility_map[r][c] = calculate_soil_fertility(rainfall_map[r][c], elevation_map[r][c])
             traversal_cost_map[r][c] = calculate_traversal_cost(region_map[r][c], steepness_map[r][c], sea_map[r][c], river_map[r][c])
-            desiribility_map[r][c] = calculate_desirability(fertility_map[r][c], temperature_map[r][c], river_proximity_map[r][c], sea_map[r][c], river_map[r][c])
+            desiribility_map[r][c] = calculate_desirability(fertility_map[r][c], temperature_map[r][c], river_proximity_map[r][c], sea_map[r][c], river_map[r][c], elevation_map[r][c])
     
 
     start_time = time.time()
@@ -37,7 +37,7 @@ def calculate_traversal_cost(region, steepness, sea, river):
     return REGION_BASE_TRAVERSAL_COST[region] + (steepness*STEEPNESS_MULTIPLIER)
 
 
-def calculate_desirability(fertility, temperature, proximity_to_water, sea, river, water_threshold=5):
+def calculate_desirability(fertility, temperature, proximity_to_water, sea, river, elevation, water_threshold=5):
     """
     Calculate desirability based on fertility, temperature, and proximity to water.
     Normalized to the range [0, 1].
@@ -53,7 +53,7 @@ def calculate_desirability(fertility, temperature, proximity_to_water, sea, rive
     """
     min_desirability, max_desirability = 0, 1
 
-    if sea or river:
+    if sea or river or elevation > 0.25:
         return 0
 
     # Temperature factor - best temperature around 0.5, less desirable if too hot or cold
