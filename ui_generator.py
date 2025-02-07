@@ -1,21 +1,19 @@
 import pygame
 import config
 
-# Sidebar dimensions
-SIDEBAR_WIDTH = 250  
-FONT_SIZE = 20
+
 
 def draw_sidebar(screen, selected_cell, terrain_data):
     """ Draws a sidebar with information about the selected cell. """
-    sidebar_x = config.WIDTH - SIDEBAR_WIDTH
+    sidebar_x = config.WIDTH
     
     # Draw sidebar background
-    pygame.draw.rect(screen, (220, 220, 220), (sidebar_x, 0, SIDEBAR_WIDTH, config.HEIGHT))  
+    pygame.draw.rect(screen, (220, 220, 220), (sidebar_x, 0, config.SIDEBAR_WIDTH, config.HEIGHT))  
 
     # Draw sidebar border (Black, 3px thickness)
-    pygame.draw.rect(screen, (80, 80, 80), (sidebar_x, 0, SIDEBAR_WIDTH, config.HEIGHT), 3)
+    pygame.draw.rect(screen, (80, 80, 80), (sidebar_x, 0, config.SIDEBAR_WIDTH, config.HEIGHT), 3)
 
-    font = pygame.font.Font("fonts\VCR_OSD_MONO_1.001.ttf", FONT_SIZE)
+    font = pygame.font.Font("fonts\VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
 
     # Display title
     title_text = font.render("Cell Info", True, (30, 30, 30))
