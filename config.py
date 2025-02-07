@@ -24,6 +24,9 @@ PAN_STEP = 5    # Pan speed in pixels
 MAX_ZOOM = 10
 MIN_ZOOM = 1
 
+SIDEBAR_WIDTH = 250  
+FONT_SIZE = 20
+
 STATE_COLOUR_PALETTE = [
     (0, 255, 0),   # Red
     (0, 180, 0),   # Green
