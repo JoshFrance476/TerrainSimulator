@@ -1,5 +1,6 @@
 from AnchorPoint import AnchorPoint
 import config
+import random
 import numpy as np
 
 class State():
@@ -13,12 +14,14 @@ class State():
         self.sid = State.sid_counter
         State.sid_counter += 1
 
+        self.colour = self.assign_colour()
+
         self.create_anchor_point(capital_location)
 
         
     
     def create_anchor_point(self, location):
-        new_ap = AnchorPoint(location, self.assign_colour(), self.sid)
+        new_ap = AnchorPoint(location, self.sid)
 
         self.anchorpoints.append(new_ap)
         
@@ -26,20 +29,19 @@ class State():
     def update_aps(self, sea_map, river_map, traversal_cost_map, population_map, id_map):
 
         for ap in self.anchorpoints:
-            if len(ap.get_territory()) >= config.CITY_MAX_TERRITORY and ap.can_expand:
+            if len(ap.get_territory()) >= config.CITY_MAX_TERRITORY-30 and ap.can_expand:
                 location_for_neighbour = ap.create_friendly_neighbour(self.sid, population_map, id_map, sea_map, river_map)
                 self.create_anchor_point(location_for_neighbour)
             else:
-                ap.update_territory_size(sea_map, river_map, traversal_cost_map, population_map, id_map)
+                rng = random.randint(0, len(ap.get_territory()))
+                if rng == 0:
+                    ap.update_territory_size(sea_map, river_map, traversal_cost_map, population_map, id_map)
         self.sid_map = self.get_sid_territory_map()
 
 
-    @classmethod
-    def get_all_anchors(cls):
-        return AnchorPoint.get_anchors()
     
     def assign_colour(self):
-        """Assigns a unique color to each anchor from the predefined list."""
+        """Assigns a unique color to state from the predefined list."""
         color = config.STATE_COLOUR_PALETTE[self.sid % len(config.STATE_COLOUR_PALETTE)]
         return color
     
