@@ -4,21 +4,20 @@ from generator_main import generate_initial_maps
 from overlay_generator import apply_heatmap_overlay, generate_coastline_map, generate_territory_overlay
 from find_top_desiribility import find_top_desiribility_points
 from AnchorPoint import AnchorPoint
+from State import State
 import random
 
 
 def simulate_init():
-    global desiribility_map, desiribility_display, colour_display, population_display, outline_display, steepness_display, elevation_display, traversal_cost_map, sea_map, river_map, territory_display, cities_list, population_map
+    global desiribility_map, desiribility_display, state_list, colour_display, population_display, outline_display, steepness_display, elevation_display, traversal_cost_map, sea_map, river_map, territory_display, cities_list, population_map
     colour_display, desiribility_map, elevation_map, traversal_cost_map, sea_map, river_map, steepness_map = generate_initial_maps()
     outline_display = generate_coastline_map(elevation_map)
     population_map = np.zeros((config.ROWS, config.COLS), dtype=float)
     population_map = update_population(population_map)
 
-    AnchorPoint.initialise(traversal_cost_map, sea_map, river_map)
-    
-    initialise_cities(population_map)
+    state_list = initialise_states(population_map)
 
-    territory_display = generate_territory_overlay(colour_display, AnchorPoint.get_uid_map(), AnchorPoint.get_anchors())
+    territory_display = generate_territory_overlay(colour_display, generate_global_apid_territory_map(), State.get_all_anchors())
     elevation_display = apply_heatmap_overlay(elevation_map, outline_display)
     population_display = apply_heatmap_overlay(population_map, outline_display, "inferno")
     desiribility_display = apply_heatmap_overlay(desiribility_map, outline_display, "inferno")
@@ -39,7 +38,6 @@ def simulate_init():
 
 def simulate_loop(filter):
     global population_display, desiribility_display, elevation_display, traversal_cost_map, territory_display, population_map
-    population_map = update_population(population_map)
     mod_filter = filter % 5
 
     if mod_filter == 0:
@@ -51,11 +49,12 @@ def simulate_loop(filter):
     elif mod_filter == 3:
         population_display = apply_heatmap_overlay(population_map, outline_display, "inferno")
         display_map = population_display
-    elif mod_filter == 4:
-        for anchor in AnchorPoint.get_anchors():
-            anchor.update_territory_size()
-        AnchorPoint.generate_territory_uid_map()
-        display_map = generate_territory_overlay(colour_display, AnchorPoint.get_uid_map(), AnchorPoint.get_anchors())
+    elif mod_filter == 4: 
+        apid_map = generate_global_apid_territory_map()
+        for state in state_list:
+            state.update_aps(sea_map, river_map, traversal_cost_map, population_map, apid_map)
+        
+        display_map = generate_territory_overlay(colour_display, generate_global_sid_territory_map(), State.get_all_anchors())
 
     return display_map
 
@@ -64,27 +63,64 @@ def update_population(population_map):
     # Create a boolean mask where desiribility_map above threshold
     mask = desiribility_map > 0.5  
 
-    # Apply the population growth formula only where the condition is True
-    population_map[mask] += desiribility_map[mask] / 10
-
     # limits populations to 10
-    population_map[mask] = np.minimum(10, population_map[mask] + desiribility_map[mask] / 10)
+    population_map[mask] = np.minimum(10, population_map[mask] + desiribility_map[mask] / 500)
     
 
     return population_map
 
 
-#Returns list of anchor objects located at the top n desiribility points
-def initialise_cities(population_map):
-
+#Returns list of state objects with capitals located at the top n desiribility points
+def initialise_states(population_map):
+    state_list = []
     # Find anchor locations
-    anchor_location_list = find_top_desiribility_points(population_map, config.NUMBER_OF_CITIES, config.CITIES_MIN_DISTANCE)
+    state_location_list = find_top_desiribility_points(population_map, config.NUMBER_OF_CITIES, config.CITIES_MIN_DISTANCE)
 
-    for uid, (_, (r, c)) in enumerate(anchor_location_list):
-        AnchorPoint((r, c), uid+1)
+    for (_, (r, c)) in state_location_list:
+        new_state = State((r, c))
+        state_list.append(new_state)
     
-    AnchorPoint.generate_territory_uid_map()
-        
+    return state_list
+
+
+def generate_global_apid_territory_map():
+    """
+    Generates a 2D ID map where each cell is assigned a anchor UID.
+    Anchor points are marked with -1.
+
+    Returns:
+        numpy array: Territory map with anchor UIDs.
+    """
+    global_territory_map = np.zeros((config.ROWS, config.COLS), dtype=int)
+
+    for state in state_list:
+        state_territory_map = state.get_apid_territory_map()
+        mask = state_territory_map != 0
+        global_territory_map[mask] = state_territory_map[mask] 
+
+
+    return global_territory_map
+
+def generate_global_sid_territory_map():
+    """
+    Generates a 2D ID map where each cell is assigned a anchor UID.
+    Anchor points are marked with -1.
+
+    Returns:
+        numpy array: Territory map with anchor UIDs.
+    """
+    global_territory_map = np.zeros((config.ROWS, config.COLS), dtype=int)
+
+    for state in state_list:
+        state_territory_map = state.get_sid_territory_map()
+        mask = state_territory_map != 0
+        global_territory_map[mask] = state_territory_map[mask] 
+
+
+    return global_territory_map
+
+
+
 
 
 
