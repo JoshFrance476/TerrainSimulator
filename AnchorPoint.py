@@ -1,54 +1,40 @@
-from collections import deque
 import numpy as np
 import config
 from heapq import heappop, heappush
+from scipy.ndimage import binary_dilation
 
 class AnchorPoint:
     """Represents region anchors in the simulation with location, prosperity, and territory."""
     
     # Class-level shared attributes
     anchor_list = []  # Stores all anchor instances
-    traversal_cost_map = None
-    sea_map = None
-    river_map = None
-    population_map = None
-    can_expand = True
-    anchor_uid_map = np.zeros((config.ROWS, config.COLS), dtype=int)  # Territory ownership map
+    
 
-    # Shared color palette for anchors
-    colour_palette = [
-        (180, 0, 0),   # Red
-        (0, 180, 0),   # Green
-        (0, 0, 180),   # Blue
-        (180, 180, 0), # Yellow
-        (180, 120, 0), # Orange
-        (80, 0, 80),   # Purple
-        (0, 180, 180), # Cyan
-        (180, 20, 100) # Pink
-    ]
-    colour_index = 0  # Tracks assigned colors
+    id_counter = 1
 
-    def __init__(self, location, uid, name="Unknown"):
+
+    def __init__(self, location, colour, sid = -1, name="Unknown"):
         """Initializes a anchor with a location, territory_size, and a unique ID."""
         self.location = location  # (row, col) tuple
         self.name = name
-        self.uid = uid
+
+        self.id = AnchorPoint.id_counter
+        AnchorPoint.id_counter += 1
+
         self.territory = []
-        self.colour = self.assign_unique_colour()
+        self.colour = colour
         self.type = 1
+        self.can_expand = True
+
+        self.sid = sid
+
+        if sid == -1:
+            self.sid == self.id
+            
 
         AnchorPoint.anchor_list.append(self)  # Register anchor instance
 
-    # ───────────────────────────────────── #
-    #      CLASS-LEVEL INITIALIZATION       #
-    # ───────────────────────────────────── #
-    
-    @classmethod
-    def initialise(cls, traversal_cost_map, sea_map, river_map):
-        """Initializes shared maps before anchor instances are created."""
-        cls.traversal_cost_map = traversal_cost_map
-        cls.sea_map = sea_map
-        cls.river_map = river_map
+
 
     # ───────────────────────────────────── #
     #            GETTER METHODS             #
@@ -59,10 +45,6 @@ class AnchorPoint:
         """Returns a list of all created anchor."""
         return cls.anchor_list
 
-    @classmethod
-    def get_uid_map(cls):
-        """Returns the global anchor UID map showing anchor territories."""
-        return cls.anchor_uid_map
 
     def get_territory(self):
         """Returns the territory owned by the anchor."""
@@ -76,80 +58,99 @@ class AnchorPoint:
         """Returns the anchor's (row, col) location."""
         return self.location
     
-    def get_uid(self):
+    def get_id(self):
         """Returns the anchor's unique identifier."""
-        return self.uid
+        return self.id
     
-    def update_territory_size(self):
+    def update_territory_size(self, sea_map, river_map, traversal_cost_map, population_map, id_map):
         """Increases the anchor's territory size by 1."""
-        if self.can_expand:
-            lowest_neighbouring_cell = self.find_lowest_cost_unclaimed_cell(self.location)
-            if lowest_neighbouring_cell and len(self.territory) < config.CITY_MAX_TERRITORY:
-                self.territory.append(lowest_neighbouring_cell)
-            else:
-                self.can_expand = False
+        lowest_neighbouring_cell = self.find_lowest_cost_unclaimed_cell(self.location, sea_map, river_map, traversal_cost_map, id_map)
+        if lowest_neighbouring_cell:
+            self.territory.append(lowest_neighbouring_cell)
+        else:
+            print("no valid cell found")
+
 
 
     # ───────────────────────────────────── #
     #        TERRITORY & MAP LOGIC          #
     # ───────────────────────────────────── #
     
-    @classmethod
-    def generate_territory_uid_map(cls):
-        """
-        Generates a 2D UID map where each cell is assigned a anchor UID.
-        Anchor points are marked with -1.
-
-        Returns:
-            numpy array: Territory map with anchor UIDs.
-        """
-        cls.anchor_uid_map.fill(0)  # Reset UID map
-
-        for anchor in cls.anchor_list:
-            for (r, c) in anchor.get_territory():
-                cls.anchor_uid_map[r, c] = anchor.get_uid()
-
-            # Mark anchor point with -1
-            r, c = anchor.location
-            cls.anchor_uid_map[r, c] = -1
 
 
-    def assign_unique_colour(self):
-        """Assigns a unique color to each anchor from the predefined list."""
-        color = AnchorPoint.colour_palette[AnchorPoint.colour_index % len(AnchorPoint.colour_palette)]
-        AnchorPoint.colour_index += 1
-        return color
 
 
-    def find_lowest_cost_unclaimed_cell(self, location):
+    def find_lowest_cost_unclaimed_cell(self, location, sea_map, river_map, traversal_cost_map, id_map):
         """Finds the lowest traversal cost unclaimed cell from the given location."""
-        rows, cols = AnchorPoint.traversal_cost_map.shape
+        rows, cols = traversal_cost_map.shape
         start_r, start_c = location
 
-        min_heap = [(AnchorPoint.traversal_cost_map[start_r, start_c], start_r, start_c)]  # (cost, row, col)
+        min_heap = [(traversal_cost_map[start_r, start_c], start_r, start_c)]  # (cost, row, col)
         visited = set()
 
         while min_heap:
             cost, r, c = heappop(min_heap)
 
+            cell_id = id_map[r][c]
+
             if (r, c) in visited:
                 continue
             visited.add((r, c))
 
-            cell_uid = AnchorPoint.get_uid_map()[r][c]
+
+            
             # Check if this is an unclaimed cell
-            if cell_uid == 0 and AnchorPoint.sea_map[r][c] == False and AnchorPoint.river_map[r][c] == False:
+            if cell_id == 0 and sea_map[r][c] == False and river_map[r][c] == False:
                 return (r, c)  # Found the lowest-cost unclaimed cell
 
             #Only add neighbours if they are adjacent to city center or claimed cell
-            if cell_uid == self.get_uid() or cell_uid == -1:
+            if cell_id == self.id or (cell_id == -1 and (r, c) == self.location):
                 # Add valid neighbors to the heap
                 for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     nr, nc = r + dr, c + dc
                     if 0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited:
-                        heappush(min_heap, (AnchorPoint.traversal_cost_map[nr, nc]+ cost, nr, nc))
+                        heappush(min_heap, (traversal_cost_map[nr, nc]+ cost, nr, nc))
 
         return None  # No valid unclaimed cell found
+    
+    def get_border_proximity_cells(self, proximity, id_map, sea_map, river_map):
 
+        # uid_mask is a boolean map of just self's territory, including city center
+        id_mask = (id_map == self.id)  # Create mask based on self.id
+        id_mask[self.location] = True  # Ensure (row, col) is explicitly set to True
+
+
+        # Create a structuring element (cross shape) for checking adjacent cells
+        structuring_element = np.array([[0,1,0], [1,1,1], [0,1,0]])  # 4-way connectivity
+
+        # Expand territory area by proximity to find proximity cells
+        border_proximity_cells = binary_dilation(id_mask, structuring_element, proximity)
+
+        border_proximity_cells = border_proximity_cells & (id_map == 0) & ~sea_map
+
+        #something about this conversion isn't right. Border proximity cells should be up to n away from ap borders, excluding where id map isn't 0 (so only unclaimed territory)
+
+        return border_proximity_cells
+
+    def create_friendly_neighbour(self, sid, population_map, id_map, sea_map, river_map):
+        proximate_cells = self.get_border_proximity_cells(5, id_map, sea_map, river_map)
+
+        # Get the indices of the cells within the proximity
+        valid_indices = np.where(proximate_cells)
+
+        # Extract the population values for those indices
+        valid_values = population_map[valid_indices]
+
+        max_index = np.argmax(valid_values)  # Position in the flattened valid values
+        max_value = valid_values[max_index]  # Max value itself
+
+        # Retrieve the corresponding (row, col) location
+        new_location = (valid_indices[0][max_index], valid_indices[1][max_index])
+
+        print("creating neighbour at ", new_location)
+
+        self.can_expand = False
+
+        return new_location
 
 
