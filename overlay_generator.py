@@ -106,7 +106,7 @@ def generate_territory_overlay(display_map, territory_map, cities_list, alpha=0.
     """
 
     # Step 1: Create a UID-to-Color mapping from cities_list
-    city_colors = {city.uid: np.array(city.colour) for city in cities_list}
+    city_colors = {city.sid: np.array(city.colour) for city in cities_list}
 
     # Step 2: Initialize an overlay with the same shape as display_map
     overlay = display_map.copy()
@@ -115,12 +115,12 @@ def generate_territory_overlay(display_map, territory_map, cities_list, alpha=0.
     rows, cols = territory_map.shape
     for i in range(rows):
         for j in range(cols):
-            uid = territory_map[i, j]
-            if uid == -1:
+            id = territory_map[i, j]
+            if id == -1:
                 #Location is city
                 overlay[i,j] = [0,0,0]
-            elif uid in city_colors:  # If the cell belongs to a city
-                city_color = city_colors[uid]
+            elif id in city_colors:  # If the cell belongs to a city
+                city_color = city_colors[id]
 
                 # Blend city color with display_map color
                 overlay[i, j] = (
