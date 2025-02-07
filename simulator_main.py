@@ -3,9 +3,7 @@ import config
 from generator_main import generate_initial_maps
 from overlay_generator import apply_heatmap_overlay, generate_coastline_map, generate_territory_overlay
 from find_top_desiribility import find_top_desiribility_points
-from AnchorPoint import AnchorPoint
 from State import State
-import random
 
 
 def simulate_init():
@@ -15,9 +13,9 @@ def simulate_init():
     population_map = np.zeros((config.ROWS, config.COLS), dtype=float)
     population_map = update_population(population_map)
 
-    state_list = initialise_states(population_map)
+    state_list = initialise_states(population_map) # list of state objects
 
-    territory_display = generate_territory_overlay(colour_display, generate_global_apid_territory_map(), State.get_all_anchors())
+    territory_display = generate_territory_overlay(colour_display, generate_global_apid_territory_map(), state_list)
     elevation_display = apply_heatmap_overlay(elevation_map, outline_display)
     population_display = apply_heatmap_overlay(population_map, outline_display, "inferno")
     desiribility_display = apply_heatmap_overlay(desiribility_map, outline_display, "inferno")
@@ -54,7 +52,7 @@ def simulate_loop(filter):
         for state in state_list:
             state.update_aps(sea_map, river_map, traversal_cost_map, population_map, apid_map)
         
-        display_map = generate_territory_overlay(colour_display, generate_global_sid_territory_map(), State.get_all_anchors())
+        display_map = generate_territory_overlay(colour_display, generate_global_sid_territory_map(), state_list)
 
     return display_map
 
