@@ -67,10 +67,7 @@ def find_lowest_neighbour(elevation_map, river_map, row, col):
         (1, 0),   # South
         (0, -1),  # West
         (0, 1),   # East
-        (1, -1),  # South-West
-        (1, 1),   # South-East
-        (-1, -1), # North-West
-        (-1, 1)   # North-East
+
     ]
 
     # Initialize variables with the current position as a fallback
