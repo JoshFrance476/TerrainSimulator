@@ -38,12 +38,6 @@ def generate_coastline_map(elevation_map):
 
     return coastline_map
 
-import numpy as np
-
-
-
-
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
@@ -91,7 +85,7 @@ def apply_heatmap_overlay(data_map, coastline_map, colormap="viridis", alpha=0.6
 
 
 
-def generate_territory_overlay(display_map, territory_map, cities_list, alpha=0.6):
+def generate_territory_overlay(display_map, territory_map, state_list, alpha=0.6):
     """
     Applies a color overlay to display_map based on territory ownership.
 
@@ -106,7 +100,7 @@ def generate_territory_overlay(display_map, territory_map, cities_list, alpha=0.
     """
 
     # Step 1: Create a UID-to-Color mapping from cities_list
-    city_colors = {city.sid: np.array(city.colour) for city in cities_list}
+    city_colors = {state.sid: np.array(state.colour) for state in state_list}
 
     # Step 2: Initialize an overlay with the same shape as display_map
     overlay = display_map.copy()
