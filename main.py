@@ -11,7 +11,7 @@ font_path = "fonts/OldNewspaperTypes.ttf"
 # Initialize Pygame
 pygame.init()
 font = pygame.font.Font(font_path, 24)
-screen = pygame.display.set_mode((config.WIDTH, config.HEIGHT), pygame.RESIZABLE)
+screen = pygame.display.set_mode((config.WIDTH+ config.SIDEBAR_WIDTH, config.HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Terrain Generation")
 
 # Zoom and Pan settings
@@ -29,9 +29,6 @@ def generate_low_res_map(display_map):
             pygame.draw.rect(low_res_surface, display_map[r][c], 
                              (c * config.CELL_SIZE, r * config.CELL_SIZE, config.CELL_SIZE, config.CELL_SIZE))
     return low_res_surface
-
-
-
 
 
 
@@ -160,7 +157,7 @@ def main():
         # Clamp panning to prevent moving out of the map bounds
         x_offset, y_offset = clamp_pan(x_offset, y_offset, zoom_level)
 
-        tick = (tick + 1) % 20
+        tick = (tick + 1) % 1
 
         if tick == 0:
             sim_update = True
