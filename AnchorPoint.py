@@ -7,13 +7,10 @@ class AnchorPoint:
     """Represents region anchors in the simulation with location, prosperity, and territory."""
     
     # Class-level shared attributes
-    anchor_list = []  # Stores all anchor instances
-    
-
     id_counter = 1
 
 
-    def __init__(self, location, colour, sid = -1, name="Unknown"):
+    def __init__(self, location, sid = -1, name="Unknown"):
         """Initializes a anchor with a location, territory_size, and a unique ID."""
         self.location = location  # (row, col) tuple
         self.name = name
@@ -22,37 +19,27 @@ class AnchorPoint:
         AnchorPoint.id_counter += 1
 
         self.territory = []
-        self.colour = colour
         self.type = 1
         self.can_expand = True
 
-        self.sid = sid
 
-        if sid == -1:
+        if sid == -1:       #if sid is not provided, assume creation of a new state with apid as sid
             self.sid == self.id
+        else:
+            self.sid = sid
             
-
-        AnchorPoint.anchor_list.append(self)  # Register anchor instance
-
 
 
     # ───────────────────────────────────── #
     #            GETTER METHODS             #
     # ───────────────────────────────────── #
     
-    @classmethod
-    def get_anchors(cls):
-        """Returns a list of all created anchor."""
-        return cls.anchor_list
 
 
     def get_territory(self):
         """Returns the territory owned by the anchor."""
         return self.territory
     
-    def get_colour(self):
-        """Returns the anchor's assigned color."""
-        return self.colour
     
     def get_location(self):
         """Returns the anchor's (row, col) location."""
