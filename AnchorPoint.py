@@ -66,7 +66,6 @@ class AnchorPoint:
 
 
 
-
     def find_lowest_cost_unclaimed_cell(self, location, sea_map, river_map, traversal_cost_map, id_map):
         """Finds the lowest traversal cost unclaimed cell from the given location."""
         rows, cols = traversal_cost_map.shape
@@ -112,15 +111,16 @@ class AnchorPoint:
 
         # Expand territory area by proximity to find proximity cells
         border_proximity_cells = binary_dilation(id_mask, structuring_element, proximity)
+        border_min_proximity_cells = binary_dilation(id_mask, structuring_element, proximity-3)
 
-        border_proximity_cells = border_proximity_cells & (id_map == 0) & ~sea_map
+        border_proximity_cells = border_proximity_cells & (id_map == 0) & ~sea_map & ~border_min_proximity_cells
 
         #something about this conversion isn't right. Border proximity cells should be up to n away from ap borders, excluding where id map isn't 0 (so only unclaimed territory)
 
         return border_proximity_cells
 
     def create_friendly_neighbour(self, sid, population_map, id_map, sea_map, river_map):
-        proximate_cells = self.get_border_proximity_cells(5, id_map, sea_map, river_map)
+        proximate_cells = self.get_border_proximity_cells(8, id_map, sea_map, river_map)
 
         # Get the indices of the cells within the proximity
         valid_indices = np.where(proximate_cells)
@@ -128,6 +128,8 @@ class AnchorPoint:
         # Extract the population values for those indices
         valid_values = population_map[valid_indices]
 
+        if valid_values.size == 0:
+            return None  # No valid cells to expand into
         max_index = np.argmax(valid_values)  # Position in the flattened valid values
         max_value = valid_values[max_index]  # Max value itself
 
@@ -136,7 +138,7 @@ class AnchorPoint:
 
         print("creating neighbour at ", new_location)
 
-        self.can_expand = False
+        #self.can_expand = False
 
         return new_location
 
