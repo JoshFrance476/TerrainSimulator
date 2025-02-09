@@ -1,5 +1,5 @@
 import pygame
-import config
+import utils.config as config
 
 
 

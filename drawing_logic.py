@@ -1,5 +1,5 @@
 import pygame
-import config
+import utils.config as config
 
 def get_hovered_cell(mouse_x, mouse_y, zoom_level, x_offset, y_offset, cell_size):
     """Converts screen coordinates to the corresponding grid cell considering zoom & pan."""
