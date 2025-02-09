@@ -1,5 +1,5 @@
-from AnchorPoint import AnchorPoint
-import config
+from entities.AnchorPoint import AnchorPoint
+import utils.config as config
 import random
 import numpy as np
 
@@ -32,6 +32,7 @@ class State():
             if len(ap.get_territory()) >= config.CITY_MAX_TERRITORY-30 and ap.can_expand:
                 location_for_neighbour = ap.create_friendly_neighbour(self.sid, population_map, id_map, sea_map, river_map)
                 self.create_anchor_point(location_for_neighbour)
+                ap.can_expand = False
             else:
                 rng = random.randint(0, len(ap.get_territory()))
                 if rng == 0:
