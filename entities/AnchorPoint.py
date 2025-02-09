@@ -1,5 +1,5 @@
 import numpy as np
-import config
+import utils.config as config
 from heapq import heappop, heappush
 from scipy.ndimage import binary_dilation
 
