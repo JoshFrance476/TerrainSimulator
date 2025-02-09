@@ -1,5 +1,5 @@
 import numpy as np
-from config import ROWS, COLS
+from utils.config import ROWS, COLS
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
