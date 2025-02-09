@@ -1,6 +1,5 @@
 import pygame
 from utils import config
-from drawing_logic import draw_terrain, draw_hover_highlight
 
 class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
@@ -71,16 +70,3 @@ class MapRenderer:
                 (scaled_width, scaled_height)
             )
             screen.blit(scaled_surface, (-camera.x_offset, -camera.y_offset))
-
-    def draw_hover_effect(self, screen, hovered_cell, camera):
-        """Draws a hover effect on the currently selected cell."""
-        if hovered_cell:
-            draw_hover_highlight(
-                screen, 
-                hovered_cell, 
-                camera.x_offset, 
-                camera.y_offset, 
-                camera.zoom_level, 
-                config.CELL_SIZE, 
-                (255, 255, 255, 50)
-            )
