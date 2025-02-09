@@ -10,12 +10,11 @@ class Simulator:
         self.static_maps = generate_static_maps()
         self.dynamic_maps = generate_dynamic_maps(self.static_maps)
 
-        self.step_counter = 0
+        self.update_counter = 0
 
         self.colour_map = generate_color_map(self.static_maps, True, True)
         self.state_manager = StateManager(self.dynamic_maps["population_map"])
         self.display_map = self.colour_map
-        self.selected_cell = (0, 0)
 
 
     def update(self):
@@ -26,14 +25,13 @@ class Simulator:
             self.state_manager.get_global_sid_territory_map(),
             self.state_manager.states
         )
-        self.step_counter += 1
+        self.update_counter += 1
 
-    def get_step_counter(self):
-        return self.step_counter
+    def get_update_counter(self):
+        return self.update_counter
 
     def get_display_map(self):
         return self.display_map
-
 
     def get_static_maps(self):
         return self.static_maps
