@@ -5,7 +5,7 @@ class UIManager:
     def __init__(self):
         self.font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
 
-    def draw_sidebar(self, selected_cell, screen, terrain_data):
+    def draw_sidebar(self, selected_cell, screen, static_maps, dynamic_maps):
         """ Draws a sidebar with information about the selected cell. """
         sidebar_x = config.WIDTH
         
@@ -26,11 +26,12 @@ class UIManager:
             
 
             # Fetch data from terrain maps
-            region = terrain_data["region_map"][r, c]
-            elevation = terrain_data["elevation_map"][r, c]
-            desirability = terrain_data["desiribility_map"][r, c]
-            steepness = terrain_data["steepness_map"][r, c]
-            traversal_cost = terrain_data["traversal_cost_map"][r, c]
+            region = static_maps["region_map"][r, c]
+            elevation = static_maps["elevation_map"][r, c]
+            desirability = static_maps["desiribility_map"][r, c]
+            steepness = static_maps["steepness_map"][r, c]
+            traversal_cost = static_maps["traversal_cost_map"][r, c]
+            population = dynamic_maps["population_map"][r, c]
 
 
             # List of text entries to display
@@ -41,7 +42,9 @@ class UIManager:
                 f"Desirability: {desirability:.2f}",
                 f"steepness: {steepness:.2f}",
                 f"traversal cost: {traversal_cost:.2f}",
+                f"population: {population:.2f}",
             ]
+
 
             # Render and display each line
             for i, line in enumerate(info_lines):
@@ -52,12 +55,13 @@ class UIManager:
  
 
 
-    def draw_hover_highlight(self, hovered_cell, screen, x_offset, y_offset, zoom_level, cell_size, color=(255, 255, 255, 100)):
+    def draw_hover_highlight(self, hovered_cell, screen, x_offset, y_offset, zoom_level, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""
         cell_y, cell_x = hovered_cell  # Ensure correct row/col order
 
         # Compute cell size after zooming
-        scaled_cell_size = cell_size * zoom_level
+        scaled_cell_size = config.CELL_SIZE * zoom_level
+
 
         # Convert grid cell to screen coordinates (adjust for zoom & panning)
         screen_x = (cell_x * scaled_cell_size) - x_offset
