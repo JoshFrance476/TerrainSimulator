@@ -16,7 +16,9 @@ class EventHandler:
         
         # Game state
         self.paused = False
+        self.selected_filter = 0
 
+        
     def handle_events(self, camera):
         """Main event handling loop."""
         for event in pygame.event.get():
@@ -47,6 +49,12 @@ class EventHandler:
             self._handle_keyboard_pan(event, camera)
         elif event.key == pygame.K_SPACE:
             self.paused = not self.paused
+        elif event.key == pygame.K_0:
+            self.selected_filter = 0
+        elif event.key == pygame.K_1:
+            self.selected_filter = 1
+
+
 
     def _handle_keyboard_pan(self, event, camera):
         """Handle keyboard-based camera panning."""
