@@ -26,19 +26,19 @@ while True:
 
     
     if not event_handler.paused:
-        simulator.update()
+        simulator.update(event_handler.selected_filter)
 
 
     
     # Render everything
     screen.fill((0, 0, 0))
     map_renderer.draw_map(screen, simulator.get_display_map(), simulator.get_update_counter(), camera)
-    ui_manager.draw_sidebar(event_handler.selected_cell, screen, simulator.get_static_maps())
-    ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_offset, camera.y_offset, camera.zoom_level, config.CELL_SIZE)
+    ui_manager.draw_sidebar(event_handler.selected_cell, screen, simulator.get_static_maps(), simulator.get_dynamic_maps())
+    ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_offset, camera.y_offset, camera.zoom_level)
 
     if event_handler.selected_cell:
         ui_manager.draw_selected_cell_border(event_handler.selected_cell, screen, camera.x_offset, camera.y_offset, camera.zoom_level, config.CELL_SIZE)
-
+    
 
 
 
