@@ -41,19 +41,19 @@ def generate_coastline_map(elevation_map):
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-def apply_heatmap_overlay(data_map, coastline_map, colormap="viridis", alpha=0.6):
+def apply_heatmap_overlay(data_map, elevation_map, colormap="viridis", alpha=0.6):
     """
     Overlays a heatmap onto the coastline map based on the values in data_map.
 
     Args:
         data_map (2D NumPy array): A float array representing data to be displayed as a heatmap.
-        coastline_map (3D NumPy array): The base image onto which the heatmap is applied.
         colormap (str): The matplotlib colormap to use (e.g., "hot", "viridis", "plasma").
         alpha (float): Opacity of the heatmap overlay (0 = transparent, 1 = solid).
 
     Returns:
         3D NumPy array: The coastline map with the heatmap overlay applied.
     """
+    coastline_map = generate_coastline_map(elevation_map)
     # Ensure data_map and coastline_map have the same shape
     if data_map.shape != coastline_map.shape[:2]:
         raise ValueError("data_map and coastline_map must have the same spatial dimensions!")
