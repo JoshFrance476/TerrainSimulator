@@ -1,8 +1,6 @@
 import random
 
-SEA_LEVEL = 0
-NUMBER_OF_RIVERS = 10
-RIVER_SOURCE_MIN_ELEVATION = 0.2
+
 
 CAMERA_ROWS, CAMERA_COLS = 266, 466 
 WORLD_ROWS, WORLD_COLS = CAMERA_ROWS * 2, CAMERA_COLS * 2
@@ -11,20 +9,16 @@ SCALE = 70 #Steepness is not synced with scale, will not be as obvious at more z
 ELEVATION_IMPACT_ON_TEMP = 1
 STEEPNESS_MULTIPLIER = 50
 
+SEA_LEVEL = 0
+NUMBER_OF_RIVERS = 10
+RIVER_SOURCE_MIN_ELEVATION = 0.2
 
 SEED = random.randint(0,10000)
 
 SCREEN_WIDTH, SCREEN_HEIGHT = CAMERA_COLS * CELL_SIZE, CAMERA_ROWS * CELL_SIZE
 
-NUMBER_OF_CITIES = 5
-CITIES_MIN_DISTANCE = 14
-CITY_MAX_TERRITORY = 50
+PAN_STEP = 2    # Pan speed in pixels
 
-LOD_THRESHOLD = 2.2  # Zoom threshold for switching LOD mode
-ZOOM_STEP = 0.1  # Zoom increment step
-PAN_STEP = 1    # Pan speed in pixels
-MAX_ZOOM = 10
-MIN_ZOOM = 1
 
 SIDEBAR_WIDTH = 250  
 FONT_SIZE = 18
