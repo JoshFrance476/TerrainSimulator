@@ -22,15 +22,17 @@ ui_manager = UIManager()
 clock = pygame.time.Clock()
 
 while True:
+    #Handle keyboard and mouse inputs
     event_handler.handle_events(camera)
 
+    # Ensure camera stays within world bounds
+    camera.clamp_pan()
     
     if not event_handler.paused:
         simulator.update()
-    
+
     # Render everything
-    screen.fill((0, 0, 0))
-    map_renderer.draw_map(screen, simulator.get_world_data(), event_handler.get_selected_filter(), camera)
+    map_renderer.render_view(screen, simulator.get_world_data(), event_handler.get_selected_filter(), camera)
     ui_manager.draw_sidebar(event_handler.selected_cell, screen, simulator.get_static_maps(), simulator.get_dynamic_maps())
     ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_pos, camera.y_pos)
 
