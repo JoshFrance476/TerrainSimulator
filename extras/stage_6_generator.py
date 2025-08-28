@@ -1,12 +1,12 @@
 import numpy as np
-from utils.config import ROWS, COLS
+from utils.config import WORLD_ROWS, WORLD_COLS
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
 
 def generate_stage_6(cities_list, traversal_cost_map, colour_map):
-    traversal_cost_multiplier_map = np.ones((ROWS, COLS), dtype=float)
+    traversal_cost_multiplier_map = np.ones((WORLD_ROWS, WORLD_COLS), dtype=float)
 
     for city in cities_list:
         path = find_path(city, (100,100), traversal_cost_map) #'path' is an array of x, y coords

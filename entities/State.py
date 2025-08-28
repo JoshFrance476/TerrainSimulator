@@ -6,7 +6,7 @@ import numpy as np
 class State():
 
     sid_counter = 1
-    sid_map = np.zeros((config.ROWS, config.COLS), dtype=int)  # Territory ownership map
+    sid_map = np.zeros((config.WORLD_ROWS, config.WORLD_COLS), dtype=int)  # Territory ownership map
 
     def __init__(self, capital_location, name="Undefined"):
         self.name = name
@@ -48,7 +48,7 @@ class State():
     
     
     def get_apid_territory_map(self):
-        territory_map = np.zeros((config.ROWS, config.COLS), dtype=int)
+        territory_map = np.zeros((config.WORLD_ROWS, config.WORLD_COLS), dtype=int)
         for ap in self.anchorpoints:
             territory_list = ap.get_territory()
             for location in territory_list:
@@ -59,7 +59,7 @@ class State():
         return territory_map
 
     def get_sid_territory_map(self):
-        territory_map = np.zeros((config.ROWS, config.COLS), dtype=int)
+        territory_map = np.zeros((config.WORLD_ROWS, config.WORLD_COLS), dtype=int)
         for ap in self.anchorpoints:
             territory_list = ap.get_territory()
             for location in territory_list:

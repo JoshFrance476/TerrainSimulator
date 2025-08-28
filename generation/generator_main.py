@@ -13,15 +13,15 @@ logging.basicConfig(level=logging.DEBUG)
 
 def generate_static_maps():
     start_time = time.time()
-    elevation_map, rainfall_map, temperature_map = generate_stage_1(config.ROWS, config.COLS, config.SCALE, config.SEED)
+    elevation_map, rainfall_map, temperature_map = generate_stage_1(config.WORLD_ROWS, config.WORLD_COLS, config.SCALE, config.SEED)
     logging.debug(f"Stage 1 generation took {time.time() - start_time:.2f} seconds")
 
     start_time = time.time()
-    river_map, sea_map, steepness_map = generate_stage_2(config.ROWS, config.COLS, config.NUMBER_OF_RIVERS, config.SEA_LEVEL, elevation_map, config.RIVER_SOURCE_MIN_ELEVATION)
+    river_map, sea_map, steepness_map = generate_stage_2(config.WORLD_ROWS, config.WORLD_COLS, config.NUMBER_OF_RIVERS, config.SEA_LEVEL, elevation_map, config.RIVER_SOURCE_MIN_ELEVATION)
     logging.debug(f"Stage 2 generation took {time.time() - start_time:.2f} seconds")
     
     start_time = time.time()
-    river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map, desiribility_map = generate_stage_3(config.ROWS, config.COLS, river_map, sea_map, elevation_map, temperature_map, rainfall_map, steepness_map, config.REGION_CONDITIONS, config.REGION_COLORS, config.REGIONS_TO_BLEND)
+    river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map, desiribility_map = generate_stage_3(config.WORLD_ROWS, config.WORLD_COLS, river_map, sea_map, elevation_map, temperature_map, rainfall_map, steepness_map, config.REGION_CONDITIONS, config.REGION_COLORS, config.REGIONS_TO_BLEND)
     logging.debug(f"Stage 3 generation took {time.time() - start_time:.2f} seconds")
 
     #start_time = time.time()

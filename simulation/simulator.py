@@ -11,7 +11,6 @@ class Simulator:
         self.static_maps = generate_static_maps()
         self.dynamic_maps = generate_dynamic_maps(self.static_maps)
 
-        self.update_counter = 0
 
         self.colour_map = generate_color_map(self.static_maps, True, True)
         self.state_manager = StateManager(self.dynamic_maps["population_map"])
@@ -38,11 +37,6 @@ class Simulator:
                 self.state_manager.states
             )
 
-
-        self.update_counter += 1
-
-    def get_update_counter(self):
-        return self.update_counter
 
     def get_display_map(self):
         return self.display_map

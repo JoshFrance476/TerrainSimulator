@@ -7,13 +7,13 @@ class UIManager:
 
     def draw_sidebar(self, selected_cell, screen, static_maps, dynamic_maps):
         """ Draws a sidebar with information about the selected cell. """
-        sidebar_x = config.WIDTH
+        sidebar_x = config.SCREEN_WIDTH
         
         # Draw sidebar background
-        pygame.draw.rect(screen, (220, 220, 220), (sidebar_x, 0, config.SIDEBAR_WIDTH, config.HEIGHT))  
+        pygame.draw.rect(screen, (220, 220, 220), (sidebar_x, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT))  
 
         # Draw sidebar border (Black, 3px thickness)
-        pygame.draw.rect(screen, (80, 80, 80), (sidebar_x, 0, config.SIDEBAR_WIDTH, config.HEIGHT), 3)
+        pygame.draw.rect(screen, (80, 80, 80), (sidebar_x, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), 3)
 
 
         # Display title
@@ -55,12 +55,12 @@ class UIManager:
  
 
 
-    def draw_hover_highlight(self, hovered_cell, screen, x_offset, y_offset, zoom_level, color=(255, 255, 255, 100)):
+    def draw_hover_highlight(self, hovered_cell, screen, x_offset, y_offset, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""
         cell_y, cell_x = hovered_cell  # Ensure correct row/col order
 
         # Compute cell size after zooming
-        scaled_cell_size = config.CELL_SIZE * zoom_level
+        scaled_cell_size = config.CELL_SIZE
 
 
         # Convert grid cell to screen coordinates (adjust for zoom & panning)
@@ -75,13 +75,13 @@ class UIManager:
         screen.blit(highlight_surface, (screen_x, screen_y))
 
 
-    def draw_selected_cell_border(self, selected_cell, screen, x_offset, y_offset, zoom_level, cell_size, color=(255, 255, 0)):
+    def draw_selected_cell_border(self, selected_cell, screen, x_offset, y_offset, cell_size, color=(255, 255, 0)):
         """Draws a border around the selected cell."""
         cell_y, cell_x = selected_cell  # Ensure correct row/col order
 
 
         # Compute cell size after zooming
-        scaled_cell_size = cell_size * zoom_level
+        scaled_cell_size = cell_size
 
         # Convert grid cell to screen coordinates (adjust for zoom & panning)
         screen_x = (cell_x * scaled_cell_size) - x_offset

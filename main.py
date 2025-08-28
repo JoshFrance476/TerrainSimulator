@@ -9,7 +9,7 @@ from rendering.ui_manager import UIManager
 pygame.init()
 
 # Initialize screen
-screen = pygame.display.set_mode((config.WIDTH + config.SIDEBAR_WIDTH, config.HEIGHT), pygame.RESIZABLE)
+screen = pygame.display.set_mode((config.SCREEN_WIDTH + config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Terrain Generation")
 
 # Initialize core objects
@@ -27,17 +27,15 @@ while True:
     
     if not event_handler.paused:
         simulator.update(event_handler.selected_filter)
-
-
     
     # Render everything
     screen.fill((0, 0, 0))
-    map_renderer.draw_map(screen, simulator.get_display_map(), simulator.get_update_counter(), camera)
+    map_renderer.draw_map(screen, simulator.get_display_map(), camera)
     ui_manager.draw_sidebar(event_handler.selected_cell, screen, simulator.get_static_maps(), simulator.get_dynamic_maps())
-    ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_offset, camera.y_offset, camera.zoom_level)
+    ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_pos, camera.y_pos)
 
     if event_handler.selected_cell:
-        ui_manager.draw_selected_cell_border(event_handler.selected_cell, screen, camera.x_offset, camera.y_offset, camera.zoom_level, config.CELL_SIZE)
+        ui_manager.draw_selected_cell_border(event_handler.selected_cell, screen, camera.x_pos, camera.y_pos, config.CELL_SIZE)
     
 
 
