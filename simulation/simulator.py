@@ -1,4 +1,3 @@
-from simulation.state_manager import StateManager
 from overlays.overlay_generator import generate_territory_overlay, apply_heatmap_overlay
 from utils.colour_utils import generate_color_map
 from generation.generator_main import generate_static_maps, generate_dynamic_maps, update_dynamic_maps
@@ -11,9 +10,8 @@ class Simulator:
         self.static_maps = generate_static_maps()
         self.dynamic_maps = generate_dynamic_maps(self.static_maps)
 
-
+        #Generates initial colour map
         self.colour_map = generate_color_map(self.static_maps, True, True)
-        self.state_manager = StateManager(self.dynamic_maps["population_map"])
         self.display_map = self.colour_map
 
 
