@@ -86,3 +86,6 @@ class EventHandler:
         cell_y = int(world_y // config.CELL_SIZE)
 
         return cell_y, cell_x
+    
+    def get_selected_filter(self):
+        return self.selected_filter
