@@ -55,53 +55,40 @@ class UIManager:
  
 
 
-    def draw_hover_highlight(self, hovered_cell, screen, x_offset, y_offset, color=(255, 255, 255, 100)):
+    def draw_hover_highlight(self, hovered_cell, screen, camera_x_pos, camera_y_pos, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""
-        cell_y, cell_x = hovered_cell  # Ensure correct row/col order
+        cell_y, cell_x = hovered_cell
 
-        # Compute cell size after zooming
-        scaled_cell_size = config.CELL_SIZE
+        # Convert grid cell to screen coordinates
+        screen_x = (cell_x - camera_x_pos) * config.CELL_SIZE
+        screen_y = (cell_y - camera_y_pos) * config.CELL_SIZE
 
-
-        # Convert grid cell to screen coordinates (adjust for zoom & panning)
-        screen_x = (cell_x * scaled_cell_size) - x_offset
-        screen_y = (cell_y * scaled_cell_size) - y_offset
-
-        # Ensure highlight surface has transparency
-        highlight_surface = pygame.Surface((scaled_cell_size, scaled_cell_size), pygame.SRCALPHA)
+        # Create transparent surface for the highlight
+        highlight_surface = pygame.Surface((config.CELL_SIZE, config.CELL_SIZE), pygame.SRCALPHA)
         highlight_surface.fill(color)
 
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
 
 
-    def draw_selected_cell_border(self, selected_cell, screen, x_offset, y_offset, cell_size, color=(255, 255, 0)):
+    def draw_selected_cell_border(self, selected_cell, screen, camera_x_pos, camera_y_pos, cell_size, color=(255, 255, 0)):
         """Draws a border around the selected cell."""
-        cell_y, cell_x = selected_cell  # Ensure correct row/col order
+        cell_y, cell_x = selected_cell
 
-
-        # Compute cell size after zooming
-        scaled_cell_size = cell_size
-
-        # Convert grid cell to screen coordinates (adjust for zoom & panning)
-        screen_x = (cell_x * scaled_cell_size) - x_offset
-        screen_y = (cell_y * scaled_cell_size) - y_offset
+        # Convert grid cell to screen coordinates
+        screen_x = (cell_x - camera_x_pos) * config.CELL_SIZE
+        screen_y = (cell_y - camera_y_pos) * config.CELL_SIZE
 
         # Create transparent surface for the border
-        highlight_surface = pygame.Surface((scaled_cell_size, scaled_cell_size), pygame.SRCALPHA)
+        highlight_surface = pygame.Surface((config.CELL_SIZE, config.CELL_SIZE), pygame.SRCALPHA)
         
-        # Scale border thickness with cell size for consistent appearance
-        min_thickness = 1
-        max_thickness = 4
-        thickness_ratio = 0.1  # Thickness as a proportion of cell size
-        scaled_thickness = max(min_thickness, min(max_thickness, int(scaled_cell_size * thickness_ratio)))
         
         # Draw rectangle border with scaled thickness
         pygame.draw.rect(
             highlight_surface,
             color,
-            (0, 0, scaled_cell_size, scaled_cell_size),
-            scaled_thickness
+            (0, 0, config.CELL_SIZE, config.CELL_SIZE),
+            1
         )
 
         # Blit highlight onto the screen
