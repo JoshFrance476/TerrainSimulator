@@ -3,11 +3,6 @@ from utils import config
 
 class EventHandler:
     def __init__(self):
-        # Mouse state
-        self.dragging = False
-        self.drag_start_x = 0
-        self.drag_start_y = 0
-        self.drag_threshold = 5
         self.mouse_release_pos = None
         
         # Selection state
@@ -78,8 +73,8 @@ class EventHandler:
         mouse_x, mouse_y = pos
 
         # Convert screen coordinates to world coordinates
-        world_x = (mouse_x + camera.x_pos)
-        world_y = (mouse_y + camera.y_pos)
+        world_x = mouse_x + (camera.x_pos * config.CELL_SIZE)
+        world_y = mouse_y + (camera.y_pos * config.CELL_SIZE)
 
         # Convert world coordinates to grid cell indices
         cell_x = int(world_x // config.CELL_SIZE)
