@@ -9,8 +9,8 @@ SCALE = 70 #Steepness is not synced with scale, will not be as obvious at more z
 ELEVATION_IMPACT_ON_TEMP = 1
 STEEPNESS_MULTIPLIER = 50
 
-SEA_LEVEL = 0
-NUMBER_OF_RIVERS = 10
+SEA_LEVEL = -0.05
+NUMBER_OF_RIVERS = 20
 RIVER_SOURCE_MIN_ELEVATION = 0.2
 
 SEED = random.randint(0,10000)
