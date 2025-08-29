@@ -2,9 +2,13 @@ import pygame
 import utils.config as config
 from camera import Camera
 from event_handler import EventHandler
+from worldData import WorldData
 from simulation.world import World
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
+
+#import tracemalloc
+#tracemalloc.start()
 
 pygame.init()
 
@@ -15,11 +19,14 @@ pygame.display.set_caption("Terrain Generation")
 # Initialize core objects
 camera = Camera()
 event_handler = EventHandler()
+worldData = WorldData()
 world = World()
 map_renderer = MapRenderer()
 ui_manager = UIManager()
 
 clock = pygame.time.Clock()
+
+map_renderer.generate_static_overlays(worldData.get_world_data())
 
 while True:
     #Handle keyboard and mouse inputs
@@ -28,13 +35,13 @@ while True:
     # Ensure camera stays within world bounds
     camera.clamp_pan()
     
-    if not event_handler.paused:
-        world.update()
+    #if not event_handler.paused:
+        #world.update()
 
 
     # Render everything
-    map_renderer.render_view(screen, world.get_world_data(), world.get_terrain_data(), event_handler.get_selected_filter(), camera)
-    ui_manager.draw_sidebar(event_handler.selected_cell, screen, world.get_world_data())
+    map_renderer.render_view(screen, worldData.get_terrain_data(), event_handler.get_selected_filter(), camera)
+    ui_manager.draw_sidebar(event_handler.selected_cell, screen, worldData.get_world_data())
     ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_pos, camera.y_pos)
 
     if event_handler.selected_cell:
@@ -45,5 +52,8 @@ while True:
 
     pygame.display.flip()
     clock.tick(20)
+
+    #print(tracemalloc.get_traced_memory())
+    #tracemalloc.stop()
 
 
