@@ -50,9 +50,17 @@ def generate_static_maps():
     static_int_layers[static_int_layers_index['river']] = river_map.astype(np.uint8)
     static_int_layers[static_int_layers_index['sea']] = sea_map.astype(np.uint8)
 
-    #AI code, converts region names to integers
+    # Create a lookup table for region names to region ID
     region_lookup = {region: idx for idx, region in enumerate(config.REGION_COLORS.keys())}
-    static_int_layers[static_int_layers_index['region']] = np.vectorize(region_lookup.get)(region_map).astype(np.uint8)
+
+    #This code increased peak memory usage significantly, below method is much more effective
+    #static_int_layers[static_int_layers_index['region']] = np.vectorize(region_lookup.get)(region_map).astype(np.uint8)
+
+    region_map_int = np.zeros_like(region_map, dtype=np.uint8)
+    for region_name, idx in region_lookup.items():
+        region_map_int[region_map == region_name] = idx
+    static_int_layers[static_int_layers_index['region']] = region_map_int
+
 
     static_layers_dict = {}
 
@@ -68,14 +76,27 @@ def generate_static_maps():
 
 
 
-def generate_dynamic_maps(desiribility_data):
-    population_map = generate_stage_4(desiribility_data)
-    return {
-        'population_map': population_map
+def generate_dynamic_maps(static_data):
+    population_map = generate_stage_4(static_data['desiribility'])
+
+    dynamic_float_layers_index = {
+        'population': 0,
     }
 
-def update_dynamic_maps(desiribility_data, population_data):
-    population_map = update_population(desiribility_data, population_data)
-    return {
-        'population_map': population_map
-    }
+    dynamic_float_layers = np.zeros((len(dynamic_float_layers_index), config.WORLD_ROWS, config.WORLD_COLS), dtype=np.float32)
+
+    dynamic_float_layers[dynamic_float_layers_index['population']] = population_map
+
+    dynamic_layers_dict = {}
+
+    for name, idx in dynamic_float_layers_index.items():
+        dynamic_layers_dict[name] = dynamic_float_layers[idx]
+    
+    return dynamic_layers_dict
+
+def update_dynamic_maps(static_data, dynamic_data):
+    population_map = update_population(static_data['desiribility'], dynamic_data['population'])
+    
+    dynamic_data['population'] = population_map
+
+    return dynamic_data
