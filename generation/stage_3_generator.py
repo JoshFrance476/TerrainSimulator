@@ -27,21 +27,22 @@ def generate_stage_3(rows, cols, river_map, sea_map, elevation_map, temperature_
     region_map = np.empty((rows, cols), dtype="<U20")
     fertility_map = np.zeros((rows, cols), dtype=float)
     traversal_cost_map = np.zeros((rows, cols), dtype=float)
-    desirability_map = np.zeros((rows, cols), dtype=float)
+
 
     for r in range(rows):
         for c in range(cols):
             region_map[r][c] = determine_region(region_conditions, elevation_map[r][c], temperature_map[r][c], rainfall_map[r][c], sea_proximity_map[r][c], river_proximity_map[r][c])
             fertility_map[r][c] = calculate_soil_fertility(rainfall_map[r][c], elevation_map[r][c])
             traversal_cost_map[r][c] = calculate_traversal_cost(region_map[r][c], steepness_map[r][c], sea_map[r][c], river_map[r][c])
-            desirability_map[r][c] = calculate_desirability(fertility_map[r][c], temperature_map[r][c], river_proximity_map[r][c], sea_map[r][c], river_map[r][c], elevation_map[r][c])
-
+            
     logging.debug(f"Biome classification took {time.time() - start_time:.2f} seconds")
 
-    start_time = time.time()
-    logging.debug(f"Colour generation took {time.time() - start_time:.2f} seconds")
 
-    return river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map, desirability_map
+    return river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map
+
+
+
+
 
 ### **Traversal & Environmental Calculations**
 def calculate_traversal_cost(region, steepness, sea, river):
@@ -52,18 +53,6 @@ def calculate_traversal_cost(region, steepness, sea, river):
     return REGION_BASE_TRAVERSAL_COST.get(region, 1) + (steepness * STEEPNESS_MULTIPLIER)
 
 
-def calculate_desirability(fertility, temperature, proximity_to_water, sea, river, elevation, water_threshold=5):
-    """
-    Computes desirability for settlement based on fertility, temperature, and proximity to water.
-    """
-    if sea or river or elevation > 0.25:
-        return 0  # No settlements in deep water or high mountains
-
-    temp_factor = 1 - abs(0.5 - temperature)  # Best temperature around 0.5
-    water_bonus = max(0, (water_threshold - proximity_to_water) / water_threshold * 0.3)
-
-    desirability = fertility * temp_factor + water_bonus
-    return normalize(desirability, 0, 1)
 
 
 def calculate_soil_fertility(rainfall, elevation):
