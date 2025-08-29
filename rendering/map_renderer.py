@@ -6,24 +6,26 @@ class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
 
     def __init__(self):
-        self.surface_cache = None  # Caching pre-rendered terrain for optimization
-        self.current_step = 0
+        pass
+    
 
-    def render_view(self, screen, world_data, terrain_data, map_filter, camera):
+    def generate_static_overlays(self, world_data):
+        self.pop_capacity_overlay = apply_heatmap_overlay(
+                    world_data["population_capacity"],
+                    world_data["elevation"]
+                )
+    
+    def render_view(self, screen, terrain_data, map_filter, camera):
         '''Takes in world data and filter to produce display map, then draws to screen'''
-        display_map = self.apply_overlay(world_data, terrain_data, map_filter)
+        display_map = self.apply_overlay(terrain_data, map_filter)
         self.draw_map_to_screen(screen, display_map, camera)
 
     
-    def apply_overlay(self, world_data, terrain_data, map_filter):
+    def apply_overlay(self, terrain_data, map_filter):
         '''Applies selected overlay to the base colour map.'''
-        static_data, dynamic_data = world_data
 
         if map_filter == 1:
-            display_map = apply_heatmap_overlay(
-                    dynamic_data["population"],
-                    static_data["elevation"]
-                )
+            display_map = self.pop_capacity_overlay
         else:
             display_map = terrain_data
 
