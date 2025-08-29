@@ -26,7 +26,6 @@ ui_manager = UIManager()
 
 clock = pygame.time.Clock()
 
-map_renderer.generate_static_overlays(worldData.get_world_data())
 
 while True:
     #Handle keyboard and mouse inputs
@@ -40,7 +39,7 @@ while True:
 
 
     # Render everything
-    map_renderer.render_view(screen, worldData.get_terrain_data(), event_handler.get_selected_filter(), camera)
+    map_renderer.render_view(screen, worldData.get_region_data(camera.x_pos, camera.y_pos, config.CAMERA_COLS+camera.x_pos, config.CAMERA_ROWS+camera.y_pos), event_handler.get_selected_filter())
     ui_manager.draw_sidebar(event_handler.selected_cell, screen, worldData.get_world_data())
     ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_pos, camera.y_pos)
 
@@ -51,7 +50,7 @@ while True:
 
 
     pygame.display.flip()
-    clock.tick(20)
+    clock.tick(60)
 
     #print(tracemalloc.get_traced_memory())
     #tracemalloc.stop()
