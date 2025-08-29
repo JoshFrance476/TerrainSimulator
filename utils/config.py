@@ -17,7 +17,7 @@ SEED = random.randint(0,10000)
 
 SCREEN_WIDTH, SCREEN_HEIGHT = CAMERA_COLS * CELL_SIZE, CAMERA_ROWS * CELL_SIZE
 
-PAN_STEP = 2    # Pan speed in pixels
+PAN_STEP = 4    # Pan speed in pixels
 
 
 SIDEBAR_WIDTH = 250  
