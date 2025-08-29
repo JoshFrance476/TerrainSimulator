@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.ndimage import binary_dilation
+import utils.config as config
 
 def generate_coastline_map(elevation_map):
     """
@@ -18,8 +19,8 @@ def generate_coastline_map(elevation_map):
     rows, cols = region_array.shape
 
     # Identify water (-) and land (+) using boolean masks
-    water_mask = region_array < 0
-    land_mask = region_array > 0
+    water_mask = region_array < config.SEA_LEVEL
+    land_mask = region_array > config.SEA_LEVEL
 
     # Create a structuring element (cross shape) for checking adjacent cells
     structuring_element = np.array([[0,1,0], [1,1,1], [0,1,0]])  # 4-way connectivity
