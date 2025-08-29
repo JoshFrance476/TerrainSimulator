@@ -33,7 +33,20 @@ class WorldData:
         return self.terrain_map
     
     def get_region_data(self, x0, y0, x1, y1):
-        return self.static_float_maps[y0:y1, x0:x1], self.static_int_maps[y0:y1, x0:x1], self.dynamic_float_maps[y0:y1, x0:x1], self.terrain_map[y0:y1, x0:x1]
+        region_data = {}
+
+        for name, idx in self.static_float_maps_index.items():
+            region_data[name] = self.static_float_maps[idx][y0:y1, x0:x1]
+
+        for name, idx in self.static_int_maps_index.items():
+            region_data[name] = self.static_int_maps[idx][y0:y1, x0:x1]
+
+        for name, idx in self.dynamic_float_maps_index.items():
+            region_data[name] = self.dynamic_float_maps[idx][y0:y1, x0:x1]
+        
+        region_data['terrain'] = self.terrain_map[y0:y1, x0:x1]
+
+        return region_data
 
     
 
