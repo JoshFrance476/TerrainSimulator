@@ -17,11 +17,12 @@ class MapRenderer:
     
     def apply_overlay(self, world_data, terrain_data, map_filter):
         '''Applies selected overlay to the base colour map.'''
+        static_data, dynamic_data = world_data
 
         if map_filter == 1:
             display_map = apply_heatmap_overlay(
-                    #world_data["population"],
-                    world_data["elevation"]
+                    dynamic_data["population"],
+                    static_data["elevation"]
                 )
         else:
             display_map = terrain_data

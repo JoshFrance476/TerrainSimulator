@@ -5,7 +5,8 @@ class UIManager:
     def __init__(self):
         self.font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
 
-    def draw_sidebar(self, selected_cell, screen, world_data, dynamic_maps):
+    def draw_sidebar(self, selected_cell, screen, world_data):
+        static_data, dynamic_data = world_data
         """ Draws a sidebar with information about the selected cell. """
         sidebar_x = config.SCREEN_WIDTH
         
@@ -26,12 +27,12 @@ class UIManager:
             
 
             # Fetch data from terrain maps
-            region = world_data["region"][r, c]
-            elevation = world_data["elevation"][r, c]
-            desirability = world_data["desiribility"][r, c]
-            steepness = world_data["steepness"][r, c]
-            traversal_cost = world_data["traversal_cost"][r, c]
-            population = dynamic_maps["population_map"][r, c]
+            region = static_data["region"][r, c]
+            elevation = static_data["elevation"][r, c]
+            desirability = static_data["desiribility"][r, c]
+            steepness = static_data["steepness"][r, c]
+            traversal_cost = static_data["traversal_cost"][r, c]
+            population = dynamic_data["population"][r, c]
 
 
             # List of text entries to display
