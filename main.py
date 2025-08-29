@@ -2,9 +2,10 @@ import pygame
 import utils.config as config
 from camera import Camera
 from event_handler import EventHandler
-from simulation.simulator import Simulator
+from simulation.world import World
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
+
 
 pygame.init()
 
@@ -15,7 +16,7 @@ pygame.display.set_caption("Terrain Generation")
 # Initialize core objects
 camera = Camera()
 event_handler = EventHandler()
-simulator = Simulator()
+world = World()
 map_renderer = MapRenderer()
 ui_manager = UIManager()
 
@@ -29,11 +30,12 @@ while True:
     camera.clamp_pan()
     
     if not event_handler.paused:
-        simulator.update()
+        world.update()
+
 
     # Render everything
-    map_renderer.render_view(screen, simulator.get_world_data(), event_handler.get_selected_filter(), camera)
-    ui_manager.draw_sidebar(event_handler.selected_cell, screen, simulator.get_static_maps(), simulator.get_dynamic_maps())
+    map_renderer.render_view(screen, world.get_world_data(), world.get_terrain_data(), event_handler.get_selected_filter(), camera)
+    ui_manager.draw_sidebar(event_handler.selected_cell, screen, world.get_world_data(), world.get_dynamic_maps())
     ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_pos, camera.y_pos)
 
     if event_handler.selected_cell:
@@ -43,4 +45,6 @@ while True:
 
 
     pygame.display.flip()
-    clock.tick(20)
+    clock.tick(60)
+
+
