@@ -2,11 +2,12 @@ from generation.generator_main import generate_static_maps, generate_dynamic_map
 from utils.colour_utils import generate_color_map
 import numpy as np
 import utils.config as config
+from scipy.ndimage import binary_dilation
 
 class WorldData:
     def __init__(self):
         self.static_float_maps_index, self.static_float_maps, self.static_int_maps_index, self.static_int_maps = self.init_static_maps()
-
+        self.coastline_map = self.generate_coastline_map(self.static_float_maps[self.static_float_maps_index['elevation']])
         self.world_data = {}
 
         # Add static float layers
@@ -46,9 +47,26 @@ class WorldData:
         
         region_data['terrain'] = self.terrain_map[y0:y1, x0:x1]
 
-        return region_data
+        region_data['coastline'] = self.coastline_map[y0:y1, x0:x1]
 
+        return region_data
     
+
+    def generate_coastline_map(self, elevation_map):
+        rows, cols, = elevation_map.shape
+
+        coastline_map = np.full((rows, cols, 3), (255, 255, 255), dtype=np.uint8)  # White background
+
+        land_mask = elevation_map > config.SEA_LEVEL
+        sea_mask = elevation_map <= config.SEA_LEVEL
+
+        # coastline = land cells that touch sea OR sea cells that touch land
+        
+        coastline_mask = land_mask & binary_dilation(sea_mask)
+
+        coastline_map[coastline_mask] = (0, 0, 0)
+
+        return coastline_map
 
 
 
