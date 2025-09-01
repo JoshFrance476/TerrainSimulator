@@ -59,6 +59,12 @@ class MapRenderer:
                     view_data["steepness"]
                 )
             self.selected_filter_name = "Steepness"
+        elif map_filter == 8:
+            display_map = apply_heatmap_overlay(
+                    view_data["coastline"],
+                    view_data["population"]
+                )
+            self.selected_filter_name = "Population"
         else:
             display_map = view_data['terrain']
             self.selected_filter_name = "None"

@@ -10,7 +10,7 @@ class EventHandler:
         self.hovered_cell = None
         
         # Game state
-        self.paused = False
+        self.paused = True
         self.selected_filter = 0
 
         
@@ -63,6 +63,8 @@ class EventHandler:
             self.selected_filter = 6
         elif event.key == pygame.K_7:
             self.selected_filter = 7
+        elif event.key == pygame.K_8:
+            self.selected_filter = 8
 
 
 
