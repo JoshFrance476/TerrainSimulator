@@ -51,6 +51,18 @@ class EventHandler:
             self.selected_filter = 0
         elif event.key == pygame.K_1:
             self.selected_filter = 1
+        elif event.key == pygame.K_2:
+            self.selected_filter = 2
+        elif event.key == pygame.K_3:
+            self.selected_filter = 3
+        elif event.key == pygame.K_4:
+            self.selected_filter = 4
+        elif event.key == pygame.K_5:
+            self.selected_filter = 5
+        elif event.key == pygame.K_6:
+            self.selected_filter = 6
+        elif event.key == pygame.K_7:
+            self.selected_filter = 7
 
 
 
