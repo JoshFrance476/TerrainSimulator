@@ -25,11 +25,11 @@ def calculate_population_capacity(fertility, temperature, proximity_to_water, se
     if sea or river:
         return 0 
     
-    capacity = 1
+    capacity = 0
 
-    temp_factor = 1 - abs(0.5 - temperature)  # Best temperature around 0.5
+    temp_factor = 1 - abs(0.4 - temperature)  # Best temperature around 0.5
     water_bonus = max(0, (water_threshold - proximity_to_water) / water_threshold * 0.3)
 
-    capacity += fertility * temp_factor + water_bonus
+    capacity += (fertility*2) * temp_factor + water_bonus 
     
     return capacity
