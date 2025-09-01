@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
 from utils.colour_utils import generate_color_map
-from utils.config import REGION_BASE_TRAVERSAL_COST, STEEPNESS_MULTIPLIER
+from utils.config import REGION_BASE_TRAVERSAL_COST, STEEPNESS_MULTIPLIER, REGION_LOOKUP
 
 import logging
 import time
@@ -24,16 +24,11 @@ def generate_stage_3(rows, cols, river_map, sea_map, elevation_map, temperature_
     river_proximity_map = calculate_proximity_map(river_map)
     sea_proximity_map = calculate_proximity_map(sea_map)
 
-    region_map = np.empty((rows, cols), dtype="<U20")
-    fertility_map = np.zeros((rows, cols), dtype=float)
-    traversal_cost_map = np.zeros((rows, cols), dtype=float)
 
-    
-    for r in range(rows):
-        for c in range(cols):
-            region_map[r][c] = determine_region(region_conditions, elevation_map[r][c], temperature_map[r][c], rainfall_map[r][c], sea_proximity_map[r][c], river_proximity_map[r][c])
-            fertility_map[r][c] = calculate_soil_fertility(region_map[r][c], rainfall_map[r][c], elevation_map[r][c], temperature_map[r][c])
-            traversal_cost_map[r][c] = calculate_traversal_cost(region_map[r][c], steepness_map[r][c], sea_map[r][c], river_map[r][c])
+
+    region_map = determine_region(region_conditions, elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map)
+    fertility_map = calculate_soil_fertility(region_map, rainfall_map, elevation_map, temperature_map)
+    traversal_cost_map = calculate_traversal_cost(region_map, steepness_map, sea_map, river_map)
             
     logging.debug(f"Biome classification took {time.time() - start_time:.2f} seconds")
 
@@ -44,13 +39,12 @@ def generate_stage_3(rows, cols, river_map, sea_map, elevation_map, temperature_
 
 
 
-### **Traversal & Environmental Calculations**
-def calculate_traversal_cost(region, steepness, sea, river):
-    """
-    Determines the movement difficulty of a terrain tile.
-    Higher values indicate slower movement.
-    """
-    return REGION_BASE_TRAVERSAL_COST.get(region, 1) + (steepness * STEEPNESS_MULTIPLIER)
+def calculate_traversal_cost(region_map, steepness_map, sea, river):
+    base_cost = REGION_BASE_TRAVERSAL_COST[region_map]
+    steepness_cost = steepness_map * STEEPNESS_MULTIPLIER
+    traversal_cost_map = base_cost + steepness_cost
+
+    return traversal_cost_map
 
 
 
@@ -60,41 +54,38 @@ def calculate_soil_fertility(region, rainfall, elevation, temperature):
     Determines soil fertility based on rainfall and elevation.
     """
 
+    fertility = np.where(elevation > 0.7, 0.1 * rainfall,
+                np.where(elevation < 0.2, rainfall * 1.2,
+                         rainfall))
 
-    if elevation > 0.7:
-        fertility = 0.1 * rainfall  # High mountains have poor fertility
-    elif elevation < 0.2:
-        fertility = rainfall * 1.2  # Lowlands near water are highly fertile
-    else:
-        fertility = rainfall
-    
-    if region == "water":
-        return 0
-    if region == "desert":
-        fertility *= 0.2
-    if region == "arid":    
-        fertility *= 0.5
+    fertility = np.where(region == REGION_LOOKUP["water"], 0, fertility)
+    fertility = np.where(region == REGION_LOOKUP["desert"], fertility * 0.2, fertility)
+    fertility = np.where(region == REGION_LOOKUP["arid"], fertility * 0.5, fertility)    
+
 
     weight = 1.0 - (temperature - 0.5)**2 * 4
     weight = np.clip(weight, 0, 1)   
     fertility *= weight
 
+    min_val = fertility.min()
+    max_val = fertility.max()
+    fertility = (fertility - min_val) / (max_val - min_val + 1e-9)
 
-    return normalize(fertility, 0, 1)
-
+    return fertility
 
 def determine_region(region_conditions, elevation, temperature, rainfall, sea_proximity, river_proximity):
-    """
-    Assigns a biome based on environmental conditions.
-    """
-    if sea_proximity == 0 or river_proximity == 0:
-        return "water"
+    region_map = np.full(elevation.shape, -1, dtype=np.int8)
 
+    water_mask = (sea_proximity == 0) | (river_proximity == 0)
+
+    region_map = np.where(water_mask, REGION_LOOKUP["water"], region_map)
     for condition in region_conditions:
-        if condition["condition"](elevation, temperature, rainfall, river_proximity):
-            return condition["color"]
+        mask = condition["condition"](elevation, temperature, rainfall, river_proximity)
+        region_map = np.where((region_map == -1) & mask,
+                              condition["regionID"], region_map)
 
-    return "grassland"  # Default biome
+    return region_map
+
 
 
 ### **Proximity Calculations (Water & Rivers)**
