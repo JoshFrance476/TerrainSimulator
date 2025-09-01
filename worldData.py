@@ -2,7 +2,8 @@ from generation.generator_main import generate_static_maps, generate_dynamic_map
 from utils.colour_utils import generate_color_map
 import numpy as np
 import utils.config as config
-from scipy.ndimage import binary_dilation
+from scipy.ndimage import binary_dilation, convolve
+
 
 class WorldData:
     def __init__(self):
@@ -25,6 +26,12 @@ class WorldData:
             self.world_data[name] = self.dynamic_float_maps[idx]
 
         self.terrain_map = generate_color_map(self.world_data, True, True)
+
+    def update(self):
+        pass
+        #self.world_data["population"] = update_population_granular(self.world_data)
+
+
 
 
     def get_world_data(self):
@@ -69,6 +76,7 @@ class WorldData:
         return coastline_map
 
 
+    
 
     def init_static_maps(self):
         elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_static_maps()
