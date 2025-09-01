@@ -5,9 +5,10 @@ class UIManager:
     def __init__(self):
         self.font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
 
-    def draw_sidebar(self, selected_cell, screen, world_data):
+    def draw_sidebar(self, selected_cell, screen, world_data, filter_name):
         """ Draws a sidebar with information about the selected cell. """
         sidebar_x = config.SCREEN_WIDTH
+        sidebar_height = config.SCREEN_HEIGHT
         
         # Draw sidebar background
         pygame.draw.rect(screen, (220, 220, 220), (sidebar_x, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT))  
@@ -32,6 +33,9 @@ class UIManager:
             traversal_cost = world_data["traversal_cost"][r, c]
             population = world_data["population"][r, c]
             pop_capacity = world_data["population_capacity"][r, c]
+            fertility = world_data["fertility"][r, c]
+            temperature = world_data["temperature"][r, c]
+            rainfall = world_data["rainfall"][r, c]
 
 
             # List of text entries to display
@@ -39,10 +43,15 @@ class UIManager:
                 f"Row: {r}, Col: {c}",
                 f"Region: {region}", # First letter of each word is capital
                 f"Elevation: {elevation:.2f}",
+                f"temperature: {temperature:.2f}",
+                f"rainfall: {rainfall:.2f}",
                 f"steepness: {steepness:.2f}",
+                f"fertility: {fertility:.2f}",
                 f"traversal cost: {traversal_cost:.2f}",
                 f"population: {population:.2f}",
                 f"pop capacity: {pop_capacity:.2f}",
+                
+                
             ]
 
 
@@ -50,6 +59,10 @@ class UIManager:
             for i, line in enumerate(info_lines):
                 text_surface = self.font.render(line, True, (30, 30, 30))
                 screen.blit(text_surface, (sidebar_x + 10, 50 + i * 25))
+            
+            # Display current filter
+            filter_text = self.font.render(f"Filter: {filter_name}", True, (30, 30, 30))
+            screen.blit(filter_text, (sidebar_x + 10, sidebar_height - 40))
     
 
  
