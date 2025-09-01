@@ -36,8 +36,8 @@ while True:
     # Ensure camera stays within world bounds
     camera.clamp_pan()
     
-    #if not event_handler.paused:
-        #world.update()
+    if not event_handler.paused:
+        worldData.update()
 
 
     # Render everything
