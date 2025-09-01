@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import REGION_COLORS
+from utils.config import REGION_COLORS, REGION_LOOKUP
 
 def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
     """
@@ -10,11 +10,11 @@ def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
 
     for r in range(rows):
         for c in range(cols):
-            region = list(REGION_COLORS)[world_data['region'][r][c]]
-            color = REGION_COLORS.get(region, (255, 128, 128))  # Default to pink
+            region_id = world_data['region'][r, c]
+            color = REGION_COLORS.get(region_id, (255, 128, 128))  # default pink
             colour_map[r, c] = color
 
-            if region == "water":
+            if region_id == REGION_LOOKUP["water"]:
 
                 blend_factor = (world_data['elevation'][r, c] + 1) / 2  # Normalize to 0-1 range for water
                 colour_map[r, c] = blend_colors(colour_map[r, c], (190, 190, 255), blend_factor)
