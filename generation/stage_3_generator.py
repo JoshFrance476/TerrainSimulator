@@ -28,11 +28,11 @@ def generate_stage_3(rows, cols, river_map, sea_map, elevation_map, temperature_
     fertility_map = np.zeros((rows, cols), dtype=float)
     traversal_cost_map = np.zeros((rows, cols), dtype=float)
 
-
+    
     for r in range(rows):
         for c in range(cols):
             region_map[r][c] = determine_region(region_conditions, elevation_map[r][c], temperature_map[r][c], rainfall_map[r][c], sea_proximity_map[r][c], river_proximity_map[r][c])
-            fertility_map[r][c] = calculate_soil_fertility(region_map[r][c], rainfall_map[r][c], elevation_map[r][c])
+            fertility_map[r][c] = calculate_soil_fertility(region_map[r][c], rainfall_map[r][c], elevation_map[r][c], temperature_map[r][c])
             traversal_cost_map[r][c] = calculate_traversal_cost(region_map[r][c], steepness_map[r][c], sea_map[r][c], river_map[r][c])
             
     logging.debug(f"Biome classification took {time.time() - start_time:.2f} seconds")
@@ -55,12 +55,11 @@ def calculate_traversal_cost(region, steepness, sea, river):
 
 
 
-def calculate_soil_fertility(region, rainfall, elevation):
+def calculate_soil_fertility(region, rainfall, elevation, temperature):
     """
     Determines soil fertility based on rainfall and elevation.
     """
-    if region == "water":
-        return 0
+
 
     if elevation > 0.7:
         fertility = 0.1 * rainfall  # High mountains have poor fertility
@@ -68,6 +67,18 @@ def calculate_soil_fertility(region, rainfall, elevation):
         fertility = rainfall * 1.2  # Lowlands near water are highly fertile
     else:
         fertility = rainfall
+    
+    if region == "water":
+        return 0
+    if region == "desert":
+        fertility *= 0.2
+    if region == "arid":    
+        fertility *= 0.5
+
+    weight = 1.0 - (temperature - 0.5)**2 * 4
+    weight = np.clip(weight, 0, 1)   
+    fertility *= weight
+
 
     return normalize(fertility, 0, 1)
 
