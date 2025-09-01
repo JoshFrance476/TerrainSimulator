@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.cm as cm
 from utils import config
 
+
 def apply_heatmap_overlay(coastline_map, data_map, colormap="viridis", alpha=0.6):
     """
     Overlays a heatmap onto the coastline map based on the values in data_map.
@@ -35,8 +36,8 @@ def apply_heatmap_overlay(coastline_map, data_map, colormap="viridis", alpha=0.6
     output_map = ((1 - alpha) * coastline_map + alpha * heatmap).astype(np.uint8)
 
     # Set cells with with value 0 to white (sea)
-    mask = data_map == 0
-    output_map[mask] = (255, 255, 255)
+    #mask = data_map == 0
+    #output_map[mask] = (255, 255, 255)
 
     return output_map
 
