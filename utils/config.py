@@ -1,7 +1,5 @@
 import random
 
-
-
 CAMERA_ROWS, CAMERA_COLS = 266, 466 
 WORLD_ROWS, WORLD_COLS = CAMERA_ROWS * 2, CAMERA_COLS * 2
 CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
@@ -23,16 +21,6 @@ PAN_STEP = 4    # Pan speed in pixels
 SIDEBAR_WIDTH = 250  
 FONT_SIZE = 18
 
-STATE_COLOUR_PALETTE = [
-    (0, 255, 0),   # Red
-    (0, 180, 0),   # Green
-    (0, 0, 180),   # Blue
-    (180, 180, 0), # Yellow
-    (180, 120, 0), # Orange
-    (80, 0, 80),   # Purple
-    (0, 180, 180), # Cyan
-    (180, 20, 100) # Pink
-]
 
 REGION_CONDITIONS = [
     {"condition": lambda e, t, r, rp: e > 0.35, "color": "snowy peaks"},
