@@ -1,6 +1,7 @@
 from noise import pnoise2
 import numpy as np
 from utils.config import ELEVATION_IMPACT_ON_TEMP
+import math
 
 def generate_stage_1(rows, cols, scale, seed):
     elevation_map = generate_noise_map(rows, cols, scale, seed)       
@@ -36,7 +37,7 @@ def calculate_temperature(elevation, row, rows):
     """
     Calculate temperature based on elevation, normalized to [0, 1].
     """
-    import math
+    
 
     deviation = 0.18
     elevation_impact = ELEVATION_IMPACT_ON_TEMP
