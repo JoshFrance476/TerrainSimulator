@@ -4,7 +4,7 @@ CAMERA_ROWS, CAMERA_COLS = 266, 466
 WORLD_ROWS, WORLD_COLS = CAMERA_ROWS * 2, CAMERA_COLS * 2
 CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
 SCALE = 70 #Steepness is not synced with scale, will not be as obvious at more zoomed in levels
-ELEVATION_IMPACT_ON_TEMP = 1
+ELEVATION_IMPACT_ON_TEMP = 0.5
 STEEPNESS_MULTIPLIER = 50
 
 SEA_LEVEL = -0.05
