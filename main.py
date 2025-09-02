@@ -2,7 +2,7 @@ import pygame
 import utils.config as config
 from camera import Camera
 from event_handler import EventHandler
-from worldData import WorldData
+from simulation.worldData import WorldData
 from simulation.world import World
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
@@ -38,17 +38,11 @@ while True:
     if not event_handler.paused:
         world.step()
 
-
+    
     # Render everything
     map_renderer.render_view(screen, world.data.get_region_data(camera.x_pos, camera.y_pos, config.CAMERA_COLS+camera.x_pos, config.CAMERA_ROWS+camera.y_pos), event_handler.get_selected_filter())
-    ui_manager.draw_sidebar(event_handler.selected_cell, screen, world.data.get_world_data(), map_renderer.get_selected_filter_name())
-    ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_pos, camera.y_pos)
-
-    if event_handler.selected_cell:
-        ui_manager.draw_selected_cell_border(event_handler.selected_cell, screen, camera.x_pos, camera.y_pos, config.CELL_SIZE)
+    ui_manager.render_ui(screen, world.get_data_for_ui(), camera.x_pos, camera.y_pos, map_renderer.get_selected_filter_name(), event_handler.get_relevant_cells())
     
-
-
 
     pygame.display.flip()
     clock.tick(60)
