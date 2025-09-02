@@ -7,9 +7,8 @@ from scipy.ndimage import binary_dilation, convolve
 
 class WorldData:
     def __init__(self):
-        self.static_float_maps_index, self.static_float_maps, self.static_int_maps_index, self.static_int_maps = self.init_static_maps()
-        self.coastline_map = self.generate_coastline_map(self.static_float_maps[self.static_float_maps_index['elevation']])
-        self.world_data = {}
+        self.static_float_maps_index, self.static_float_maps, self.static_int_maps_index, self.static_int_maps, self.colour_map = self.init_static_maps()
+        self.world_data = {'colour': self.colour_map}
 
         # Add static float layers
         for name, idx in self.static_float_maps_index.items():
@@ -25,8 +24,6 @@ class WorldData:
         for name, idx in self.dynamic_float_maps_index.items():
             self.world_data[name] = self.dynamic_float_maps[idx]
 
-        self.terrain_map = generate_color_map(self.world_data, True, True)
-
     def update(self):
         pass
         #self.world_data["population"] = update_population_granular(self.world_data)
@@ -38,7 +35,7 @@ class WorldData:
         return self.world_data
     
     def get_terrain_data(self):
-        return self.terrain_map
+        return self.colour_map
     
     def get_region_data(self, x0, y0, x1, y1):
         region_data = {}
@@ -52,34 +49,18 @@ class WorldData:
         for name, idx in self.dynamic_float_maps_index.items():
             region_data[name] = self.dynamic_float_maps[idx][y0:y1, x0:x1]
         
-        region_data['terrain'] = self.terrain_map[y0:y1, x0:x1]
-
-        region_data['coastline'] = self.coastline_map[y0:y1, x0:x1]
+        region_data['colour'] = self.colour_map[y0:y1, x0:x1]
 
         return region_data
     
 
-    def generate_coastline_map(self, elevation_map):
-        rows, cols, = elevation_map.shape
-
-        coastline_map = np.full((rows, cols, 3), (255, 255, 255), dtype=np.uint8)  # White background
-
-        land_mask = elevation_map > config.SEA_LEVEL
-        sea_mask = elevation_map <= config.SEA_LEVEL
-
-        # coastline = land cells that touch sea OR sea cells that touch land
-        
-        coastline_mask = land_mask & binary_dilation(sea_mask)
-
-        coastline_map[coastline_mask] = (0, 0, 0)
-
-        return coastline_map
+    
 
 
     
 
     def init_static_maps(self):
-        elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_static_maps()
+        elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_static_maps()
         
         static_float_layers_index = {
             'elevation': 0,
@@ -105,6 +86,7 @@ class WorldData:
             'sea': 2,
             'river_proximity': 3,
             'sea_proximity': 4,
+            'coastline': 5,
         }
 
         static_int_layers = np.zeros((len(static_int_layers_index), config.WORLD_ROWS, config.WORLD_COLS), dtype=np.uint8)
@@ -113,19 +95,21 @@ class WorldData:
         static_int_layers[static_int_layers_index['sea']] = sea_map.astype(np.uint8)
         static_int_layers[static_int_layers_index['river_proximity']] = river_proximity_map.astype(np.uint8)
         static_int_layers[static_int_layers_index['sea_proximity']] = sea_proximity_map.astype(np.uint8)
+        static_int_layers[static_int_layers_index['coastline']] = coastline_map.astype(np.uint8)
 
-        # Create a lookup table for region names to region ID
-        region_lookup = {region: idx for idx, region in enumerate(config.REGION_COLORS.keys())}
 
-        #This code increased peak memory usage significantly, below method is much more effective
-        #static_int_layers[static_int_layers_index['region']] = np.vectorize(region_lookup.get)(region_map).astype(np.uint8)
 
-        region_map_int = np.zeros_like(region_map, dtype=np.uint8)
-        for region_name, idx in region_lookup.items():
-            region_map_int[region_map == region_name] = idx
-        static_int_layers[static_int_layers_index['region']] = region_map_int
+        for region_name, idx in config.REGION_LOOKUP.items():
+            region_map[region_map == region_name] = idx
+        static_int_layers[static_int_layers_index['region']] = region_map
 
-        return static_float_layers_index, static_float_layers, static_int_layers_index, static_int_layers
+        colour_map = generate_color_map({
+            'elevation': elevation_map,
+            'region': region_map,
+            'steepness': steepness_map
+        }, True, True)
+
+        return static_float_layers_index, static_float_layers, static_int_layers_index, static_int_layers, colour_map
 
 
 
