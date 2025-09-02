@@ -1,5 +1,7 @@
 import random
 import numpy as np
+import utils.config as config
+from scipy.ndimage import binary_dilation
 
 def generate_stage_2(rows, cols, number_of_rivers, sea_level, elevation_map, river_source_min_elevation):
     # Initialize an empty river map
@@ -17,7 +19,9 @@ def generate_stage_2(rows, cols, number_of_rivers, sea_level, elevation_map, riv
                 sea_map[r][c] = True
             steepness_map[r][c] = calculate_steepness(elevation_map, r, c)
     
-    return river_map, sea_map, steepness_map
+    coastline_map = generate_coastline_map(elevation_map)
+    
+    return river_map, sea_map, steepness_map, coastline_map
             
 
 
@@ -103,6 +107,22 @@ def calculate_steepness(elevation_map, row, col):
     steepness = max(north_south, east_west)  # Max difference between opposite neighbors
 
     return normalize(steepness, 0, 1)
+
+def generate_coastline_map(elevation_map):
+        rows, cols, = elevation_map.shape
+
+        coastline_map = np.zeros((rows, cols), dtype=np.uint8)  # White background
+
+        land_mask = elevation_map > config.SEA_LEVEL
+        sea_mask = elevation_map <= config.SEA_LEVEL
+
+        # coastline = land cells that touch sea OR sea cells that touch land
+        
+        coastline_mask = land_mask & binary_dilation(sea_mask)
+
+        coastline_map[coastline_mask] = 1
+
+        return coastline_map
 
 
 def normalize(value, min_value, max_value):
