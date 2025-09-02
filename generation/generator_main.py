@@ -19,7 +19,7 @@ def generate_static_maps():
     logging.debug(f"Stage 1 generation took {time.time() - start_time:.2f} seconds")
 
     start_time = time.time()
-    river_map, sea_map, steepness_map = generate_stage_2(config.WORLD_ROWS, config.WORLD_COLS, config.NUMBER_OF_RIVERS, config.SEA_LEVEL, elevation_map, config.RIVER_SOURCE_MIN_ELEVATION)
+    river_map, sea_map, steepness_map, coastline_map = generate_stage_2(config.WORLD_ROWS, config.WORLD_COLS, config.NUMBER_OF_RIVERS, config.SEA_LEVEL, elevation_map, config.RIVER_SOURCE_MIN_ELEVATION)
     logging.debug(f"Stage 2 generation took {time.time() - start_time:.2f} seconds")
     
     start_time = time.time()
@@ -27,7 +27,7 @@ def generate_static_maps():
     logging.debug(f"Stage 3 generation took {time.time() - start_time:.2f} seconds")
 
     
-    return elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map   
+    return elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map   
 
 
 
@@ -35,7 +35,9 @@ def generate_static_maps():
 
 
 def generate_dynamic_maps(static_data):
+    start_time = time.time()
     population_capacity_map, population_map = generate_stage_4(config.WORLD_ROWS, config.WORLD_COLS, static_data)
+    logging.debug(f"Stage 4 generation took {time.time() - start_time:.2f} seconds")
 
     return population_capacity_map, population_map
 
