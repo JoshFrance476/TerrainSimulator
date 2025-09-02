@@ -66,7 +66,7 @@ class MapRenderer:
                 )
             self.selected_filter_name = "Population"
         else:
-            display_map = view_data['terrain']
+            display_map = view_data['colour']
             self.selected_filter_name = "None"
 
         return display_map
