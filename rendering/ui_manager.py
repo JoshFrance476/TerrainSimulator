@@ -4,8 +4,41 @@ from utils import config
 class UIManager:
     def __init__(self):
         self.font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
+    
+    def render_ui(self, screen, data, camera_x, camera_y, filter, relevant_cells):
+        world_data, settlement_data = data
+        selected_cell, hovered_cell = relevant_cells
+        self.draw_settlements(settlement_data, screen, camera_x, camera_y)
+        self.draw_left_sidebar(screen, settlement_data)
+        self.draw_right_sidebar(selected_cell, screen, world_data, filter)
+        self.draw_hover_highlight(hovered_cell, screen, camera_x, camera_y)
 
-    def draw_sidebar(self, selected_cell, screen, world_data, filter_name):
+        if selected_cell:
+            self.draw_selected_cell_border(selected_cell, screen, camera_x, camera_y)
+
+
+    def draw_settlements(self, settlement_data, screen, camera_x, camera_y):
+        for s in settlement_data:
+            r, c = s["pos"]
+            x = (c - camera_x) * config.CELL_SIZE + config.SIDEBAR_WIDTH
+            y = (r - camera_y) * config.CELL_SIZE
+            pygame.draw.rect(screen, (0, 0, 0), (x, y, config.CELL_SIZE, config.CELL_SIZE))
+            text_surface = self.font.render(s["name"], True, (30, 30, 30))
+            screen.blit(text_surface, (x + 5, y - 5))
+
+
+    def draw_left_sidebar(self, screen, settlement_data):
+
+
+        pygame.draw.rect(screen, (220, 220, 220), (0, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT))
+        pygame.draw.rect(screen, (80, 80, 80), (0, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), 3)
+
+        title_text = self.font.render("Settlement Info", True, (30, 30, 30))
+        screen.blit(title_text, (10, 20))
+
+
+
+    def draw_right_sidebar(self, selected_cell, screen, world_data, filter_name):
         """ Draws a sidebar with information about the selected cell. """
         sidebar_x = config.SCREEN_WIDTH
         sidebar_height = config.SCREEN_HEIGHT
@@ -73,7 +106,7 @@ class UIManager:
         cell_y, cell_x = hovered_cell
 
         # Convert grid cell to screen coordinates
-        screen_x = (cell_x - camera_x_pos) * config.CELL_SIZE
+        screen_x = (cell_x - camera_x_pos) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
         screen_y = (cell_y - camera_y_pos) * config.CELL_SIZE
 
         # Create transparent surface for the highlight
@@ -84,12 +117,12 @@ class UIManager:
         screen.blit(highlight_surface, (screen_x, screen_y))
 
 
-    def draw_selected_cell_border(self, selected_cell, screen, camera_x_pos, camera_y_pos, cell_size, color=(255, 255, 0)):
+    def draw_selected_cell_border(self, selected_cell, screen, camera_x_pos, camera_y_pos, color=(255, 255, 0)):
         """Draws a border around the selected cell."""
         cell_y, cell_x = selected_cell
 
         # Convert grid cell to screen coordinates
-        screen_x = (cell_x - camera_x_pos) * config.CELL_SIZE
+        screen_x = (cell_x - camera_x_pos) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
         screen_y = (cell_y - camera_y_pos) * config.CELL_SIZE
 
         # Create transparent surface for the border
