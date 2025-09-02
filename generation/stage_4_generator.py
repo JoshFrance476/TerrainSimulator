@@ -1,10 +1,7 @@
 import numpy as np
 
 
-def generate_stage_4(rows, cols, static_data):
-    population_capacity_map = np.zeros((rows, cols), dtype=np.float32)
-    population_map = np.zeros((rows, cols), dtype=np.float32)
-
+def generate_stage_4(static_data):
     fertility_map = static_data["fertility"]
     temperature_map = static_data["temperature"]
     river_proximity_map = static_data["river_proximity"]
@@ -14,7 +11,7 @@ def generate_stage_4(rows, cols, static_data):
 
     population_capacity_map = np.vectorize(calculate_population_capacity, otypes=[np.float32])(fertility_map, temperature_map, river_proximity_map, sea_map, river_map, elevation_map)
 
-    population_map = init_population(population_capacity_map, population_map)
+    population_map = init_population(population_capacity_map)
 
 
     return population_capacity_map, population_map
@@ -35,13 +32,14 @@ def calculate_population_capacity(fertility, temperature, proximity_to_water, se
 
     capacity += (fertility*2) * temp_factor + water_bonus 
 
-    #Multiplies by random float between 0 and 1, skewed towards lower values
+    #Multiplies by random float between 0 and 1
     capacity *= np.random.power(1)
     
     return capacity
 
-def init_population(population_capacity_map, population_map):
-        flattened_population = population_capacity_map.ravel()
-        highest_location = np.argmax(flattened_population)
-        population_map.ravel()[highest_location] = 1
+
+
+def init_population(population_capacity_map):
+        population_map = population_capacity_map.copy()
+
         return population_map
