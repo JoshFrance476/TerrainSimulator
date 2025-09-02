@@ -7,7 +7,9 @@ def find_k_largest_value_locations(data, k):
     topk_indices = np.argpartition(flat_map, -k)[-k:]
     topk_indices_sorted = topk_indices[np.argsort(-flat_map[topk_indices])]
 
-    return topk_indices_sorted
+    rows, cols = data.shape
+    coords = np.column_stack(np.unravel_index(topk_indices_sorted, (rows, cols)))
+    return coords
 
 
 
