@@ -2,11 +2,11 @@ from generation.generator_main import generate_static_maps, generate_dynamic_map
 from utils.colour_utils import generate_color_map
 import numpy as np
 import utils.config as config
-from scipy.ndimage import binary_dilation, convolve
 
 
 class WorldData:
-    def __init__(self):
+    def __init__(self, rows, cols):
+        self.rows, self.cols = rows, cols
         self.static_float_maps_index, self.static_float_maps, self.static_int_maps_index, self.static_int_maps, self.colour_map = self.init_static_maps()
         self.world_data = {'colour': self.colour_map}
 
@@ -60,7 +60,7 @@ class WorldData:
     
 
     def init_static_maps(self):
-        elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_static_maps()
+        elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_static_maps(self.rows, self.cols)
         
         static_float_layers_index = {
             'elevation': 0,
@@ -71,7 +71,7 @@ class WorldData:
             'rainfall': 5,
         }
 
-        static_float_layers = np.zeros((len(static_float_layers_index), config.WORLD_ROWS, config.WORLD_COLS), dtype=np.float32)
+        static_float_layers = np.zeros((len(static_float_layers_index), self.rows, self.cols), dtype=np.float32)
 
         static_float_layers[static_float_layers_index['elevation']] = elevation_map
         static_float_layers[static_float_layers_index['traversal_cost']] = traversal_cost_map
@@ -89,7 +89,7 @@ class WorldData:
             'coastline': 5,
         }
 
-        static_int_layers = np.zeros((len(static_int_layers_index), config.WORLD_ROWS, config.WORLD_COLS), dtype=np.uint8)
+        static_int_layers = np.zeros((len(static_int_layers_index), self.rows, self.cols), dtype=np.uint8)
 
         static_int_layers[static_int_layers_index['river']] = river_map.astype(np.uint8)
         static_int_layers[static_int_layers_index['sea']] = sea_map.astype(np.uint8)
@@ -123,7 +123,7 @@ class WorldData:
             'population': 1,
         }
 
-        dynamic_float_layers = np.zeros((len(dynamic_float_layers_index), config.WORLD_ROWS, config.WORLD_COLS), dtype=np.float32)
+        dynamic_float_layers = np.zeros((len(dynamic_float_layers_index), self.rows, self.cols), dtype=np.float32)
 
         dynamic_float_layers[dynamic_float_layers_index['population']] = population_map
         dynamic_float_layers[dynamic_float_layers_index['population_capacity']] = population_capacity_map
