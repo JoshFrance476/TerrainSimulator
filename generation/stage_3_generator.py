@@ -30,7 +30,6 @@ def generate_stage_3(rows, cols, river_map, sea_map, elevation_map, temperature_
     fertility_map = calculate_soil_fertility(region_map, rainfall_map, elevation_map, temperature_map)
     traversal_cost_map = calculate_traversal_cost(region_map, steepness_map, sea_map, river_map)
             
-    logging.debug(f"Biome classification took {time.time() - start_time:.2f} seconds")
 
 
     return river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map
