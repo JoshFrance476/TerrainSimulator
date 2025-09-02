@@ -1,8 +1,8 @@
 import random
 import numpy as np
 
-CAMERA_ROWS, CAMERA_COLS = 266, 466 
-WORLD_ROWS, WORLD_COLS = CAMERA_ROWS * 2, CAMERA_COLS * 2
+CAMERA_ROWS, CAMERA_COLS = 266, 440 
+WORLD_ROWS, WORLD_COLS = CAMERA_ROWS*2, CAMERA_COLS*2
 CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
 SCALE = 70 # Steepness is not synced with scale, will not be as obvious at more zoomed in levels
 
@@ -16,13 +16,14 @@ RIVER_SOURCE_MIN_ELEVATION = 0.2
 
 SEED = random.randint(0,10000)
 
-SCREEN_WIDTH, SCREEN_HEIGHT = CAMERA_COLS * CELL_SIZE, CAMERA_ROWS * CELL_SIZE
 
 PAN_STEP = 4    # Pan speed in pixels
 
 
 SIDEBAR_WIDTH = 250  
 FONT_SIZE = 18
+
+SCREEN_WIDTH, SCREEN_HEIGHT = CAMERA_COLS * CELL_SIZE + (SIDEBAR_WIDTH), CAMERA_ROWS * CELL_SIZE
 
 REGION_LOOKUP = {
     "water": 0,
