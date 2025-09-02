@@ -21,8 +21,7 @@ pygame.display.set_caption("Terrain Generation")
 # Initialize core objects
 camera = Camera()
 event_handler = EventHandler()
-worldData = WorldData()
-world = World()
+world = World(config.WORLD_ROWS, config.WORLD_COLS)
 map_renderer = MapRenderer()
 ui_manager = UIManager()
 
@@ -37,12 +36,12 @@ while True:
     camera.clamp_pan()
     
     if not event_handler.paused:
-        worldData.update()
+        world.step()
 
 
     # Render everything
-    map_renderer.render_view(screen, worldData.get_region_data(camera.x_pos, camera.y_pos, config.CAMERA_COLS+camera.x_pos, config.CAMERA_ROWS+camera.y_pos), event_handler.get_selected_filter())
-    ui_manager.draw_sidebar(event_handler.selected_cell, screen, worldData.get_world_data(), map_renderer.get_selected_filter_name())
+    map_renderer.render_view(screen, world.data.get_region_data(camera.x_pos, camera.y_pos, config.CAMERA_COLS+camera.x_pos, config.CAMERA_ROWS+camera.y_pos), event_handler.get_selected_filter())
+    ui_manager.draw_sidebar(event_handler.selected_cell, screen, world.data.get_world_data(), map_renderer.get_selected_filter_name())
     ui_manager.draw_hover_highlight(event_handler.hovered_cell, screen, camera.x_pos, camera.y_pos)
 
     if event_handler.selected_cell:
