@@ -78,7 +78,7 @@ class MapRenderer:
         surface = pygame.surfarray.make_surface(display_map.swapaxes(0, 1))  
         surface = pygame.transform.scale(surface, (display_map.shape[1] * config.CELL_SIZE,
                                                 display_map.shape[0] * config.CELL_SIZE))
-        screen.blit(surface, (0, 0))
+        screen.blit(surface, (config.SIDEBAR_WIDTH, 0))
 
     def get_selected_filter_name(self):
         return self.selected_filter_name

@@ -13,6 +13,8 @@ class EventHandler:
         self.paused = True
         self.selected_filter = 0
 
+    def get_relevant_cells(self):
+        return self.selected_cell, self.hovered_cell
         
     def handle_events(self, camera):
         """Main event handling loop."""
@@ -72,7 +74,7 @@ class EventHandler:
         """Handle mouse button release events."""
         if event.button == 1:  # Left mouse button
             self.mouse_release_pos = pygame.mouse.get_pos()
-            if self.mouse_release_pos:     #ensures mouse position is on the screen
+            if self.mouse_release_pos[0] > config.SIDEBAR_WIDTH and self.mouse_release_pos[0] < config.SCREEN_WIDTH:     #ensures mouse position is on the screen
                 self.selected_cell = self._get_cell_at_mouse_position(self.mouse_release_pos, camera)
 
 
@@ -85,14 +87,16 @@ class EventHandler:
 
     def _get_cell_at_mouse_position(self, pos, camera):
         mouse_x, mouse_y = pos
-
+            
         # Convert screen coordinates to world coordinates
-        world_x = mouse_x + (camera.x_pos * config.CELL_SIZE)
+        world_x = (mouse_x - config.SIDEBAR_WIDTH) + (camera.x_pos * config.CELL_SIZE)
         world_y = mouse_y + (camera.y_pos * config.CELL_SIZE)
 
         # Convert world coordinates to grid cell indices
         cell_x = int(world_x // config.CELL_SIZE)
         cell_y = int(world_y // config.CELL_SIZE)
+
+        
 
         return cell_y, cell_x
     
