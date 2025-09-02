@@ -4,12 +4,14 @@ import numpy as np
 CAMERA_ROWS, CAMERA_COLS = 266, 466 
 WORLD_ROWS, WORLD_COLS = CAMERA_ROWS * 2, CAMERA_COLS * 2
 CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
-SCALE = 70 #Steepness is not synced with scale, will not be as obvious at more zoomed in levels
+SCALE = 70 # Steepness is not synced with scale, will not be as obvious at more zoomed in levels
+
+TEMPERATURE_DEVIATION = 0.18 # Smaller values = higher peak at equator, larger values = flatter curve
 ELEVATION_IMPACT_ON_TEMP = 0.5
-STEEPNESS_MULTIPLIER = 50
+STEEPNESS_MULTIPLIER = 1
 
 SEA_LEVEL = -0.05
-NUMBER_OF_RIVERS = 20
+NUMBER_OF_RIVERS = 50
 RIVER_SOURCE_MIN_ELEVATION = 0.2
 
 SEED = random.randint(0,10000)
