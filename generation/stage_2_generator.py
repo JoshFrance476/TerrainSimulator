@@ -3,26 +3,70 @@ import numpy as np
 import utils.config as config
 from scipy.ndimage import binary_dilation
 
-def generate_stage_2(rows, cols, number_of_rivers, sea_level, elevation_map, river_source_min_elevation):
+def generate_stage_2(number_of_rivers, sea_level, elevation_map, river_source_min_elevation):
     # Initialize an empty river map
-    sea_map = np.zeros((rows, cols), dtype=bool)
-    river_map = np.zeros((rows, cols), dtype=bool)
-    steepness_map = np.zeros((rows, cols), dtype=float)
+    sea_map = np.zeros((elevation_map.shape), dtype=bool)
+    river_map = np.zeros((elevation_map.shape), dtype=bool)
 
-    for _ in range(number_of_rivers):
-        single_river_map = generate_river_map(elevation_map, sea_level, river_source_min_elevation)
-        river_map = np.logical_or(river_map, single_river_map)
+    river_map = generate_river_map(elevation_map, sea_level, river_source_min_elevation ,number_of_rivers)
+    #for _ in range(number_of_rivers):
+    #    single_river_map = generate_river_map(elevation_map, sea_level, river_source_min_elevation)
+    #    river_map = np.logical_or(river_map, single_river_map)
 
-    for r in range(rows):
-        for c in range(cols):
-            if elevation_map[r][c] < sea_level:
-                sea_map[r][c] = True
-            steepness_map[r][c] = calculate_steepness(elevation_map, r, c)
+    sea_map[elevation_map < sea_level] = True
+    steepness_map = calculate_steepness(elevation_map)
     
     coastline_map = generate_coastline_map(elevation_map)
     
     return river_map, sea_map, steepness_map, coastline_map
             
+
+# 8 neighbors (D8)
+DIRS = [(-1, 0), (1, 0), (0, -1), (0, 1),   # N, S, W, E
+        (-1, -1), (-1, 1), (1, -1), (1, 1)] # diagonals
+
+def compute_flow_directions(elevation_map):
+    rows, cols = elevation_map.shape
+    padded = np.pad(elevation_map, 1, constant_values=np.inf)
+
+    neighbors = []
+    for dr, dc in DIRS:
+        neighbors.append(padded[1+dr:1+dr+rows, 1+dc:1+dc+cols])
+    neighbors = np.stack(neighbors, axis=-1)  # (rows, cols, 8)
+
+    flow_idx = np.argmin(neighbors, axis=-1)  # lowest neighbor index
+
+    # Lookup tables for dr/dc
+    dr = np.take([d[0] for d in DIRS], flow_idx)
+    dc = np.take([d[1] for d in DIRS], flow_idx)
+
+    return dr, dc
+
+def generate_rivers(elevation_map, sea_level, river_source_min_elevation, n_rivers=10, max_length=5000):
+    rows, cols = elevation_map.shape
+    river_map = np.zeros((rows, cols), dtype=bool)
+
+    # Precompute flow directions
+    dr, dc = compute_flow_directions(elevation_map)
+
+    # Random river sources
+    candidates = np.argwhere(elevation_map > river_source_min_elevation)
+    np.random.shuffle(candidates)
+    sources = candidates[:n_rivers]
+
+    # Trace each river
+    for r, c in sources:
+        for _ in range(max_length):
+            river_map[r, c] = True
+            if elevation_map[r, c] <= sea_level:
+                break
+            nr, nc = r + dr[r, c], c + dc[r, c]
+            if (nr == r and nc == c) or river_map[nr, nc]:
+                break  # stuck in pit or merging
+            r, c = nr, nc
+
+    return river_map
+
 
 
 def generate_river_map(elevation_map, sea_level, river_source_min_elevation):
@@ -90,23 +134,27 @@ def find_lowest_neighbour(elevation_map, river_map, row, col):
     return lowest_pos
 
 
-def calculate_steepness(elevation_map, row, col):
+def calculate_steepness(elevation_map):
     """
-    Calculate terrain steepness based on elevation difference between opposite neighbors, normalized to [0, 1].
+    Calculate terrain steepness using gradient magnitude.
+    Normalized to [0, 1].
     """
-    rows, cols = len(elevation_map), len(elevation_map[0])
+    # Compute gradients in y (rows) and x (cols)
+    grad_y, grad_x = np.gradient(elevation_map)
+
+    # Magnitude of slope vector (Euclidean norm)
+    steepness = np.sqrt(grad_x**2 + grad_y**2)
+
+    # Normalize to [0, 1]
+    min_val, max_val = steepness.min(), steepness.max()
+    if max_val > min_val:
+        steepness = (steepness - min_val) / (max_val - min_val)
+    else:
+        steepness = np.zeros_like(steepness)
+
+    return steepness.astype(np.float32)
 
 
-    def get_elevation(r, c):
-        if 0 <= r < rows and 0 <= c < cols:
-            return elevation_map[r][c]
-        return 0  # Default for out-of-bounds
-
-    north_south = abs(get_elevation(row - 1, col) - get_elevation(row + 1, col))
-    east_west = abs(get_elevation(row, col - 1) - get_elevation(row, col + 1))
-    steepness = max(north_south, east_west)  # Max difference between opposite neighbors
-
-    return normalize(steepness, 0, 1)
 
 def generate_coastline_map(elevation_map):
         rows, cols, = elevation_map.shape
