@@ -27,7 +27,7 @@ class UIManager:
             
 
             # Fetch data from terrain maps
-            region = world_data["region"][r, c]
+            region = config.REGION_NAMES[world_data["region"][r, c]]
             elevation = world_data["elevation"][r, c]
             steepness = world_data["steepness"][r, c]
             traversal_cost = world_data["traversal_cost"][r, c]
@@ -41,7 +41,7 @@ class UIManager:
             # List of text entries to display
             info_lines = [
                 f"Row: {r}, Col: {c}",
-                f"Region: {region}", # First letter of each word is capital
+                f"Region: {region.title()}", # First letter of each word is capital
                 f"Elevation: {elevation:.2f}",
                 f"temperature: {temperature:.2f}",
                 f"rainfall: {rainfall:.2f}",
