@@ -8,10 +8,10 @@ def generate_stage_2(number_of_rivers, sea_level, elevation_map, river_source_mi
     sea_map = np.zeros((elevation_map.shape), dtype=bool)
     river_map = np.zeros((elevation_map.shape), dtype=bool)
 
-    river_map = generate_river_map(elevation_map, sea_level, river_source_min_elevation ,number_of_rivers)
-    #for _ in range(number_of_rivers):
-    #    single_river_map = generate_river_map(elevation_map, sea_level, river_source_min_elevation)
-    #    river_map = np.logical_or(river_map, single_river_map)
+    #river_map = generate_river_map(elevation_map, sea_level, river_source_min_elevation)
+    for _ in range(number_of_rivers):
+        single_river_map = generate_river_map(elevation_map, sea_level, river_source_min_elevation)
+        river_map = np.logical_or(river_map, single_river_map)
 
     sea_map[elevation_map < sea_level] = True
     steepness_map = calculate_steepness(elevation_map)
