@@ -1,24 +1,22 @@
 from settlement import Settlement
-from utils.map_utils import find_k_largest_value_locations
 from utils.config import STARTING_SETTLEMENT_COUNT
 
 class SettlementManager:
-    def __init__(self, data):
-        self.world_data = data
+    def __init__(self, world, world_data):
+        self.world = world
+        self.world_data = world_data
         self.settlements = {}
         self.next_settlement_id = 0
-    
-    #def update(self):
-        #for s in self.settlements.values():
-            #s.update()
-    
-    def init_settlements(self):
-        # Find the x largest values in the population map
-        population_map = self.world_data["population"]
-        top_x_indices = find_k_largest_value_locations(population_map, STARTING_SETTLEMENT_COUNT)
-        # Initialize settlements at these locations
+
+        # Initialize settlements at the x largest values in the population map
+        top_x_indices = self.world.get_x_largest_values("population", STARTING_SETTLEMENT_COUNT)
         for i, index in enumerate(top_x_indices):
             self.create_settlement(f"Settlement {i}", index[0], index[1])
+    
+    def update(self):
+        for s in self.settlements.values():
+            s.update()
+
 
 
     def create_settlement(self, name, r, c):
