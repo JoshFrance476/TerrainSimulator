@@ -43,6 +43,48 @@ REGION_LOOKUP = {
 REGION_NAMES = {v: k for k, v in REGION_LOOKUP.items()}
 
 
+RESOURCE_LOOKUP = {
+    "none": 0,
+    "wood": 1,
+    "grain": 2,
+    "ore": 3,
+    "fish": 4,
+}
+
+RESOURCE_NAMES = {v: k for k, v in RESOURCE_LOOKUP.items()}
+
+RESOURCE_COLORS = {
+    1: (100, 100, 0),
+    2: (255, 255, 100),
+    3: (40, 40, 40),
+    4: (0, 0, 255),
+}
+
+RESOURCE_RULES = {
+    "wood": {
+        "region": {"forest": 0.02},     # base weight if region is forest
+        "fertility": 0,          
+        "elevation": 0,    
+        "cluster": {"scale": 30},      # Perlin noise cluster scale
+    },
+    "grain": {
+        "region": {"grassland": 0.1, "savannah": 0.01},
+        "fertility": 0,            
+        "rainfall": 0,           
+        "temperature": 0,
+        "cluster": {"scale": 50},
+    },
+    "ore": {
+        "region": {"mountains": 0.1, "snowy peaks": 0.1},
+        "elevation": 8,  
+        "cluster": {"scale": 20},
+    },
+    "fish": {
+        "region": {"water": 0.05},
+        "cluster": {"scale": 60},
+    },
+}
+
 REGION_CONDITIONS = [
     {"condition": lambda e, t, r, rp: (e > 0.35), 
      "regionID": REGION_LOOKUP["snowy peaks"]},
