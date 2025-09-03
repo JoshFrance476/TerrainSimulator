@@ -16,8 +16,10 @@ class MapRenderer:
     
     def apply_overlay(self, view_data, map_filter):
         '''Applies selected overlay to the base colour map.'''
-
-        if map_filter == 1:
+        if map_filter == 0:
+            display_map = view_data["colour"]
+            self.selected_filter_name = "None"
+        elif map_filter == 1:
             display_map = apply_heatmap_overlay(
                     view_data["coastline"],
                     view_data["elevation"]
@@ -65,9 +67,13 @@ class MapRenderer:
                     view_data["population"]
                 )
             self.selected_filter_name = "Population"
-        else:
-            display_map = view_data['colour']
-            self.selected_filter_name = "None"
+        elif map_filter == 9:
+            display_map = view_data["colour"].copy()
+            resource_map = view_data["resource"]
+            for rid, color in config.RESOURCE_COLORS.items():
+                display_map[resource_map == rid] = color
+            self.selected_filter_name = "Resource"
+
 
         return display_map
 
