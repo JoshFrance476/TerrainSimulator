@@ -27,6 +27,8 @@ ui_manager = UIManager()
 
 clock = pygame.time.Clock()
 
+tick_count = 0
+
 
 while True:
     event_handler.handle_events(camera)
@@ -34,8 +36,8 @@ while True:
     camera.clamp_pan()
     
     if not event_handler.paused:
-        world.step()
-
+        world.step(tick_count)
+        tick_count += 1
     
     map_renderer.render_view(screen, 
                              world.get_region_data(camera.x_pos, 
