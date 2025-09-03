@@ -8,15 +8,14 @@ class World:
     def __init__(self, rows, cols):
         self.rows, self.cols = rows, cols
         self.data = WorldData(rows, cols)
-        self.settlement_manager = SettlementManager(self.data.get_world_data())
+        self.settlement_manager = SettlementManager(self, self.data.get_world_data())
 
-        self.settlement_manager.init_settlements()
 
         
     
-    def step(self):
-        self.data.update()
-        #self.settlement_manager.update()
+    def step(self, tick_count):
+        if tick_count % 60 == 0:
+            self.settlement_manager.update()
 
     #def update(self):
         #self.dynamic_maps = update_dynamic_maps(self.static_maps_dict, self.dynamic_maps_dict)
@@ -51,6 +50,8 @@ class World:
             return self.data.get_region_data(c0, r0, c1, r1)[map]
 
 
+    def get_x_largest_values(self, map_name, x):
+        return self.data.find_x_largest_values(map_name, x)
 
     
 
