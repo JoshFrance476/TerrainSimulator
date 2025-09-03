@@ -67,3 +67,10 @@ if __name__ == "__main__":
     """
     event_json = ask_deepseek(prompt, desc_schema)
     print("LLM Response:", event_json)
+
+#def generate_description(self):
+#        prompt = f"""Task:
+#        Write a short, one-sentence description of this settlement based on the context. 
+#        Context: Name: {self.name}, Row: {self.r}, Col: {self.c}, Population: {self.population}, Region: {self._world_data['region'][self.r, self.c]}
+#        """
+#        self.description = ask_deepseek(prompt, desc_schema)
