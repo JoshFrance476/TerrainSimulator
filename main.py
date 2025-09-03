@@ -29,19 +29,28 @@ clock = pygame.time.Clock()
 
 
 while True:
-    #Handle keyboard and mouse inputs
     event_handler.handle_events(camera)
 
-    # Ensure camera stays within world bounds
     camera.clamp_pan()
     
     if not event_handler.paused:
         world.step()
 
     
-    # Render everything
-    map_renderer.render_view(screen, world.data.get_region_data(camera.x_pos, camera.y_pos, config.CAMERA_COLS+camera.x_pos, config.CAMERA_ROWS+camera.y_pos), event_handler.get_selected_filter())
-    ui_manager.render_ui(screen, world.get_data_for_ui(), camera.x_pos, camera.y_pos, map_renderer.get_selected_filter_name(), event_handler.get_relevant_cells())
+    map_renderer.render_view(screen, 
+                             world.get_region_data(camera.x_pos, 
+                                                        camera.y_pos, 
+                                                        config.CAMERA_COLS+camera.x_pos, 
+                                                        config.CAMERA_ROWS+camera.y_pos), 
+                            event_handler.get_selected_filter())
+    
+    ui_manager.render_ui(screen, 
+                         world.get_cell_data(event_handler.selected_cell), 
+                         world.get_all_settlements(),
+                         camera.x_pos, 
+                         camera.y_pos, 
+                         map_renderer.get_selected_filter_name(), 
+                         event_handler.get_relevant_cells())
     
 
     pygame.display.flip()
