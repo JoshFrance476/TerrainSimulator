@@ -28,6 +28,23 @@ class WorldData:
         pass
         #self.world_data["population"] = update_population_granular(self.world_data)
 
+    
+    def get_cell_data(self, pos):
+        r, c = pos
+
+        cell_data = {}
+        for name, idx in self.static_float_maps_index.items():
+            cell_data[name] = float(self.static_float_maps[idx][r, c])
+
+        for name, idx in self.static_int_maps_index.items():
+            cell_data[name] = int(self.static_int_maps[idx][r, c])
+
+        for name, idx in self.dynamic_float_maps_index.items():
+            cell_data[name] = float(self.dynamic_float_maps[idx][r, c])
+
+        cell_data['colour'] = tuple(self.colour_map[r, c])
+
+        return cell_data
 
 
 
