@@ -36,10 +36,10 @@ def generate_static_maps(rows, cols):
 
 def generate_dynamic_maps(static_data):
     start_time = time.time()
-    population_capacity_map, population_map = generate_stage_4(static_data)
+    population_capacity_map, population_map, resource_map = generate_stage_4(static_data)
     logging.debug(f"Stage 4 generation took {time.time() - start_time:.2f} seconds")
 
-    return population_capacity_map, population_map
+    return population_capacity_map, population_map, resource_map
 
 
 #def update_dynamic_maps(static_data, dynamic_data):
