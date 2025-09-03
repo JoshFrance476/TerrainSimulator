@@ -1,8 +1,8 @@
 import pygame
 import utils.config as config
 from camera import Camera
-from event_handler import EventHandler
-from simulation.worldData import WorldData
+from input_handler import EventHandler
+from simulation.world_data import WorldData
 from simulation.world import World
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
