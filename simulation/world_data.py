@@ -2,6 +2,7 @@ from generation.generator_main import generate_static_maps, generate_dynamic_map
 from utils.colour_utils import generate_color_map
 import numpy as np
 import utils.config as config
+import utils.map_utils
 
 
 class WorldData:
@@ -24,8 +25,8 @@ class WorldData:
         for name, idx in self.dynamic_float_maps_index.items():
             self.world_data[name] = self.dynamic_float_maps[idx]
 
-    def update(self):
-        pass
+    #def update(self):
+        #pass
         #self.world_data["population"] = update_population_granular(self.world_data)
 
     
@@ -70,6 +71,8 @@ class WorldData:
 
         return region_data
     
+    def find_x_largest_values(self, map_name, x):
+        return utils.map_utils.find_x_largest_value_locations(self.world_data[map_name], x)
 
     
 
@@ -133,16 +136,17 @@ class WorldData:
 
 
     def init_dynamic_maps(self, static_data):
-        population_capacity_map, population_map = generate_dynamic_maps(static_data)
+        population_capacity_map, population_map, resource_map = generate_dynamic_maps(static_data)
 
         dynamic_float_layers_index = {
             'population_capacity': 0,
             'population': 1,
+            'resource': 2,
         }
 
         dynamic_float_layers = np.zeros((len(dynamic_float_layers_index), self.rows, self.cols), dtype=np.float32)
 
         dynamic_float_layers[dynamic_float_layers_index['population']] = population_map
         dynamic_float_layers[dynamic_float_layers_index['population_capacity']] = population_capacity_map
-
+        dynamic_float_layers[dynamic_float_layers_index['resource']] = resource_map
         return dynamic_float_layers_index, dynamic_float_layers
