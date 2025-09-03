@@ -47,7 +47,7 @@ class UIManager:
             info_lines = [
                 f"Name: {settlement_name}",
                 f"Row: {settlement_r}, Col: {settlement_c}",
-                f"Population: {settlement_population}"
+                f"Population: {settlement_population:.2f}"
             ]
 
             text_surface = self.large_font.render(info_lines[0], True, (30, 30, 30))
