@@ -92,7 +92,7 @@ class UIManager:
             fertility = cell_data["fertility"]
             temperature = cell_data["temperature"]
             rainfall = cell_data["rainfall"]
-
+            resource = cell_data["resource"]
 
             # List of text entries to display
             cell_info_lines = [
@@ -106,6 +106,7 @@ class UIManager:
                 f"traversal cost: {traversal_cost:.2f}",
                 f"population: {population:.2f}",
                 f"pop capacity: {pop_capacity:.2f}",
+                f"resource: {config.RESOURCE_NAMES[resource]}",
             ]
 
             # Render and display each line
