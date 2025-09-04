@@ -72,21 +72,16 @@ Resource rules function as follows:
 RESOURCE_RULES = {
     "lumber": {
         "region": {"forest": 0.04},    
-        "cluster": {"scale": 30},      # Perlin noise cluster scale
     },
     "fertile land": {
         "region": {"grassland": 0.04, "savannah": 0.01},
         "fertility": {"min": 0.4, "max": 1, "weight": 1},
-        "cluster": {"scale": 50},
     },
     "ore": {
         "region": {"mountains": 0.01, "snowy peaks": 0.01},
-        "elevation": {"min": 0.5, "max": 1, "weight": 0},
-        "cluster": {"scale": 20},
     },
     "fish": {
         "region": {"water": 0.01},
-        "cluster": {"scale": 60},
     },
 }
 
