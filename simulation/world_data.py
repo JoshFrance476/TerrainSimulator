@@ -1,4 +1,4 @@
-from generation.generator_main import generate_static_maps, generate_dynamic_maps#, update_dynamic_maps
+from generation.generator_main import generate_maps
 from utils.colour_utils import generate_color_map
 import numpy as np
 import utils.config as config
@@ -19,11 +19,6 @@ class WorldData:
         for name, idx in self.static_int_maps_index.items():
             self.world_data[name] = self.static_int_maps[idx]
 
-        self.dynamic_float_maps_index, self.dynamic_float_maps = self.init_dynamic_maps(self.world_data)
-
-        # Add dynamic float layers
-        for name, idx in self.dynamic_float_maps_index.items():
-            self.world_data[name] = self.dynamic_float_maps[idx]
 
     #def update(self):
         #pass
@@ -39,9 +34,6 @@ class WorldData:
 
         for name, idx in self.static_int_maps_index.items():
             cell_data[name] = int(self.static_int_maps[idx][r, c])
-
-        for name, idx in self.dynamic_float_maps_index.items():
-            cell_data[name] = float(self.dynamic_float_maps[idx][r, c])
 
         cell_data['colour'] = tuple(self.colour_map[r, c])
 
@@ -63,13 +55,11 @@ class WorldData:
 
         for name, idx in self.static_int_maps_index.items():
             region_data[name] = self.static_int_maps[idx][y0:y1, x0:x1]
-
-        for name, idx in self.dynamic_float_maps_index.items():
-            region_data[name] = self.dynamic_float_maps[idx][y0:y1, x0:x1]
         
         region_data['colour'] = self.colour_map[y0:y1, x0:x1]
 
         return region_data
+    
     
     def find_x_largest_values(self, map_name, x):
         return utils.map_utils.find_x_largest_value_locations(self.world_data[map_name], x)
@@ -80,7 +70,7 @@ class WorldData:
     
 
     def init_static_maps(self):
-        elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_static_maps(self.rows, self.cols)
+        elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map, population_capacity_map, population_map, resource_map = generate_maps(self.rows, self.cols)
         
         static_float_layers_index = {
             'elevation': 0,
@@ -89,6 +79,9 @@ class WorldData:
             'fertility': 3,
             'temperature': 4,
             'rainfall': 5,
+            'population_capacity': 6,
+            'population': 7,
+            
         }
 
         static_float_layers = np.zeros((len(static_float_layers_index), self.rows, self.cols), dtype=np.float32)
@@ -99,6 +92,8 @@ class WorldData:
         static_float_layers[static_float_layers_index['fertility']] = fertility_map
         static_float_layers[static_float_layers_index['temperature']] = temperature_map
         static_float_layers[static_float_layers_index['rainfall']] = rainfall_map
+        static_float_layers[static_float_layers_index['population_capacity']] = population_capacity_map
+        static_float_layers[static_float_layers_index['population']] = population_map
 
         static_int_layers_index = {
             'region': 0,
@@ -107,6 +102,7 @@ class WorldData:
             'river_proximity': 3,
             'sea_proximity': 4,
             'coastline': 5,
+            'resource': 6,
         }
 
         static_int_layers = np.zeros((len(static_int_layers_index), self.rows, self.cols), dtype=np.uint8)
@@ -116,7 +112,7 @@ class WorldData:
         static_int_layers[static_int_layers_index['river_proximity']] = river_proximity_map.astype(np.uint8)
         static_int_layers[static_int_layers_index['sea_proximity']] = sea_proximity_map.astype(np.uint8)
         static_int_layers[static_int_layers_index['coastline']] = coastline_map.astype(np.uint8)
-
+        static_int_layers[static_int_layers_index['resource']] = resource_map.astype(np.uint8)
 
 
         for region_name, idx in config.REGION_LOOKUP.items():
@@ -130,23 +126,3 @@ class WorldData:
         }, True, True)
 
         return static_float_layers_index, static_float_layers, static_int_layers_index, static_int_layers, colour_map
-
-
-
-
-
-    def init_dynamic_maps(self, static_data):
-        population_capacity_map, population_map, resource_map = generate_dynamic_maps(static_data)
-
-        dynamic_float_layers_index = {
-            'population_capacity': 0,
-            'population': 1,
-            'resource': 2,
-        }
-
-        dynamic_float_layers = np.zeros((len(dynamic_float_layers_index), self.rows, self.cols), dtype=np.float32)
-
-        dynamic_float_layers[dynamic_float_layers_index['population']] = population_map
-        dynamic_float_layers[dynamic_float_layers_index['population_capacity']] = population_capacity_map
-        dynamic_float_layers[dynamic_float_layers_index['resource']] = resource_map
-        return dynamic_float_layers_index, dynamic_float_layers

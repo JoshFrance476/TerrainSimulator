@@ -11,9 +11,7 @@ import utils.config as config
 logging.basicConfig(level=logging.DEBUG)
 
 
-
-
-def generate_static_maps(rows, cols):
+def generate_maps(rows, cols):
     start_time = time.time()
     elevation_map, rainfall_map, temperature_map = generate_stage_1(rows, cols, config.SCALE, config.SEED)
     logging.debug(f"Stage 1 generation took {time.time() - start_time:.2f} seconds")
@@ -26,20 +24,10 @@ def generate_static_maps(rows, cols):
     river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_stage_3(river_map, sea_map, elevation_map, temperature_map, rainfall_map, steepness_map, config.REGION_CONDITIONS)
     logging.debug(f"Stage 3 generation took {time.time() - start_time:.2f} seconds")
 
-    
-    return elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map   
-
-
-
-
-
-
-def generate_dynamic_maps(static_data):
     start_time = time.time()
-    population_capacity_map, population_map, resource_map = generate_stage_4(static_data)
+    population_capacity_map, population_map, resource_map = generate_stage_4(fertility_map, temperature_map, river_proximity_map, sea_map, river_map, elevation_map, region_map, rainfall_map)
     logging.debug(f"Stage 4 generation took {time.time() - start_time:.2f} seconds")
 
-    return population_capacity_map, population_map, resource_map
+    
+    return elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map, population_capacity_map, population_map, resource_map
 
-
-#def update_dynamic_maps(static_data, dynamic_data):
