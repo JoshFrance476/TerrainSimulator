@@ -1,15 +1,14 @@
-from llm_api import ask_deepseek, desc_schema
-
-
 class Settlement:
 
-    def __init__(self, id, name, r, c, world_data):
+    def __init__(self, id, name, r, c, world_data, resources = []):
         self.id = id
         self.name = name
         self.description = ""
         self.r = r
         self.c = c
         self._world_data = world_data   #Pointer to worldData. Means settlement data is linked directly to map data
+
+        self.resources = resources
 
         self.population_capacity *= 5
 
@@ -20,9 +19,6 @@ class Settlement:
     def update(self):
         self.population *= self.growth_rate
 
-    
-    
-    
     #Map-linked values
     @property
     def population_capacity(self):
