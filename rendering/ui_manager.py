@@ -118,7 +118,14 @@ class UIManager:
 
                 settlement_info_lines = [
                     f"Name: {settlement_data.name}",
+                    f"Resources:"
                 ]
+                
+                settlement_resources = settlement_data.resources
+
+                for resource, count in settlement_resources.items():
+                    settlement_info_lines.append(f"{resource.title()}: {count}")
+
 
                 settlement_offset_y = 100 + len(cell_info_lines) * 25
 
