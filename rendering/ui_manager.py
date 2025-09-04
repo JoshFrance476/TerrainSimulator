@@ -106,7 +106,7 @@ class UIManager:
                 f"traversal cost: {traversal_cost:.2f}",
                 f"population: {population:.2f}",
                 f"pop capacity: {pop_capacity:.2f}",
-                f"resource: {config.RESOURCE_NAMES[resource]}",
+                f"resource: {config.RESOURCE_NAMES[resource].title()}",
             ]
 
             # Render and display each line
