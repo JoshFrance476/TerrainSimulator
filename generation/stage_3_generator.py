@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import REGION_BASE_TRAVERSAL_COST, STEEPNESS_MULTIPLIER, REGION_LOOKUP
+from utils.config import REGION_BASE_TRAVERSAL_COST, STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST, REGION_LOOKUP
 from utils.map_utils import calculate_proximity_map
 
 
@@ -20,7 +20,7 @@ def generate_stage_3(river_map, sea_map, elevation_map, temperature_map, rainfal
 
 def calculate_traversal_cost(region_map, steepness_map):
     base_cost = REGION_BASE_TRAVERSAL_COST[region_map]
-    steepness_cost = steepness_map * STEEPNESS_MULTIPLIER
+    steepness_cost = steepness_map * STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST
     traversal_cost_map = base_cost + steepness_cost
 
     return traversal_cost_map
