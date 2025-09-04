@@ -86,9 +86,9 @@ RESOURCE_RULES = {
 }
 
 REGION_CONDITIONS = [
-    {"condition": lambda e, t, r, rp: (e > 0.75), 
+    {"condition": lambda e, t, r, rp: (e > 0.65), 
      "regionID": REGION_LOOKUP["snowy peaks"]},
-    {"condition": lambda e, t, r, rp: (e > 0.6), 
+    {"condition": lambda e, t, r, rp: (e > 0.5), 
      "regionID": REGION_LOOKUP["mountains"]},
     {"condition": lambda e, t, r, rp: (t < 0.02), 
      "regionID": REGION_LOOKUP["tundra"]},
@@ -116,7 +116,7 @@ REGION_COLORS = {
     4: (190, 160, 130),
     5: (34, 139, 34),
     6: (34, 112, 34),
-    7: (125, 160, 50),
+    7: (125, 140, 70),
     8: (230, 230, 230),
     9: (0, 90, 0)
 }
