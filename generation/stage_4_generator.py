@@ -2,26 +2,21 @@ import numpy as np
 from utils.config import RESOURCE_LOOKUP, RESOURCE_RULES, REGION_LOOKUP
 
 
-def generate_stage_4(static_data):
-    fertility_map = static_data["fertility"]
-    temperature_map = static_data["temperature"]
-    river_proximity_map = static_data["river_proximity"]
-    sea_map = static_data["sea"]
-    river_map = static_data["river"]
-    elevation_map = static_data["elevation"]
+def generate_stage_4(fertility_map, temperature_map, river_proximity_map, sea_map, river_map, elevation_map, region_map, rainfall_map):
 
-    population_capacity_map = np.vectorize(calculate_population_capacity, otypes=[np.float32])(fertility_map, temperature_map, river_proximity_map, sea_map, river_map, elevation_map)
+
+    population_capacity_map = np.vectorize(calculate_population_capacity, otypes=[np.float32])(fertility_map, temperature_map, river_proximity_map, sea_map, river_map)
 
     population_map = init_population(population_capacity_map)
 
-    resource_map = calculate_resource_map(static_data)
+    resource_map = calculate_resource_map(fertility_map, temperature_map, elevation_map, region_map, rainfall_map)
 
 
     return population_capacity_map, population_map, resource_map
 
 
 
-def calculate_population_capacity(fertility, temperature, proximity_to_water, sea, river, elevation, water_threshold=5):
+def calculate_population_capacity(fertility, temperature, proximity_to_water, sea, river, water_threshold=5):
     """
     Calculates population capacity based on fertility, temperature, and proximity to water. Can use Numpy vectorization instead in future.
     """
@@ -41,9 +36,9 @@ def calculate_population_capacity(fertility, temperature, proximity_to_water, se
     return capacity
 
 
-def calculate_resource_map(static_data):
+def calculate_resource_map(fertility_map, temperature_map, elevation_map, region_map, rainfall_map):
     # Thank you ChatGPT. Applies all rules set out in RESOURCE_RULES to generate resource map
-    rows, cols = static_data["elevation"].shape
+    rows, cols = fertility_map.shape
     probability_stack = np.zeros((rows, cols, len(RESOURCE_LOOKUP)))
 
     for resource, rules in RESOURCE_RULES.items():
@@ -52,19 +47,19 @@ def calculate_resource_map(static_data):
 
         if "region" in rules:
             for region_name, weight in rules["region"].items():
-                probability_map[static_data["region"] == REGION_LOOKUP[region_name]] += weight
+                probability_map[region_map == REGION_LOOKUP[region_name]] += weight
 
         if "fertility" in rules:
-            probability_map *= factor_from_range(static_data["fertility"], rules["fertility"])
+            probability_map *= factor_from_range(fertility_map, rules["fertility"])
 
         if "rainfall" in rules:
-            probability_map *= factor_from_range(static_data["rainfall"], rules["rainfall"])
+            probability_map *= factor_from_range(rainfall_map, rules["rainfall"])
         
         if "temperature" in rules:
-            probability_map *= factor_from_range(static_data["temperature"], rules["temperature"])
+            probability_map *= factor_from_range(temperature_map, rules["temperature"])
         
         if "elevation" in rules:
-            probability_map *= factor_from_range(static_data["elevation"], rules["elevation"])
+            probability_map *= factor_from_range(elevation_map, rules["elevation"])
 
         
         
