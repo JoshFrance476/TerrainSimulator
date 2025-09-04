@@ -8,16 +8,16 @@ import utils.map_utils
 class WorldData:
     def __init__(self, rows, cols):
         self.rows, self.cols = rows, cols
-        self.static_float_maps_index, self.static_float_maps, self.static_int_maps_index, self.static_int_maps, self.colour_map = self.init_static_maps()
+        self.float_layers_index, self.float_layers, self.int_layers_index, self.int_layers, self.colour_map = self.init_maps()
         self.world_data = {'colour': self.colour_map}
 
         # Add static float layers
-        for name, idx in self.static_float_maps_index.items():
-            self.world_data[name] = self.static_float_maps[idx]
+        for name, idx in self.float_layers_index.items():
+            self.world_data[name] = self.float_layers[idx]
 
         # Add int layers
-        for name, idx in self.static_int_maps_index.items():
-            self.world_data[name] = self.static_int_maps[idx]
+        for name, idx in self.int_layers_index.items():
+            self.world_data[name] = self.int_layers[idx]
 
 
     #def update(self):
@@ -29,11 +29,11 @@ class WorldData:
         r, c = pos
 
         cell_data = {}
-        for name, idx in self.static_float_maps_index.items():
-            cell_data[name] = float(self.static_float_maps[idx][r, c])
+        for name, idx in self.float_layers_index.items():
+            cell_data[name] = float(self.float_layers[idx][r, c])
 
-        for name, idx in self.static_int_maps_index.items():
-            cell_data[name] = int(self.static_int_maps[idx][r, c])
+        for name, idx in self.int_layers_index.items():
+            cell_data[name] = int(self.int_layers[idx][r, c])
 
         cell_data['colour'] = tuple(self.colour_map[r, c])
 
@@ -50,17 +50,17 @@ class WorldData:
     def get_region_data(self, x0, y0, x1, y1):
         region_data = {}
 
-        for name, idx in self.static_float_maps_index.items():
-            region_data[name] = self.static_float_maps[idx][y0:y1, x0:x1]
+        for name, idx in self.float_layers_index.items():
+            region_data[name] = self.float_layers[idx][y0:y1, x0:x1]
 
-        for name, idx in self.static_int_maps_index.items():
-            region_data[name] = self.static_int_maps[idx][y0:y1, x0:x1]
+        for name, idx in self.int_layers_index.items():
+            region_data[name] = self.int_layers[idx][y0:y1, x0:x1]
         
         region_data['colour'] = self.colour_map[y0:y1, x0:x1]
 
         return region_data
     
-    
+
     def find_x_largest_values(self, map_name, x):
         return utils.map_utils.find_x_largest_value_locations(self.world_data[map_name], x)
 
@@ -69,10 +69,10 @@ class WorldData:
 
     
 
-    def init_static_maps(self):
+    def init_maps(self):
         elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map, population_capacity_map, population_map, resource_map = generate_maps(self.rows, self.cols)
         
-        static_float_layers_index = {
+        float_layers_index = {
             'elevation': 0,
             'traversal_cost': 1,
             'steepness': 2,
@@ -84,18 +84,18 @@ class WorldData:
             
         }
 
-        static_float_layers = np.zeros((len(static_float_layers_index), self.rows, self.cols), dtype=np.float32)
+        float_layers = np.zeros((len(float_layers_index), self.rows, self.cols), dtype=np.float32)
 
-        static_float_layers[static_float_layers_index['elevation']] = elevation_map
-        static_float_layers[static_float_layers_index['traversal_cost']] = traversal_cost_map
-        static_float_layers[static_float_layers_index['steepness']] = steepness_map
-        static_float_layers[static_float_layers_index['fertility']] = fertility_map
-        static_float_layers[static_float_layers_index['temperature']] = temperature_map
-        static_float_layers[static_float_layers_index['rainfall']] = rainfall_map
-        static_float_layers[static_float_layers_index['population_capacity']] = population_capacity_map
-        static_float_layers[static_float_layers_index['population']] = population_map
+        float_layers[float_layers_index['elevation']] = elevation_map
+        float_layers[float_layers_index['traversal_cost']] = traversal_cost_map
+        float_layers[float_layers_index['steepness']] = steepness_map
+        float_layers[float_layers_index['fertility']] = fertility_map
+        float_layers[float_layers_index['temperature']] = temperature_map
+        float_layers[float_layers_index['rainfall']] = rainfall_map
+        float_layers[float_layers_index['population_capacity']] = population_capacity_map
+        float_layers[float_layers_index['population']] = population_map
 
-        static_int_layers_index = {
+        int_layers_index = {
             'region': 0,
             'river': 1,
             'sea': 2,
@@ -105,19 +105,19 @@ class WorldData:
             'resource': 6,
         }
 
-        static_int_layers = np.zeros((len(static_int_layers_index), self.rows, self.cols), dtype=np.uint8)
+        int_layers = np.zeros((len(int_layers_index), self.rows, self.cols), dtype=np.uint8)
 
-        static_int_layers[static_int_layers_index['river']] = river_map.astype(np.uint8)
-        static_int_layers[static_int_layers_index['sea']] = sea_map.astype(np.uint8)
-        static_int_layers[static_int_layers_index['river_proximity']] = river_proximity_map.astype(np.uint8)
-        static_int_layers[static_int_layers_index['sea_proximity']] = sea_proximity_map.astype(np.uint8)
-        static_int_layers[static_int_layers_index['coastline']] = coastline_map.astype(np.uint8)
-        static_int_layers[static_int_layers_index['resource']] = resource_map.astype(np.uint8)
+        int_layers[int_layers_index['river']] = river_map.astype(np.uint8)
+        int_layers[int_layers_index['sea']] = sea_map.astype(np.uint8)
+        int_layers[int_layers_index['river_proximity']] = river_proximity_map.astype(np.uint8)
+        int_layers[int_layers_index['sea_proximity']] = sea_proximity_map.astype(np.uint8)
+        int_layers[int_layers_index['coastline']] = coastline_map.astype(np.uint8)
+        int_layers[int_layers_index['resource']] = resource_map.astype(np.uint8)
 
 
         for region_name, idx in config.REGION_LOOKUP.items():
             region_map[region_map == region_name] = idx
-        static_int_layers[static_int_layers_index['region']] = region_map
+        int_layers[int_layers_index['region']] = region_map
 
         colour_map = generate_color_map({
             'elevation': elevation_map,
@@ -125,4 +125,4 @@ class WorldData:
             'steepness': steepness_map
         }, True, True)
 
-        return static_float_layers_index, static_float_layers, static_int_layers_index, static_int_layers, colour_map
+        return float_layers_index, float_layers, int_layers_index, int_layers, colour_map
