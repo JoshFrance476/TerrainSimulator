@@ -30,7 +30,7 @@ def calculate_population_capacity(fertility, temperature, proximity_to_water, se
     
     capacity = 0
 
-    temp_factor = 1 - abs(0.4 - temperature)  # Best temperature around 0.5
+    temp_factor = 1 - abs(0.4 - temperature)  # Best temperature around 0.4
     water_bonus = max(0, (water_threshold - proximity_to_water) / water_threshold * 0.3)
 
     capacity += (fertility*2) * temp_factor + water_bonus 
@@ -55,16 +55,16 @@ def calculate_resource_map(static_data):
                 probability_map[static_data["region"] == REGION_LOOKUP[region_name]] += weight
 
         if "fertility" in rules:
-            probability_map *= 1 / (1 + np.exp(-rules["fertility"] * (static_data["fertility"] - 0.5)))
+            probability_map *= factor_from_range(static_data["fertility"], rules["fertility"])
 
         if "rainfall" in rules:
-            probability_map *= 1 / (1 + np.exp(-rules["rainfall"] * (static_data["rainfall"] - 0.5)))
+            probability_map *= factor_from_range(static_data["rainfall"], rules["rainfall"])
         
         if "temperature" in rules:
-            probability_map *= 1 / (1 + np.exp(-rules["temperature"] * (static_data["temperature"] - 0.5)))
+            probability_map *= factor_from_range(static_data["temperature"], rules["temperature"])
         
         if "elevation" in rules:
-            probability_map *= 1 / (1 + np.exp(-rules["elevation"] * (static_data["elevation"] - 0.5)))
+            probability_map *= factor_from_range(static_data["elevation"], rules["elevation"])
 
         
         
@@ -82,6 +82,26 @@ def calculate_resource_map(static_data):
 
 
     return resource_map
+
+def factor_from_range(values, rule):
+    vmin, vmax, weight = rule["min"], rule["max"], rule["weight"]
+
+    mask = (values >= vmin) & (values <= vmax)
+    out = np.zeros_like(values, dtype=np.float32)
+
+    denom = max(vmax - vmin, 1e-9)
+    norm = (values - vmin) / denom 
+    norm = np.clip(norm, 0.0, 1.0)
+
+    if weight == 0:
+        out[mask] = 1.0
+    elif weight > 0:
+        out[mask] = norm[mask] ** weight
+    else:
+        out[mask] = (1 - norm[mask]) ** abs(weight)
+
+    return out
+
 
 def init_population(population_capacity_map):
         population_map = population_capacity_map.copy()

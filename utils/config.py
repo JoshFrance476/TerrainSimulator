@@ -59,28 +59,33 @@ RESOURCE_COLORS = {
     3: (40, 40, 40),
     4: (0, 0, 255),
 }
+"""
+Resource rules function as follows:
 
+'Region' - base probability of resource in given regions
+'Factors' - 'min', 'max' - specify the value range where the resource can appear. 
+            'weight' - specify the distribution of the resource within the range. 
+                       0 = uniform distribution
+                       >0 = more weight towards the max
+                       <0 = more weight towards the min
+"""
 RESOURCE_RULES = {
     "lumber": {
-        "region": {"forest": 0.02},     # base weight if region is forest
-        "fertility": 0,          
-        "elevation": 0,    
+        "region": {"forest": 0.04},    
         "cluster": {"scale": 30},      # Perlin noise cluster scale
     },
     "fertile land": {
-        "region": {"grassland": 0.1, "savannah": 0.01},
-        "fertility": 0,            
-        "rainfall": 0,           
-        "temperature": 0,
+        "region": {"grassland": 0.04, "savannah": 0.01},
+        "fertility": {"min": 0.4, "max": 1, "weight": 1},
         "cluster": {"scale": 50},
     },
     "ore": {
-        "region": {"mountains": 0.1, "snowy peaks": 0.1},
-        "elevation": 8,  
+        "region": {"mountains": 0.01, "snowy peaks": 0.01},
+        "elevation": {"min": 0.5, "max": 1, "weight": 0},
         "cluster": {"scale": 20},
     },
     "fish": {
-        "region": {"water": 0.05},
+        "region": {"water": 0.01},
         "cluster": {"scale": 60},
     },
 }
