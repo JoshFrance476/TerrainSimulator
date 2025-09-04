@@ -7,8 +7,8 @@ CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
 SCALE = 70 # Steepness is not synced with scale, will not be as obvious at more zoomed in levels
 
 TEMPERATURE_DEVIATION = 0.18 # Smaller values = higher peak at equator, larger values = flatter curve
-ELEVATION_IMPACT_ON_TEMP = 0.5
-STEEPNESS_MULTIPLIER = 1
+ELEVATION_IMPACT_ON_TEMP = 0.2
+STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST = 1
 
 SEA_LEVEL = -0.05
 NUMBER_OF_RIVERS = 50
@@ -45,8 +45,8 @@ REGION_NAMES = {v: k for k, v in REGION_LOOKUP.items()}
 
 RESOURCE_LOOKUP = {
     "none": 0,
-    "wood": 1,
-    "grain": 2,
+    "lumber": 1,
+    "fertile land": 2,
     "ore": 3,
     "fish": 4,
 }
@@ -61,13 +61,13 @@ RESOURCE_COLORS = {
 }
 
 RESOURCE_RULES = {
-    "wood": {
+    "lumber": {
         "region": {"forest": 0.02},     # base weight if region is forest
         "fertility": 0,          
         "elevation": 0,    
         "cluster": {"scale": 30},      # Perlin noise cluster scale
     },
-    "grain": {
+    "fertile land": {
         "region": {"grassland": 0.1, "savannah": 0.01},
         "fertility": 0,            
         "rainfall": 0,           
@@ -86,19 +86,19 @@ RESOURCE_RULES = {
 }
 
 REGION_CONDITIONS = [
-    {"condition": lambda e, t, r, rp: (e > 0.35), 
+    {"condition": lambda e, t, r, rp: (e > 0.75), 
      "regionID": REGION_LOOKUP["snowy peaks"]},
-    {"condition": lambda e, t, r, rp: (e > 0.25), 
+    {"condition": lambda e, t, r, rp: (e > 0.6), 
      "regionID": REGION_LOOKUP["mountains"]},
     {"condition": lambda e, t, r, rp: (t < 0.02), 
      "regionID": REGION_LOOKUP["tundra"]},
-    {"condition": lambda e, t, r, rp: (e < 0.1) & (t > 0.76) & (r < 0.4), 
+    {"condition": lambda e, t, r, rp: (t > 0.76) & (r < 0.2), 
      "regionID": REGION_LOOKUP["desert"]},
-    {"condition": lambda e, t, r, rp: (e < 0.25) & (t > 0.62) & (r < 0.65) & (rp >= 4), 
+    {"condition": lambda e, t, r, rp: (t > 0.62) & (r < 0.6) & (rp >= 4), 
      "regionID": REGION_LOOKUP["arid"]},
-    {"condition": lambda e, t, r, rp: (e < 0.23) & (t > 0.52) & ((r > 0.5) | (rp < 4)), 
+    {"condition": lambda e, t, r, rp: (e < 0.4) & (t > 0.52) & ((r > 0.4) | (rp < 4)), 
      "regionID": REGION_LOOKUP["savannah"]},
-    {"condition": lambda e, t, r, rp: (e < 0.05) & (t < 0.45) & (t > 0.2) & (r > 0.6), 
+    {"condition": lambda e, t, r, rp: (e < 0.1) & (t < 0.45) & (t > 0.2) & (r > 0.8), 
      "regionID": REGION_LOOKUP["marsh"]},
     {"condition": lambda e, t, r, rp: (r > 0.50), 
      "regionID": REGION_LOOKUP["forest"]},

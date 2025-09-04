@@ -24,7 +24,7 @@ def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
             elif variation_toggle:
 
                 colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['steepness'][r, c] * 0.2)
-                colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['elevation'][r, c] / 2)
+                colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['elevation'][r, c] / 3)
 
 
 
