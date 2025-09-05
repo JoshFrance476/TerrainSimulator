@@ -21,16 +21,13 @@ def apply_heatmap_overlay(coastline_map, data_map, colormap="viridis", alpha=0.6
 
     base_map = np.full((*data_map.shape, 3), (255, 255, 255), dtype=np.uint8)  # White background
 
-    # Normalize data_map values between 0 and 1
-    data_min, data_max = np.min(data_map), np.max(data_map)
-    if data_max > data_min:
-        normalized_data = (data_map - data_min) / (data_max - data_min)
-    else:
-        normalized_data = np.zeros_like(data_map)  # Avoid divide-by-zero errors
+    if data_map.min() == -1:
+        data_map = (data_map - -1) / (1 - -1)
+
 
     # Get the colormap and apply it to the normalized data
     cmap = cm.get_cmap(colormap)
-    heatmap = cmap(normalized_data)[:, :, :3]  # Extract RGB channels (ignore alpha)
+    heatmap = cmap(data_map)[:, :, :3]  # Extract RGB channels (ignore alpha)
 
     # Convert heatmap values to 0-255 integer range
     heatmap = (heatmap * 255).astype(np.uint8)
