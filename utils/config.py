@@ -4,6 +4,8 @@ import numpy as np
 CAMERA_ROWS, CAMERA_COLS = 266, 440 
 WORLD_ROWS, WORLD_COLS = CAMERA_ROWS*2, CAMERA_COLS*2
 CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
+MAGNIFIER_CELL_SIZE = 6
+MAGNIFIER_CELL_AMOUNT = 12
 SCALE = 70 # Steepness is not synced with scale, will not be as obvious at more zoomed in levels
 
 TEMPERATURE_DEVIATION = 0.18 # Smaller values = higher peak at equator, larger values = flatter curve
@@ -90,7 +92,7 @@ REGION_CONDITIONS = [
      "regionID": REGION_LOOKUP["snowy peaks"]},
     {"condition": lambda e, t, r, rp: (e > 0.5), 
      "regionID": REGION_LOOKUP["mountains"]},
-    {"condition": lambda e, t, r, rp: (t < 0.02), 
+    {"condition": lambda e, t, r, rp: (t < 0.09), 
      "regionID": REGION_LOOKUP["tundra"]},
     {"condition": lambda e, t, r, rp: (t > 0.76) & (r < 0.2), 
      "regionID": REGION_LOOKUP["desert"]},
@@ -117,7 +119,7 @@ REGION_COLORS = {
     5: (34, 139, 34),
     6: (34, 112, 34),
     7: (125, 140, 70),
-    8: (230, 230, 230),
+    8: (79, 130, 66),
     9: (0, 90, 0)
 }
 
