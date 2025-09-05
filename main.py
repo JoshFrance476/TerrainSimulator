@@ -63,7 +63,10 @@ while True:
                                                             hovered_cell[0]-config.MAGNIFIER_CELL_AMOUNT, 
                                                             hovered_cell[1]+config.MAGNIFIER_CELL_AMOUNT, 
                                                             hovered_cell[0]+config.MAGNIFIER_CELL_AMOUNT),
-                                      event_handler.get_selected_filter())
+                                      event_handler.get_selected_filter(),
+                                      event_handler.hovered_cell,
+                                      camera.x_pos,
+                                      camera.y_pos)
 
 
     
