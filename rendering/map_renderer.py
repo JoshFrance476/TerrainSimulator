@@ -14,9 +14,9 @@ class MapRenderer:
         self.draw_view(screen, display_map)
         
     
-    def render_magnifier(self, screen, magnifier_map, map_filter):
+    def render_magnifier(self, screen, magnifier_map, map_filter, hovered_cell, camera_x_pos, camera_y_pos):
         magnifier_display_map = self.apply_overlay(magnifier_map, map_filter)
-        self.draw_magnifier(screen, magnifier_display_map)
+        self.draw_magnifier(screen, magnifier_display_map, hovered_cell, camera_x_pos, camera_y_pos)
 
     
     def apply_overlay(self, view_data, map_filter):
@@ -90,13 +90,12 @@ class MapRenderer:
                                                 display_map.shape[0] * config.CELL_SIZE))
         screen.blit(surface, (config.SIDEBAR_WIDTH, 0))
     
-    def draw_magnifier(self, screen, magnifier_map):
-        mouse_pos = pygame.mouse.get_pos()
+    def draw_magnifier(self, screen, magnifier_map, hovered_cell, camera_x_pos, camera_y_pos):
         magnifier_surface = pygame.surfarray.make_surface(magnifier_map.swapaxes(0, 1))
         magnifier_surface = pygame.transform.scale(magnifier_surface, (magnifier_map.shape[1] * config.MAGNIFIER_CELL_SIZE,
                                                                           magnifier_map.shape[0] * config.MAGNIFIER_CELL_SIZE))
-        screen.blit(magnifier_surface, (mouse_pos[0] - config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[1]/2,
-                                            mouse_pos[1] - config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[0]/2))
+        screen.blit(magnifier_surface, ((hovered_cell[1]*config.CELL_SIZE)+config.SIDEBAR_WIDTH-(camera_x_pos*config.CELL_SIZE) - (config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[1]//2),
+                                        (hovered_cell[0]*config.CELL_SIZE)-camera_y_pos*config.CELL_SIZE - (config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[0]//2)))
 
     def get_selected_filter_name(self):
         return self.selected_filter_name
