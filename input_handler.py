@@ -12,9 +12,15 @@ class EventHandler:
         # Game state
         self.paused = True
         self.selected_filter = 0
+        self.magnified = False
+
+    def get_magnified(self):
+        return self.magnified
 
     def get_relevant_cells(self):
         return self.selected_cell, self.hovered_cell
+    
+
         
     def handle_events(self, camera):
         """Main event handling loop."""
@@ -35,7 +41,10 @@ class EventHandler:
             camera.y_pos -= config.PAN_STEP
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             camera.y_pos += config.PAN_STEP
-
+        if keys[pygame.K_LCTRL]:
+            self.magnified = True
+        else:
+            self.magnified = False
 
         # Update hover state
         self._update_hover_state(camera)
@@ -85,6 +94,7 @@ class EventHandler:
         """Update the currently hovered cell."""
         mouse_pos = pygame.mouse.get_pos()
         self.hovered_cell = self._get_cell_at_mouse_position(mouse_pos, camera)
+    
 
 
     def _get_cell_at_mouse_position(self, pos, camera):
