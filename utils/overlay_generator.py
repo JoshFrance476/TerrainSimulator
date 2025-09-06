@@ -21,8 +21,12 @@ def apply_heatmap_overlay(coastline_map, data_map, colormap="viridis", alpha=0.6
 
     base_map = np.full((*data_map.shape, 3), (255, 255, 255), dtype=np.uint8)  # White background
 
+    #If elevation map, normalise to 0-1
     if data_map.min() == -1:
-        data_map = (data_map - -1) / (1 - -1)
+        data_map = (data_map + 1) / 2
+    
+    if data_map.max() > 10:
+        data_map = (data_map - 1)/ 4
 
 
     # Get the colormap and apply it to the normalized data
