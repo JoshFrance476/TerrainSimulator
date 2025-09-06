@@ -1,5 +1,6 @@
 from simulation.world_data import WorldData
-from settlement_manager import SettlementManager
+from simulation.settlement_manager import SettlementManager
+from simulation.state_manager import StateManager
 from utils.config import REGION_NAMES
 
 class World:
@@ -8,20 +9,32 @@ class World:
     def __init__(self, rows, cols):
         self.rows, self.cols = rows, cols
         self.data = WorldData(rows, cols)
-        self.settlement_manager = SettlementManager(self, self.data.get_world_data())
+        self.settlement_manager = SettlementManager(self)
+        self.state_manager = StateManager(self)
 
+        for settlement in self.settlement_manager.get_all_settlements().values():
+            if settlement.id%2 == 0:
+                self.state_manager.create_state(settlement.id, settlement.r, settlement.c)
 
         
-    
     def step(self, tick_count):
         if tick_count % 60 == 0:
             self.settlement_manager.update()
+            self.state_manager.update()
+            
 
-    #def update(self):
-        #self.dynamic_maps = update_dynamic_maps(self.static_maps_dict, self.dynamic_maps_dict)
     
     def get_world_data(self):
         return self.data.get_world_data()  
+    
+    def get_map_data(self, map_name):
+        return self.data.get_world_data()[map_name]
+    
+    def set_map_data(self, map_name, data):
+        self.data.set_map_data(map_name, data)
+    
+    def set_map_data_at(self, map_name, pos, data):
+        self.data.set_map_data_at(map_name, pos, data)
     
     def get_region_data(self, x0, y0, x1, y1):
         return self.data.get_region_data(x0, y0, x1, y1)
@@ -31,6 +44,12 @@ class World:
 
     def get_all_settlements(self):
         return self.settlement_manager.get_all_settlements()
+    
+    def get_all_states(self):
+        return self.state_manager.get_all_states()
+    
+    def get_settlement_distance_map(self):
+        return self.settlement_manager.create_settlement_distance_map(self.rows, self.cols)
 
 
     def get_cell_data(self, selected_cell):
@@ -52,6 +71,16 @@ class World:
 
     def get_x_largest_values(self, map_name, x):
         return self.data.find_x_largest_values(map_name, x)
+    
+    def get_settlements_in_state(self, state_id):
+        for settlement in self.settlement_manager.get_all_settlements().values():
+            if settlement.state == state_id:
+                yield settlement
+    
+
+    
+    def find_eligible_state_founders(self):
+        return self.settlement_manager.find_eligible_state_founders()
 
     
 
