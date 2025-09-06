@@ -16,7 +16,7 @@ SEA_LEVEL = -0.05
 NUMBER_OF_RIVERS = 25
 RIVER_SOURCE_MIN_ELEVATION = 0.6
 
-STARTING_SETTLEMENT_COUNT = 1
+STARTING_SETTLEMENT_COUNT = 10
 
 SEED = random.randint(0,10000)
 
@@ -28,6 +28,21 @@ SIDEBAR_WIDTH = 250
 FONT_SIZE = 18
 
 SCREEN_WIDTH, SCREEN_HEIGHT = CAMERA_COLS * CELL_SIZE + (SIDEBAR_WIDTH), CAMERA_ROWS * CELL_SIZE
+
+STATE_COLOURS = {
+    0: (255, 0, 0),
+    1: (0, 255, 0),
+    2: (0, 0, 255),
+    3: (255, 255, 0),
+    4: (0, 255, 255),
+    5: (255, 0, 255),
+    6: (255, 255, 255),
+    7: (0, 0, 0),
+    8: (128, 128, 128),
+    9: (192, 192, 192),
+    10: (255, 165, 0),
+    
+}
 
 REGION_LOOKUP = {
     "water": 0,
