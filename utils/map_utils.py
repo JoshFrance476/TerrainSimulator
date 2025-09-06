@@ -3,7 +3,6 @@ from scipy.ndimage import distance_transform_cdt
 from noise import pnoise2
 
 def find_x_largest_value_locations(data, x):
-    x += 1
     flat_map = data.ravel()
     topk_indices = np.argpartition(flat_map, -x)[-x:]
     topk_indices_sorted = topk_indices[np.argsort(-flat_map[topk_indices])]
