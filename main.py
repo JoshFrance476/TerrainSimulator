@@ -51,6 +51,7 @@ while True:
     ui_manager.render_ui(screen, 
                          world.get_cell_data(event_handler.selected_cell), 
                          world.get_all_settlements(),
+                         world.get_all_states(),
                          camera.x_pos, 
                          camera.y_pos, 
                          map_renderer.get_selected_filter_name(), 
