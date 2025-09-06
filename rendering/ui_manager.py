@@ -6,12 +6,19 @@ class UIManager:
         self.large_font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
         self.small_font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE-3)
     
-    def render_ui(self, screen, cell_data, settlements_dict, camera_x, camera_y, filter, relevant_cells):
+    def render_ui(self, screen, cell_data, settlements_dict, states_dict, camera_x, camera_y, filter, relevant_cells):
         cell_data, settlement_data = cell_data
+        if cell_data:
+            if cell_data["state"] != 255:
+                state_data = states_dict[cell_data["state"]]
+            else:
+                state_data = None
+        else:
+            state_data = None
         selected_cell, hovered_cell = relevant_cells
         self.draw_settlements(settlements_dict, screen, camera_x, camera_y)
         self.draw_left_sidebar(screen, settlements_dict)
-        self.draw_right_sidebar(screen, cell_data, settlement_data, selected_cell, filter)
+        self.draw_right_sidebar(screen, cell_data, settlement_data, state_data, selected_cell, filter)
         self.draw_hover_highlight(hovered_cell, screen, camera_x, camera_y)
 
         if selected_cell:
@@ -61,7 +68,7 @@ class UIManager:
 
 
 
-    def draw_right_sidebar(self, screen, cell_data, settlement_data, selected_cell, filter_name):
+    def draw_right_sidebar(self, screen, cell_data, settlement_data, state_data, selected_cell, filter_name):
         """ Draws a sidebar with information about the selected cell. """
         sidebar_x = config.SCREEN_WIDTH
         sidebar_height = config.SCREEN_HEIGHT
@@ -93,6 +100,7 @@ class UIManager:
             temperature = cell_data["temperature"]
             rainfall = cell_data["rainfall"]
             resource = cell_data["resource"]
+            state = cell_data["state"]
 
             # List of text entries to display
             cell_info_lines = [
@@ -107,6 +115,7 @@ class UIManager:
                 f"population: {population:.2f}",
                 f"pop capacity: {pop_capacity:.2f}",
                 f"resource: {config.RESOURCE_NAMES[resource].title()}",
+                f"state: {state}"
             ]
 
             # Render and display each line
@@ -136,6 +145,22 @@ class UIManager:
                     text_surface = self.large_font.render(line, True, (30, 30, 30))
                     screen.blit(text_surface, (sidebar_x + 10, settlement_offset_y + i * 25))
             
+            if state_data:
+                state_info_lines = [
+                    f"Name: {state_data.name}",
+                    f"Tile Capacity: {state_data.tile_capacity}",
+                    f"Tile Count: {state_data.tile_count}"
+                ]
+
+                state_offset_y = 200 + len(cell_info_lines) * 25
+
+                title_text = self.large_font.render("State Info", True, (30, 30, 30))
+                screen.blit(title_text, (sidebar_x + 10, state_offset_y-25))
+
+                for i, line in enumerate(state_info_lines):
+                    text_surface = self.large_font.render(line, True, (30, 30, 30))
+                    screen.blit(text_surface, (sidebar_x + 10, state_offset_y + i * 25))
+                
 
             # Display current filter
             filter_text = self.large_font.render(f"Filter: {filter_name}", True, (30, 30, 30))
