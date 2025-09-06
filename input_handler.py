@@ -78,6 +78,8 @@ class EventHandler:
             self.selected_filter = 8
         elif event.key == pygame.K_9:
             self.selected_filter = 9
+        elif event.key == pygame.K_p:
+            self.selected_filter = 10
 
 
 
