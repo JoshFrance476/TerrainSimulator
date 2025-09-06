@@ -1,6 +1,6 @@
 import pygame
 from utils import config
-from overlays.overlay_generator import apply_heatmap_overlay
+from utils.overlay_generator import apply_heatmap_overlay
 
 class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
@@ -78,8 +78,12 @@ class MapRenderer:
             for rid, color in config.RESOURCE_COLORS.items():
                 display_map[resource_map == rid] = color
             self.selected_filter_name = "Resource"
-
-
+        elif map_filter == 10:
+            display_map = view_data["colour"].copy()
+            state_map = view_data["state"]
+            for state_id, color in config.STATE_COLOURS.items():
+                display_map[state_map == state_id] = color
+            self.selected_filter_name = "State"
         return display_map
 
 
