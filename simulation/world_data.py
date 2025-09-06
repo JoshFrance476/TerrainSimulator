@@ -58,8 +58,16 @@ class WorldData:
         
         region_data['colour'] = self.colour_map[y0:y1, x0:x1]
 
+
+
         return region_data
     
+    def set_map_data(self, map_name, data):
+        self.world_data[map_name][:] = data
+    
+    def set_map_data_at(self, map_name, pos, data):
+        self.world_data[map_name][pos] = data
+
 
     def find_x_largest_values(self, map_name, x):
         return utils.map_utils.find_x_largest_value_locations(self.world_data[map_name], x)
@@ -81,7 +89,6 @@ class WorldData:
             'rainfall': 5,
             'population_capacity': 6,
             'population': 7,
-            
         }
 
         float_layers = np.zeros((len(float_layers_index), self.rows, self.cols), dtype=np.float32)
@@ -103,6 +110,7 @@ class WorldData:
             'sea_proximity': 4,
             'coastline': 5,
             'resource': 6,
+            'state': 7
         }
 
         int_layers = np.zeros((len(int_layers_index), self.rows, self.cols), dtype=np.uint8)
@@ -113,6 +121,7 @@ class WorldData:
         int_layers[int_layers_index['sea_proximity']] = sea_proximity_map.astype(np.uint8)
         int_layers[int_layers_index['coastline']] = coastline_map.astype(np.uint8)
         int_layers[int_layers_index['resource']] = resource_map.astype(np.uint8)
+        int_layers[int_layers_index['state']] = np.full((self.rows, self.cols), 255, dtype=np.int32)
 
 
         for region_name, idx in config.REGION_LOOKUP.items():
