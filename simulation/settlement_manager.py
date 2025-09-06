@@ -1,5 +1,6 @@
 from simulation.settlement import Settlement
 from utils.config import STARTING_SETTLEMENT_COUNT, RESOURCE_NAMES
+from scipy.ndimage import distance_transform_edt
 import numpy as np
 
 class SettlementManager:
@@ -27,7 +28,13 @@ class SettlementManager:
         new_settlement = Settlement(id, name, r, c, self._world, resources)
 
         self.settlements[id] = new_settlement
-        
+    
+    def create_settlement_distance_map(self, r, c):
+        mask = np.ones((r, c), dtype=bool)  
+        for s in self.settlements.values():
+            mask[s.r, s.c] = False
+        return distance_transform_edt(mask)
+    
     def return_settlement_resources(self, r, c):
         resource_map = self._world.get_surrounding_data(r, c, radius=3, map="resource")
 
