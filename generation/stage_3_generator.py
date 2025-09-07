@@ -43,7 +43,7 @@ def calculate_soil_fertility(region, rainfall, elevation, temperature):
     fertility[region == REGION_LOOKUP['mountains']] *= 0.1
     fertility[region == REGION_LOOKUP['snowy peaks']] *= 0.05
     fertility[region == REGION_LOOKUP['marsh']] *= 0.5
-    fertility[region == REGION_LOOKUP['savannah']] *= 0.5
+    fertility[region == REGION_LOOKUP['savanna']] *= 0.5
     fertility[region == REGION_LOOKUP['grassland']] *= 1.2
 
 

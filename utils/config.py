@@ -52,7 +52,7 @@ REGION_LOOKUP = {
     "arid": 4,
     "grassland": 5,
     "forest": 6,
-    "savannah": 7,
+    "savanna": 7,
     "tundra": 8,
     "marsh": 9
 }
@@ -91,7 +91,7 @@ RESOURCE_RULES = {
         "region": {"forest": 0.04},    
     },
     "fertile land": {
-        "region": {"grassland": 0.04, "savannah": 0.01},
+        "region": {"grassland": 0.04, "savanna": 0.01},
         "fertility": {"min": 0.4, "max": 1, "weight": 1},
     },
     "ore": {
@@ -114,7 +114,7 @@ REGION_CONDITIONS = [
     {"condition": lambda e, t, r, rp: (t > 0.62) & (r < 0.6) & (rp >= 4), 
      "regionID": REGION_LOOKUP["arid"]},
     {"condition": lambda e, t, r, rp: (e < 0.4) & (t > 0.52) & ((r > 0.4) | (rp < 4)), 
-     "regionID": REGION_LOOKUP["savannah"]},
+     "regionID": REGION_LOOKUP["savanna"]},
     {"condition": lambda e, t, r, rp: (e < 0.1) & (t < 0.45) & (t > 0.2) & (r > 0.8), 
      "regionID": REGION_LOOKUP["marsh"]},
     {"condition": lambda e, t, r, rp: (r > 0.50), 
