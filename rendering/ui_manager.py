@@ -101,6 +101,10 @@ class UIManager:
             rainfall = cell_data["rainfall"]
             resource = cell_data["resource"]
             state = cell_data["state"]
+            settlement_distance = cell_data["settlement_distance"]
+            flip_probability = cell_data["flip_probability"]
+            decay_probability = cell_data["decay_probability"]
+            neighbor_counts = cell_data["neighbor_counts"]
 
             # List of text entries to display
             cell_info_lines = [
@@ -115,7 +119,11 @@ class UIManager:
                 f"population: {population:.2f}",
                 f"pop capacity: {pop_capacity:.2f}",
                 f"resource: {config.RESOURCE_NAMES[resource].title()}",
-                f"state: {state}"
+                f"state: {state}",
+                f"settlement dist: {settlement_distance}",
+                f"flip prob: {flip_probability:.2f}",
+                f"decay prob: {decay_probability:.2f}",
+                f"neighbor counts: {neighbor_counts}"
             ]
 
             # Render and display each line

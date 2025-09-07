@@ -89,6 +89,8 @@ class WorldData:
             'rainfall': 5,
             'population_capacity': 6,
             'population': 7,
+            'flip_probability': 8,
+            'decay_probability': 9
         }
 
         float_layers = np.zeros((len(float_layers_index), self.rows, self.cols), dtype=np.float32)
@@ -101,7 +103,9 @@ class WorldData:
         float_layers[float_layers_index['rainfall']] = rainfall_map
         float_layers[float_layers_index['population_capacity']] = population_capacity_map
         float_layers[float_layers_index['population']] = population_map
-
+        float_layers[float_layers_index['flip_probability']] = np.zeros((self.rows, self.cols), dtype=np.float32)
+        float_layers[float_layers_index['decay_probability']] = np.zeros((self.rows, self.cols), dtype=np.float32)
+        
         int_layers_index = {
             'region': 0,
             'river': 1,
@@ -110,7 +114,9 @@ class WorldData:
             'sea_proximity': 4,
             'coastline': 5,
             'resource': 6,
-            'state': 7
+            'state': 7,
+            'settlement_distance': 8,
+            'neighbor_counts': 9
         }
 
         int_layers = np.zeros((len(int_layers_index), self.rows, self.cols), dtype=np.uint8)
@@ -122,7 +128,8 @@ class WorldData:
         int_layers[int_layers_index['coastline']] = coastline_map.astype(np.uint8)
         int_layers[int_layers_index['resource']] = resource_map.astype(np.uint8)
         int_layers[int_layers_index['state']] = np.full((self.rows, self.cols), 255, dtype=np.int32)
-
+        int_layers[int_layers_index['settlement_distance']] = np.full((self.rows, self.cols), 0, dtype=np.int32)
+        int_layers[int_layers_index['neighbor_counts']] = np.full((self.rows, self.cols), 0, dtype=np.int32)
 
         for region_name, idx in config.REGION_LOOKUP.items():
             region_map[region_map == region_name] = idx
