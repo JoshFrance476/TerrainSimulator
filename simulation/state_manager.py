@@ -13,13 +13,20 @@ class StateManager:
 
     
     def update(self):
-        new_state_map = self.update_all_state_territories_fast({1:0.2, 2:0.5, 3:0.8, 4:1.0})
+        new_state_map, prob, decay_prob, neighbor_counts, settlement_dist_map = self.update_all_state_territories_fast({1:0.1, 2:0.3, 3:0.9, 4:1.0})
 
         self._world.set_map_data("state", new_state_map)
+        self._world.set_map_data("flip_probability", prob)
+        self._world.set_map_data("decay_probability", decay_prob)
+        self._world.set_map_data("neighbor_counts", neighbor_counts)
+        self._world.set_map_data("settlement_distance", settlement_dist_map)
+
 
         for state in self.states.values():
-            state.tile_capacity = len(list(self._world.get_settlements_in_state(state.id))) * 100
-
+            tile_capacity = 0
+            for settlement in self._world.get_settlements_in_state(state.id):
+                tile_capacity += settlement.population*60
+            state.tile_capacity = tile_capacity
 
     def create_state(self, name, r, c):
         new_state = State(self.next_state_id, name)
@@ -31,74 +38,7 @@ class StateManager:
 
         return new_state
     
-    def expand_all_states(self, flip_rules, unclaimed_id=255):
-        """
-        Expand territory for all states simultaneously.
-        
-        state_map: 2D array of ints (state IDs, or `unclaimed_id` for unclaimed)
-        traversal_cost_map: 2D float array
-        flip_rules: dict {neighbor_count: base_prob} 
-                    e.g. {1:0.1, 2:0.2, 3:0.5, 4:1.0}
-        """
-
-        state_map = self._world.get_map_data("state")
-        traversal_cost_map = self._world.get_map_data("traversal_cost")
-        region_map = self._world.get_map_data("region")
-
-        rows, cols = state_map.shape
-        new_map = state_map.copy()
-
-
-        # --- Step 1: For each state, build adjacency counts ---
-        unique_states = np.unique(state_map[state_map != unclaimed_id])
-
-
-        # Store candidate flips as (prob, state_id)
-        flip_probs = np.zeros((rows, cols), dtype=np.float32)
-        flip_states = np.full((rows, cols), 255, dtype=np.int32)
-
-        kernel = np.array([[0,1,0],
-                        [1,0,1],
-                        [0,1,0]])
-
-        for sid in unique_states:
-            state_mask = (state_map == sid).astype(np.int8)
-
-            # Count neighbors of sid
-            neighbor_count_map = convolve2d(state_mask, kernel, mode="same", boundary="fill")
-
-            # Candidate tiles: unclaimed with sid neighbors
-            unclaimed_neighbour_mask = (state_map == unclaimed_id) & (neighbor_count_map > 0) & (region_map != 0)
-
-            # Lookup base prob from rules
-            base_prob = np.zeros_like(neighbor_count_map, dtype=np.float32)
-
-            for n, p in flip_rules.items():
-                base_prob[neighbor_count_map == n] = p
-
-            # Adjust for traversal cost
-            prob = base_prob / np.clip(traversal_cost_map, 1, 10)
-
-            prob[traversal_cost_map > 10] = 0
-
-            # Roll dice for sid
-            rolls = np.random.rand(*state_map.shape)
-            flips = (rolls < prob) & unclaimed_neighbour_mask
-
-            # Conflict resolution: keep higher prob
-            better = flips & (prob > flip_probs)
-            flip_probs[better] = prob[better]
-            flip_states[better] = sid
-
-        # --- Step 2: Apply flips ---
-        new_map[state_map == unclaimed_id] = np.where(
-            flip_states[state_map == unclaimed_id] != 255,
-            flip_states[state_map == unclaimed_id],
-            new_map[state_map == unclaimed_id]
-        )
-
-        return new_map
-
+    
     def update_all_state_territories_fast(self, flip_rules, unclaimed_id=255):
         """
         Expand territory for all states simultaneously (optimized).
@@ -128,36 +68,26 @@ class StateManager:
         water_stack = np.stack([north_w, south_w, west_w, east_w], axis=0)
 
         # A neighbor is "blocking" if it's claimed OR water
-        claimed_mask = (neighbor_stack != unclaimed_id) | water_stack
+        claimed_mask_with_water = (neighbor_stack != unclaimed_id) | water_stack
+        claimed_mask = (neighbor_stack != unclaimed_id)
 
+        neighbor_counts_with_water = claimed_mask_with_water.sum(axis=0)
         neighbor_counts = claimed_mask.sum(axis=0)
 
 
-        decay_prob = np.zeros_like(state_map, dtype=np.float32)
-
-        decay_prob = (settlement_dist_map * 0.002)
-
-        decay_prob[neighbor_counts == 4] = 0
-
-        decay_prob[neighbor_counts == 3] = 0
-
-
-        rolls = np.random.rand(rows, cols)
-        flips = (rolls < decay_prob) & (state_map != unclaimed_id)
-
-        new_map[flips] = unclaimed_id
+        
 
         # Base probabilities from flip_rules (array lookup by count)
         base_prob = np.zeros_like(state_map, dtype=np.float32)
         for n, p in flip_rules.items():
-            base_prob[neighbor_counts == n] = p
+            base_prob[neighbor_counts_with_water == n] = p
 
         # Scale by traversal cost
-        prob = base_prob / (traversal_cost_map - 1)
+        #prob = base_prob / (traversal_cost_map - 1)
 
 
         # Candidate mask: unclaimed cells with at least one neighbor and valid region
-        candidates = (state_map == unclaimed_id) & (neighbor_counts > 0) & (region_map != 0)
+        candidates = (state_map == unclaimed_id) & (neighbor_counts_with_water > 0) & (region_map != 0)
 
         # For each candidate, pick a neighbor state id
         # (use the first non-unclaimed neighbor; could randomize if you prefer)
@@ -165,21 +95,52 @@ class StateManager:
         for direction in range(4):
             mask = candidates & (neighbor_ids == unclaimed_id) & (neighbor_stack[direction] != unclaimed_id)
             neighbor_ids[mask] = neighbor_stack[direction][mask]
+
+
+
+
+
+        decay_prob = np.zeros_like(state_map, dtype=np.float32)
+
+        decay_prob = (settlement_dist_map**2) * 0.0001
+        #decay_prob = np.clip(decay_prob, 0, 1)
+
+
         
         for state in self.states.values():
             state_tiles = np.sum(state_map == state.id)
             factor = max(0.0, 1 - state_tiles / state.tile_capacity)
             state.tile_count = state_tiles
-            prob[neighbor_ids == state.id] *= factor
+            base_prob[neighbor_ids == state.id] *= factor
+            decay_prob[neighbor_ids == state.id] *= factor
+        
+
+
+
+        decay_prob[neighbor_counts_with_water == 4] = 0
+
+        decay_prob[(neighbor_counts == 0) & (settlement_dist_map > 0)] = 1
+
+
+        rolls = np.random.rand(rows, cols)
+        flips = (rolls < decay_prob) & (state_map != unclaimed_id)
+
+        new_map[flips] = unclaimed_id
+
+
+
+
+        
+        base_prob[neighbor_counts_with_water == 4] = 1
 
         # Roll dice once
         rolls = np.random.rand(rows, cols)
-        flips = candidates & (rolls < prob) & (neighbor_ids != unclaimed_id)
+        flips = candidates & (rolls < base_prob) & (neighbor_ids != unclaimed_id)
 
         # Apply flips
         new_map[flips] = neighbor_ids[flips]
 
-        return new_map
+        return new_map, base_prob, decay_prob, neighbor_counts_with_water, settlement_dist_map
     
     def get_all_states(self):
         return self.states
