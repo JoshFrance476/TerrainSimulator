@@ -13,6 +13,8 @@ class EventHandler:
         self.paused = True
         self.selected_filter = 0
         self.magnified = False
+        self.right_sidebar_screen = 0
+        self.left_sidebar_screen = 0
 
     def get_magnified(self):
         return self.magnified
@@ -20,11 +22,12 @@ class EventHandler:
     def get_relevant_cells(self):
         return self.selected_cell, self.hovered_cell
     
-
+    def get_active_screens(self):
+        return self.left_sidebar_screen, self.right_sidebar_screen
         
-    def handle_events(self, camera):
+    def handle_events(self, events, camera):
         """Main event handling loop."""
-        for event in pygame.event.get():
+        for event in events:
             if event.type == pygame.QUIT:
                 self._handle_quit()
             elif event.type == pygame.KEYDOWN:
@@ -80,6 +83,14 @@ class EventHandler:
             self.selected_filter = 9
         elif event.key == pygame.K_p:
             self.selected_filter = 10
+        elif event.key == pygame.K_q:
+            self.right_sidebar_screen -= 1
+        elif event.key == pygame.K_e:
+            self.right_sidebar_screen += 1
+        elif event.key == pygame.K_z:
+            self.left_sidebar_screen -= 1
+        elif event.key == pygame.K_x:
+            self.left_sidebar_screen += 1
 
 
 
