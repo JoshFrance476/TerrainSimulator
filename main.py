@@ -14,6 +14,13 @@ from rendering.ui_manager import UIManager
 
 pygame.init()
 
+class FontManager:
+    def __init__(self):
+        self.large_font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
+        self.small_font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE-3)
+
+
+
 # Initialize screen
 screen = pygame.display.set_mode((config.SCREEN_WIDTH + config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Terrain Generation")
@@ -23,7 +30,10 @@ camera = Camera()
 event_handler = EventHandler()
 world = World(config.WORLD_ROWS, config.WORLD_COLS)
 map_renderer = MapRenderer()
-ui_manager = UIManager()
+fonts = FontManager()
+ui_manager = UIManager(fonts)
+
+
 
 clock = pygame.time.Clock()
 
@@ -31,7 +41,12 @@ tick_count = 0
 
 
 while True:
-    event_handler.handle_events(camera)
+    events = pygame.event.get()
+    
+    event_handler.handle_events(events, camera)
+
+    for event in events:
+        ui_manager.handle_event(event)
 
     camera.clamp_pan()
     
@@ -48,14 +63,16 @@ while True:
                              screen_data, 
                             event_handler.get_selected_filter())
     
+    
     ui_manager.render_ui(screen, 
-                         world.get_cell_data(event_handler.selected_cell), 
+                         world.get_cell_data(event_handler.selected_cell),
+                         event_handler.get_active_screens(), 
                          world.get_all_settlements(),
                          world.get_all_states(),
                          camera.x_pos, 
                          camera.y_pos, 
                          map_renderer.get_selected_filter_name(), 
-                         event_handler.get_relevant_cells())
+                         event_handler.get_relevant_cells(),)
     
     if event_handler.magnified:
         selected_cell, hovered_cell = event_handler.get_relevant_cells()
