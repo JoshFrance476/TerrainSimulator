@@ -20,9 +20,9 @@ class WorldData:
             self.world_data[name] = self.int_layers[idx]
 
 
-    #def update(self):
-        #pass
-        #self.world_data["population"] = update_population_granular(self.world_data)
+    def update(self):
+        pass
+        #self.world_data["population"] *= np.random.uniform(0.97, 1.05)
 
     
     def get_cell_data(self, pos):
