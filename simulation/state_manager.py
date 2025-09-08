@@ -13,7 +13,7 @@ class StateManager:
 
     
     def update(self):
-        new_state_map, prob, decay_prob, neighbor_counts, settlement_dist_map = self.update_all_state_territories_fast({1:0.1, 2:0.3, 3:0.9, 4:1.0})
+        new_state_map, prob, decay_prob, neighbor_counts, settlement_dist_map = self.update_all_state_territories_fast({1:0.05, 2:0.2, 3:0.95, 4:1.0})
 
         self._world.set_map_data("state", new_state_map)
         self._world.set_map_data("flip_probability", prob)
@@ -77,13 +77,9 @@ class StateManager:
 
         
 
-        # Base probabilities from flip_rules (array lookup by count)
-        base_prob = np.zeros_like(state_map, dtype=np.float32)
-        for n, p in flip_rules.items():
-            base_prob[neighbor_counts_with_water == n] = p
+        
 
-        # Scale by traversal cost
-        #prob = base_prob / (traversal_cost_map - 1)
+        
 
 
         # Candidate mask: unclaimed cells with at least one neighbor and valid region
@@ -106,6 +102,11 @@ class StateManager:
         #decay_prob = np.clip(decay_prob, 0, 1)
 
 
+        # Base probabilities from flip_rules (array lookup by count)
+        base_prob = np.zeros_like(state_map, dtype=np.float32)
+        for n, p in flip_rules.items():
+            base_prob[neighbor_counts_with_water == n] = p
+
         
         for state in self.states.values():
             state_tiles = np.sum(state_map == state.id)
@@ -114,6 +115,12 @@ class StateManager:
             base_prob[neighbor_ids == state.id] *= factor
             decay_prob[neighbor_ids == state.id] *= factor
         
+
+        min_cost, max_cost = 1, 3
+        clipped = np.clip(traversal_cost_map, min_cost, max_cost)
+        multiplier = (max_cost - clipped) / (max_cost - min_cost)
+        base_prob *= multiplier
+
 
 
 
@@ -129,6 +136,7 @@ class StateManager:
 
 
 
+        #base_prob = base_prob / (traversal_cost_map - 1)
 
         
         base_prob[neighbor_counts_with_water == 4] = 1
