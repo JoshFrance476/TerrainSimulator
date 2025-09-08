@@ -13,12 +13,13 @@ class World:
         self.state_manager = StateManager(self)
 
         for settlement in self.settlement_manager.get_all_settlements().values():
-            if settlement.id%2 == 0:
+            if settlement.id%5 == 0:
                 self.state_manager.create_state(settlement.id, settlement.r, settlement.c)
 
         
     def step(self, tick_count):
-        if tick_count % 60 == 0:
+        if tick_count % 30 == 0:
+            self.data.update()
             self.settlement_manager.update()
             self.state_manager.update()
             
