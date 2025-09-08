@@ -55,9 +55,9 @@ class World:
 
     def get_cell_data(self, selected_cell):
         if selected_cell:
-            return self.data.get_cell_data(selected_cell), self.settlement_manager.get_settlement_by_pos(selected_cell)
+            return self.data.get_cell_data(selected_cell), self.settlement_manager.get_settlement_by_pos(selected_cell), selected_cell
         else:
-            return None, None
+            return None, None, None
     
 
     def get_surrounding_data(self, r, c, radius=3, map="all"):
