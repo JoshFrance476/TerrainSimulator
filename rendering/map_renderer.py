@@ -82,7 +82,8 @@ class MapRenderer:
             display_map = view_data["colour"].copy()
             state_map = view_data["state"]
             for state_id, color in config.STATE_COLOURS.items():
-                display_map[state_map == state_id] = color
+                state_map_mask = state_map != 255
+                display_map[state_map_mask & (state_map % len(config.STATE_COLOURS) == state_id)] = color
             self.selected_filter_name = "State"
         return display_map
 
