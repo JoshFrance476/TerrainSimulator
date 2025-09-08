@@ -12,7 +12,7 @@ class Settlement:
 
         self.population_capacity *= 5
 
-        self.growth_rate = 1.01
+        self.growth_rate = 1.001
         self.cohesion = 1
         
     
