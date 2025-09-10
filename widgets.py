@@ -27,7 +27,7 @@ class InfoBox:
     LINE_HEIGHT = 20
 
     def __init__(self, large_font, small_font, title="Untitled", visible_lines=None, hidden_lines=None):
-        self.title = title
+        self.title = TextLink(title, None, large_font)
         self.visible_lines = visible_lines or {}
         self.hidden_lines = hidden_lines or {}
         self.large_font = large_font
@@ -36,10 +36,13 @@ class InfoBox:
         self.expanded = False
 
     def set_info(self, title, visible_lines, hidden_lines = None):
-        self.title = title
+        self.title = TextLink(title, None, self.large_font)
         self.visible_lines = visible_lines
         self.hidden_lines = hidden_lines or {}
         self.update_height()
+    
+    def add_text_link_action(self, action):
+        self.title.action = action
 
     def update_height(self):
         lines = len(self.visible_lines) + (len(self.hidden_lines) if self.expanded else 0)
@@ -50,8 +53,7 @@ class InfoBox:
         pygame.draw.rect(screen, (220,220,220), rect)
         pygame.draw.rect(screen, (80,80,80), rect, 2)
 
-        title_text = self.large_font.render(self.title, True, (30,30,30))
-        screen.blit(title_text, (x + self.PADDING, y + 5))
+        self.title.draw(screen, x + self.PADDING, y + 5)
 
         lines = list(self.visible_lines.items())
         if self.expanded:
@@ -85,6 +87,7 @@ class CollapsibleInfoBox(InfoBox):
 
     def handle_event(self, event):
         self.toggle_button.handle_event(event)
+        self.title.handle_event(event)
 
 
 class Button:
@@ -120,3 +123,23 @@ class Button:
                 if self.toggle:
                     self.toggled = not self.toggled
                 self.action()
+
+class TextLink:
+    def __init__(self, text, action, font):
+        self.text = text
+        self.action = action
+        self.font = font
+        self.rect = None
+
+
+    def draw(self, screen, x, y):
+        text = self.font.render(self.text, True, (30, 30, 30))
+        self.rect = pygame.Rect(x, y, 100, 20)
+
+        screen.blit(text, (x, y))
+    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                self.action()
+
