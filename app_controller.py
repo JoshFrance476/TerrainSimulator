@@ -45,6 +45,15 @@ class AppController:
     def set_selected_filter(self, filter_name):
         self.selected_filter = filter_name
 
+    def select_settlement(self, r, c):
+        self.selected_cell = (r, c)
+        self.active_right_sidebar = 1
+    
+    def select_state(self, state_id):
+        self.active_right_sidebar = 2
+        settlements_in_state = self.world.get_settlements_in_state(state_id)
+        if len(settlements_in_state) > 0:
+            self.selected_cell = (settlements_in_state[0].r, settlements_in_state[0].c)
 
     def get_selected_cell(self):
         return self.selected_cell
