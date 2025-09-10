@@ -1,21 +1,32 @@
 import pygame
 from utils import config
-from widgets import InfoBoxList, InfoBox, CollapsibleInfoBox
+from widgets import InfoBoxList, CollapsibleInfoBox, Button
 
 
 
 class UIManager:
-    def __init__(self, fonts):
+    def __init__(self, fonts, controller):
+        self.controller = controller
         self.left_sidebar = LeftSidebarController(fonts)
-        self.right_sidebar = RightSidebarController(fonts)
+        self.right_sidebar = RightSidebarController(fonts, controller)
         self.fonts = fonts
+        
 
     def handle_event(self, event):
         self.left_sidebar.handle_event(event)
+        self.right_sidebar.handle_event(event)
 
-    def render_ui(self, screen, cell_data, active_screens, settlements_dict, states_dict, camera_x, camera_y, filter, relevant_cells):
-        active_left_sidebar_screen, active_right_sidebar_screen = active_screens
-        cell_data, settlement_data, selected_cell = cell_data
+    def render_ui(self, screen, world):
+        selected_cell = self.controller.selected_cell
+        hovered_cell = self.controller.hovered_cell
+        settlements_dict = world.get_all_settlements()
+        states_dict = world.get_all_states()
+        cell_data, settlement_data, selected_cell = world.get_cell_data(selected_cell)
+        filter_name = self.controller.selected_filter
+
+        active_left_sidebar_screen = self.controller.active_left_sidebar
+        active_right_sidebar_screen = self.controller.active_right_sidebar
+
         if cell_data:
             if cell_data["state"] != 255:
                 state_data = states_dict[cell_data["state"]]
@@ -24,37 +35,46 @@ class UIManager:
         else:
             state_data = None
 
-        self.draw_settlements(settlements_dict, screen, camera_x, camera_y)
+        self.draw_settlements(settlements_dict, screen)
+
+        self.draw_hover_highlight(hovered_cell, screen)
+
+        if selected_cell:
+            self.draw_selected_cell_border(selected_cell, screen)
 
         if active_left_sidebar_screen % 2 == 0:
             self.left_sidebar.show_settlements(settlements_dict)
         else:
             self.left_sidebar.show_states(states_dict)
+        
+        if active_right_sidebar_screen % 3 == 0:
+            self.right_sidebar.show_cell_info(cell_data)
+        elif active_right_sidebar_screen % 3 == 1:
+            self.right_sidebar.show_settlement_info(settlement_data)
+        elif active_right_sidebar_screen % 3 == 2:
+            self.right_sidebar.show_state_info(state_data)
 
         self.left_sidebar.draw(screen)
-        selected_cell, hovered_cell = relevant_cells
-        self.draw_hover_highlight(hovered_cell, screen, camera_x, camera_y)
-        self.right_sidebar.draw(screen, active_right_sidebar_screen, cell_data, settlement_data, state_data, filter, selected_cell)
-        if selected_cell:
-            self.draw_selected_cell_border(selected_cell, screen, camera_x, camera_y)
-    
-    def draw_settlements(self, settlements_dict, screen, camera_x, camera_y):
+        self.right_sidebar.draw(screen, filter_name)
+        
+
+    def draw_settlements(self, settlements_dict, screen):
         for s in settlements_dict.values():
-            x = (s.c - camera_x) * config.CELL_SIZE + config.SIDEBAR_WIDTH
-            y = (s.r - camera_y) * config.CELL_SIZE
+            x = (s.c - self.controller.get_camera_position()[0]) * config.CELL_SIZE + config.SIDEBAR_WIDTH
+            y = (s.r - self.controller.get_camera_position()[1]) * config.CELL_SIZE
             pygame.draw.rect(screen, (0, 0, 0), (x, y, config.CELL_SIZE, config.CELL_SIZE))
             text_surface = self.fonts.large_font.render(s.name, True, (30, 30, 30))
             screen.blit(text_surface, (x + 5, y - 5))
     
     
     
-    def draw_hover_highlight(self, hovered_cell, screen, camera_x_pos, camera_y_pos, color=(255, 255, 255, 100)):
+    def draw_hover_highlight(self, hovered_cell, screen, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""
         cell_y, cell_x = hovered_cell
 
         # Convert grid cell to screen coordinates
-        screen_x = (cell_x - camera_x_pos) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
-        screen_y = (cell_y - camera_y_pos) * config.CELL_SIZE
+        screen_x = (cell_x - self.controller.get_camera_position()[0]) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
+        screen_y = (cell_y - self.controller.get_camera_position()[1]) * config.CELL_SIZE
 
         # Create transparent surface for the highlight
         highlight_surface = pygame.Surface((config.CELL_SIZE, config.CELL_SIZE), pygame.SRCALPHA)
@@ -64,13 +84,13 @@ class UIManager:
         screen.blit(highlight_surface, (screen_x, screen_y))
 
 
-    def draw_selected_cell_border(self, selected_cell, screen, camera_x_pos, camera_y_pos, color=(255, 255, 0)):
+    def draw_selected_cell_border(self, selected_cell, screen, color=(255, 255, 0)):
         """Draws a border around the selected cell."""
         cell_y, cell_x = selected_cell
 
         # Convert grid cell to screen coordinates
-        screen_x = (cell_x - camera_x_pos) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
-        screen_y = (cell_y - camera_y_pos) * config.CELL_SIZE
+        screen_x = (cell_x - self.controller.get_camera_position()[0]) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
+        screen_y = (cell_y - self.controller.get_camera_position()[1]) * config.CELL_SIZE
 
         # Create transparent surface for the border
         highlight_surface = pygame.Surface((config.CELL_SIZE, config.CELL_SIZE), pygame.SRCALPHA)
@@ -141,106 +161,88 @@ class LeftSidebarController:
 
 
 class RightSidebarController:
-    def __init__(self, fonts):
+    def __init__(self, fonts, controller):
         self.fonts = fonts
+        self.controller = controller
+        self.title = ""
+        self.info_list = {}
+        self.buttons = []
+    
+    def show_settlement_info(self, settlement_data):
+        self.buttons = []
+        self.title = "Settlement Info"
+        if settlement_data:
+            self.info_list = {
+                "Name": settlement_data.name,
+                "Resources": ""
+            }
+            for resource, count in settlement_data.resources.items():
+                self.info_list[resource.title()] = count
+        else:
+            self.info_list = {}
+            self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 170, 25, lambda: self.controller.create_settlement(self.controller.get_selected_cell()), "Create Settlement", self.fonts.small_font))
 
-
-    def draw(self, screen, active_right_sidebar_screen, cell_data, settlement_data, state_data, filter_name, selected_cell):
+    def show_state_info(self, state_data):
+        self.buttons = []
+        self.title = "State Info"
+        if state_data:
+            self.info_list = {
+                "Name": state_data.name,
+                "Tile Capacity": f"{state_data.tile_capacity:.1f}",
+                "Tile Count": f"{state_data.tile_count:.0f}"
+            }
+        else:
+            self.info_list = {}
+            self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 170, 25, lambda: self.controller.create_state(self.controller.get_selected_cell()), "Create State", self.fonts.small_font))
+    
+    def show_cell_info(self, cell_data):
+        self.buttons = []
+        self.title = "Cell Info"
+        if cell_data:
+            self.info_list = {
+                "Row": self.controller.get_selected_cell()[0],
+                "Col": self.controller.get_selected_cell()[1],
+                "Region": cell_data["region"],
+                "Elevation": f"{cell_data['elevation']:.2f}",
+                "Temperature": f"{cell_data['temperature']:.2f}",
+                "Rainfall": f"{cell_data['rainfall']:.2f}",
+                "Steepness": f"{cell_data['steepness']:.2f}",
+                "Fertility": f"{cell_data['fertility']:.2f}",
+                "Traversal Cost": f"{cell_data['traversal_cost']:.2f}",
+                "Population": f"{cell_data['population']:.2f}",
+                "Population Capacity": f"{cell_data['population_capacity']:.2f}",
+                "Resource": cell_data['resource'],
+                "State": cell_data["state"],
+                "Settlement Distance": cell_data['settlement_distance'],
+                "Flip Probability": f"{cell_data['flip_probability']:.3f}",
+                "Decay Probability": f"{cell_data['decay_probability']:.3f}",
+                "Neighbor Counts": cell_data["neighbor_counts"]
+            }
+        else:
+            self.info_list = {}
+            
+        
+    def draw(self, screen, filter_name):
         # Draw sidebar background
-        pygame.draw.rect(screen, (220, 220, 220), (self.sidebar_x, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT))  
+        pygame.draw.rect(screen, (220, 220, 220), (config.SCREEN_WIDTH, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT))  
 
         # Draw sidebar border (Black, 3px thickness)
-        pygame.draw.rect(screen, (80, 80, 80), (self.sidebar_x, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), 3)
+        pygame.draw.rect(screen, (80, 80, 80), (config.SCREEN_WIDTH, 0, config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), 3)
 
-        
 
-        if active_right_sidebar_screen % 3 == 0:
-            title, info_list = self.unpack_cell_info(cell_data, selected_cell)
-        elif active_right_sidebar_screen % 3 == 1:
-            title, info_list = self.unpack_settlement_info(settlement_data)
-        elif active_right_sidebar_screen % 3 == 2:
-            title, info_list = self.unpack_state_info(state_data)
+        title_text = self.fonts.large_font.render(self.title, True, (30, 30, 30))
+        screen.blit(title_text, (config.SCREEN_WIDTH + 10, 20))
         
-         # Display title
-        title_text = self.fonts.large_font.render(title, True, (30, 30, 30))
-        screen.blit(title_text, (self.sidebar_x + 10, 20))
+        for i, (label, value) in enumerate(self.info_list.items()):
+            text_surface = self.fonts.small_font.render(f"{label}: {value}", True, (30, 30, 30))
+            screen.blit(text_surface, (config.SCREEN_WIDTH + 10, 50 + i * 20))
         
-        for i, line in enumerate(info_list):
-            text_surface = self.fonts.large_font.render(line, True, (30, 30, 30))
-            screen.blit(text_surface, (self.sidebar_x + 10, 50 + i * 25))
+        for button in self.buttons:
+            button.draw(screen)
         
-        filter_text = self.fonts.large_font.render(f"Filter: {filter_name}", True, (30, 30, 30))
-        screen.blit(filter_text, (self.sidebar_x + 10, self.sidebar_height - 40))
+        filter_text = self.fonts.small_font.render(f"Filter: {filter_name}", True, (30, 30, 30))
+        screen.blit(filter_text, (config.SCREEN_WIDTH + 10, config.SCREEN_HEIGHT - 40))
     
-    def unpack_settlement_info(self, settlement_data):
-        settlement_info_lines = []
-        title = "Settlement Info"
-        if settlement_data:
-            settlement_info_lines = [
-                f"Name: {settlement_data.name}",
-                f"Resources:"
-            ]
-                
-            settlement_resources = settlement_data.resources
-
-            for resource, count in settlement_resources.items():
-                settlement_info_lines.append(f"{resource.title()}: {count}")
-
-        return title, settlement_info_lines
-
-    def unpack_state_info(self, state_data):
-        state_info_lines = []
-        title = "State Info"
-        if state_data:
-            state_info_lines = [
-                f"Name: {state_data.name}",
-                f"Tile Capacity: {state_data.tile_capacity}",
-                f"Tile Count: {state_data.tile_count}"
-            ]
-
-        return title, state_info_lines
-
-    def unpack_cell_info(self, cell_data, selected_cell):
-
-        cell_info_lines = []
-        title = "Cell Info" 
-        if cell_data:
-            r, c = selected_cell
-            # Fetch data from terrain maps
-            region = config.REGION_NAMES[cell_data["region"]]
-            elevation = cell_data["elevation"]
-            steepness = cell_data["steepness"]
-            traversal_cost = cell_data["traversal_cost"]
-            population = cell_data["population"]
-            pop_capacity = cell_data["population_capacity"]
-            fertility = cell_data["fertility"]
-            temperature = cell_data["temperature"]
-            rainfall = cell_data["rainfall"]
-            resource = cell_data["resource"]
-            state = cell_data["state"]
-            settlement_distance = cell_data["settlement_distance"]
-            flip_probability = cell_data["flip_probability"]
-            decay_probability = cell_data["decay_probability"]
-            neighbor_counts = cell_data["neighbor_counts"]
-
-            # List of text entries to display
-            cell_info_lines = [
-                f"Row: {r}, Col: {c}",
-                f"Region: {region.title()}", # First letter of each word is capital
-                f"Elevation: {elevation:.2f}",
-                f"temperature: {temperature:.2f}",
-                f"rainfall: {rainfall:.2f}",
-                f"steepness: {steepness:.2f}",
-                f"fertility: {fertility:.2f}",
-                f"traversal cost: {traversal_cost:.2f}",
-                f"population: {population:.2f}",
-                f"pop capacity: {pop_capacity:.2f}",
-                f"resource: {config.RESOURCE_NAMES[resource].title()}",
-                f"state: {state}",
-                f"settlement dist: {settlement_distance}",
-                f"flip prob: {flip_probability:.3f}",
-                f"decay prob: {decay_probability:.3f}",
-                f"neighbor counts: {neighbor_counts}"
-            ]
-        
-        return title, cell_info_lines
+    def handle_event(self, event):
+        for b in self.buttons:
+            b.handle_event(event)
