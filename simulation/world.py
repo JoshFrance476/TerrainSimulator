@@ -74,12 +74,9 @@ class World:
         return self.data.find_x_largest_values(map_name, x)
     
     def get_settlements_in_state(self, state_id):
-        for settlement in self.settlement_manager.get_all_settlements().values():
-            if settlement.state == state_id:
-                yield settlement
+        return [s for s in self.settlement_manager.get_all_settlements().values() if s.state == state_id]
     
 
-    
     def find_eligible_state_founders(self):
         return self.settlement_manager.find_eligible_state_founders()
     
