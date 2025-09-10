@@ -12,7 +12,7 @@ class SettlementManager:
         # Initialize settlements at the x largest values in the population map
         top_x_indices = self._world.get_x_largest_values("population", STARTING_SETTLEMENT_COUNT)
         for i, index in enumerate(top_x_indices):
-            self.create_settlement(f"Settlement {i}", index[0], index[1])
+            self.create_settlement(index[0], index[1], f"Settlement {i}")
     
     def update(self):
         for s in self.settlements.values():
@@ -21,13 +21,15 @@ class SettlementManager:
         #    self.find_eligible_settlements()
     
 
-    def create_settlement(self, name, r, c):
+    def create_settlement(self, r, c, name="Unnamed"):
         id = self.next_settlement_id
         self.next_settlement_id += 1
 
         resources = self.return_settlement_resources(r, c)
 
         new_settlement = Settlement(id, name, r, c, self._world, resources)
+        if new_settlement.population < 1:
+            new_settlement.population = 1
 
         self.settlements[id] = new_settlement
     
