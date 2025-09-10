@@ -1,13 +1,14 @@
 import pygame
 from utils import config
 from widgets import InfoBoxList, CollapsibleInfoBox, Button
+from functools import partial
 
 
 
 class UIManager:
     def __init__(self, fonts, controller):
         self.controller = controller
-        self.left_sidebar = LeftSidebarController(fonts)
+        self.left_sidebar = LeftSidebarController(fonts, controller)
         self.right_sidebar = RightSidebarController(fonts, controller)
         self.fonts = fonts
         
@@ -109,8 +110,9 @@ class UIManager:
 
 
 class LeftSidebarController:
-    def __init__(self, fonts):
+    def __init__(self, fonts, controller):
         self.fonts = fonts
+        self.controller = controller
         self.title = ""
         self.info_box_list = None
 
@@ -128,6 +130,7 @@ class LeftSidebarController:
                 box = self.settlement_info_boxes[s.id]
 
             box.set_info(s.name, {"Location": f"{s.r}, {s.c}"}, {"Population": f"{s.population:.2f}"})
+            box.add_text_link_action(partial(self.controller.select_settlement, s.r, s.c))
             self.info_box_list.add_info_box(box)
 
     def show_states(self, states_dict):
@@ -141,6 +144,7 @@ class LeftSidebarController:
                 box = self.state_info_boxes[s.id]
 
             box.set_info(str(s.name), {"Tile Capacity": f"{s.tile_capacity:.0f}"}, {"Tile Count": s.tile_count})
+            box.add_text_link_action(partial(self.controller.select_state, s.id))
             self.info_box_list.add_info_box(box)
 
     def draw(self, screen):
@@ -159,6 +163,8 @@ class LeftSidebarController:
         if self.info_box_list:
             self.info_box_list.handle_event(event)
 
+        
+
 
 class RightSidebarController:
     def __init__(self, fonts, controller):
@@ -174,10 +180,10 @@ class RightSidebarController:
         if settlement_data:
             self.info_list = {
                 "Name": settlement_data.name,
-                "Resources": ""
+                "Improved Resources": "\n"
             }
-            for resource, count in settlement_data.resources.items():
-                self.info_list[resource.title()] = count
+            for resource in settlement_data.improved_resources:
+                self.info_list["Improved Resources"] += f"{resource.name} ({resource.location[0]}, {resource.location[1]}) ({resource.distance})\n"
         else:
             self.info_list = {}
             self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 170, 25, lambda: self.controller.create_settlement(self.controller.get_selected_cell()), "Create Settlement", self.fonts.small_font))
@@ -202,7 +208,7 @@ class RightSidebarController:
             self.info_list = {
                 "Row": self.controller.get_selected_cell()[0],
                 "Col": self.controller.get_selected_cell()[1],
-                "Region": cell_data["region"],
+                "Region": config.REGION_NAMES[cell_data["region"]].title(),
                 "Elevation": f"{cell_data['elevation']:.2f}",
                 "Temperature": f"{cell_data['temperature']:.2f}",
                 "Rainfall": f"{cell_data['rainfall']:.2f}",
