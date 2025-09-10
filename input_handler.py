@@ -2,111 +2,78 @@ import pygame
 from utils import config
 
 class EventHandler:
-    def __init__(self):
-        self.mouse_release_pos = None
-        
-        # Selection state
-        self.selected_cell = None
-        self.hovered_cell = None
-        
-        # Game state
-        self.paused = True
-        self.selected_filter = 0
-        self.magnified = False
-        self.right_sidebar_screen = 0
-        self.left_sidebar_screen = 0
+    def __init__(self, controller=None):
+        self.controller = controller or None
 
-    def get_magnified(self):
-        return self.magnified
-
-    def get_relevant_cells(self):
-        return self.selected_cell, self.hovered_cell
-    
-    def get_active_screens(self):
-        return self.left_sidebar_screen, self.right_sidebar_screen
         
     def handle_events(self, events, camera):
         """Main event handling loop."""
         for event in events:
-            if event.type == pygame.QUIT:
-                self._handle_quit()
-            elif event.type == pygame.KEYDOWN:
-                self._handle_keyboard(event, camera)
+            if event.type == pygame.KEYDOWN:
+                self._handle_keyboard(event)
             elif event.type == pygame.MOUSEBUTTONUP:
-                self._handle_mouse_release(event, camera)
+                if event.button == 1:  # Left mouse button
+                    self.mouse_release_pos = pygame.mouse.get_pos()
+                    if self.mouse_release_pos[0] > config.SIDEBAR_WIDTH and self.mouse_release_pos[0] < config.SCREEN_WIDTH:     #ensures mouse position is on the screen
+                        r, c = self._get_cell_at_mouse_position(self.mouse_release_pos, camera)
+                        self.controller.select_cell(r, c)
             
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            camera.x_pos -= config.PAN_STEP
+            self.controller.pan_camera(-config.PAN_STEP, 0)
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            camera.x_pos += config.PAN_STEP
+            self.controller.pan_camera(config.PAN_STEP, 0)
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            camera.y_pos -= config.PAN_STEP
+            self.controller.pan_camera(0, -config.PAN_STEP)
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            camera.y_pos += config.PAN_STEP
-        if keys[pygame.K_LCTRL]:
-            self.magnified = True
-        else:
-            self.magnified = False
+            self.controller.pan_camera(0, config.PAN_STEP)
+        
+        self.controller.magnified = keys[pygame.K_LCTRL]
 
-        # Update hover state
-        self._update_hover_state(camera)
 
-    def _handle_quit(self):
-        """Handle application quit."""
-        pygame.quit()
-        exit()
+        mouse_pos = pygame.mouse.get_pos()
+        r, c = self._get_cell_at_mouse_position(mouse_pos, camera)
+        self.controller.hover_cell(r, c)
 
-    def _handle_keyboard(self, event, camera):
+
+    def _handle_keyboard(self, event):
         """Handle keyboard input."""
         if event.key == pygame.K_SPACE:
-            self.paused = not self.paused
+            self.controller.toggle_pause()
         elif event.key == pygame.K_0:
-            self.selected_filter = 0
+            self.controller.set_selected_filter("None")
         elif event.key == pygame.K_1:
-            self.selected_filter = 1
+            self.controller.set_selected_filter("Elevation")
         elif event.key == pygame.K_2:
-            self.selected_filter = 2
+            self.controller.set_selected_filter("Temperature")
         elif event.key == pygame.K_3:
-            self.selected_filter = 3
+            self.controller.set_selected_filter("Rainfall")
         elif event.key == pygame.K_4:
-            self.selected_filter = 4
+            self.controller.set_selected_filter("Population Capacity")
         elif event.key == pygame.K_5:
-            self.selected_filter = 5
+            self.controller.set_selected_filter("Fertility")
         elif event.key == pygame.K_6:
-            self.selected_filter = 6
+            self.controller.set_selected_filter("Traversal Cost")
         elif event.key == pygame.K_7:
-            self.selected_filter = 7
+            self.controller.set_selected_filter("Steepness")
         elif event.key == pygame.K_8:
-            self.selected_filter = 8
+            self.controller.set_selected_filter("Population")
         elif event.key == pygame.K_9:
-            self.selected_filter = 9
+            self.controller.set_selected_filter("Resource")
         elif event.key == pygame.K_p:
-            self.selected_filter = 10
+            self.controller.set_selected_filter("State")
         elif event.key == pygame.K_q:
-            self.right_sidebar_screen -= 1
+            self.controller.cycle_right_sidebar(-1)
         elif event.key == pygame.K_e:
-            self.right_sidebar_screen += 1
+            self.controller.cycle_right_sidebar(1)
         elif event.key == pygame.K_z:
-            self.left_sidebar_screen -= 1
+            self.controller.cycle_left_sidebar(-1)
         elif event.key == pygame.K_x:
-            self.left_sidebar_screen += 1
+            self.controller.cycle_left_sidebar(1)
 
 
 
-    def _handle_mouse_release(self, event, camera):
-        """Handle mouse button release events."""
-        if event.button == 1:  # Left mouse button
-            self.mouse_release_pos = pygame.mouse.get_pos()
-            if self.mouse_release_pos[0] > config.SIDEBAR_WIDTH and self.mouse_release_pos[0] < config.SCREEN_WIDTH:     #ensures mouse position is on the screen
-                self.selected_cell = self._get_cell_at_mouse_position(self.mouse_release_pos, camera)
 
-
-
-    def _update_hover_state(self, camera):
-        """Update the currently hovered cell."""
-        mouse_pos = pygame.mouse.get_pos()
-        self.hovered_cell = self._get_cell_at_mouse_position(mouse_pos, camera)
     
 
 
@@ -124,6 +91,3 @@ class EventHandler:
         
 
         return cell_y, cell_x
-    
-    def get_selected_filter(self):
-        return self.selected_filter
