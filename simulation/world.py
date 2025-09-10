@@ -14,7 +14,7 @@ class World:
 
         for settlement in self.settlement_manager.get_all_settlements().values():
             if settlement.id%5 == 0:
-                self.state_manager.create_state(settlement.id, settlement.r, settlement.c)
+                self.state_manager.create_state(settlement.r, settlement.c, f"State {settlement.id}")
 
         
     def step(self, tick_count):
@@ -82,6 +82,12 @@ class World:
     
     def find_eligible_state_founders(self):
         return self.settlement_manager.find_eligible_state_founders()
+    
+    def create_settlement(self, r, c):
+        return self.settlement_manager.create_settlement(r, c)
+
+    def create_state(self, r, c):
+        return self.state_manager.create_state(r, c)
 
     
 
