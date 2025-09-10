@@ -1,6 +1,20 @@
+import numpy as np
+from utils.config import RESOURCE_NAMES, RESOURCE_RULES, REGION_LOOKUP
+from dataclasses import dataclass
+
+
+@dataclass
+class Resource:
+    name: str
+    location: tuple[int, int]
+    distance: int
+    collected: bool = False
+
+
+
 class Settlement:
 
-    def __init__(self, id, name, r, c, world, resources = []):
+    def __init__(self, id, name, r, c, world):
         self.id = id
         self.name = name
         self.description = ""
@@ -8,17 +22,70 @@ class Settlement:
         self.c = c
         self._world = world
 
-        self.resources = resources
+        self.reach = 3
 
+        self.available_resources = self.get_available_resources()
+        self.improved_resources = []
         self.population_capacity *= 5
 
-        self.growth_rate = 1.001
+        self.growth_rate = 1.05
         self.cohesion = 1
+        
+
+        self.thresholds = [2, 5, 10]
+        self.triggered_thresholds = set()
+
+        if self.population < 1:
+            self.population = 1
         
     
     def update(self):
         self.population *= self.growth_rate
+
+        for i, threshold in enumerate(self.thresholds):
+            if self.population > threshold and i not in self.triggered_thresholds:
+                self.triggered_thresholds.add(i)
+                self.improve_tile()
+
+
+    def get_available_resources(self):
+        available_resources = []
+        resource_map = self._world.get_surrounding_data(self.r, self.c, self.reach, map="resource")
+
+        masked_resource_map = np.argwhere(resource_map != 0)
+
+
+        for dr, dc in masked_resource_map:
+            r = self.r + dr - self.reach
+            c = self.c + dc - self.reach
+
+            distance = abs(r - self.r) + abs(c - self.c)
+
+            available_resources.append(Resource(RESOURCE_NAMES[resource_map[dr, dc]], (r, c), distance))
+
+        return available_resources
+
+
     
+    
+    def improve_tile(self):
+        furthest_distance = self.reach*2
+        resource_to_improve = None
+        for resource in self.available_resources:
+            if resource.distance < furthest_distance and resource.collected == False:
+                furthest_distance = resource.distance
+                resource_to_improve = resource
+
+        if resource_to_improve:
+            resource_to_improve.collected = True
+
+            if "upgraded_bonuses" in RESOURCE_RULES[resource_to_improve.name]:
+                self.growth_rate += RESOURCE_RULES[resource_to_improve.name]["upgraded_bonuses"]["population_growth"]
+            
+            self._world.set_map_data_at("region", resource_to_improve.location, REGION_LOOKUP[RESOURCE_RULES[resource_to_improve.name]["upgraded"]])
+            self.improved_resources.append(resource_to_improve)
+            self.available_resources.remove(resource_to_improve)
+
 
     #Map-linked values
 
