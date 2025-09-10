@@ -56,7 +56,11 @@ REGION_LOOKUP = {
     "savanna": 7,
     "tundra": 8,
     "marsh": 9,
-    "glacier": 10
+    "glacier": 10,
+    "lumber mill": 11,
+    "farm": 12,
+    "mine": 13,
+    "fishing spot": 14
 }
 
 REGION_NAMES = {v: k for k, v in REGION_LOOKUP.items()}
@@ -90,19 +94,25 @@ Resource rules function as follows:
 """
 RESOURCE_RULES = {
     "lumber": {
+        "upgraded": "lumber mill",
         "region": {"forest": 0.04},    
     },
     "fertile land": {
+        "upgraded": "farm",
+        "upgraded_bonuses": {"population_growth": 0.2},
         "region": {"grassland": 0.04, "savanna": 0.01},
         "fertility": {"min": 0.4, "max": 1, "weight": 1},
     },
     "ore": {
+        "upgraded": "mine",
         "region": {"mountains": 0.01, "snowy peaks": 0.01},
     },
     "fish": {
+        "upgraded": "fishing spot",
         "region": {"water": 0.01},
     },
 }
+
 
 REGION_CONDITIONS = [
     {"condition": lambda e, t, r, rp: (e > 0.7) & (t < 0.6), 
