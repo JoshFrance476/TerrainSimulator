@@ -6,18 +6,19 @@ class EventHandler:
         self.controller = controller or None
 
         
-    def handle_events(self, events, camera):
+    def handle_event(self, event):
         """Main event handling loop."""
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                self._handle_keyboard(event)
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:  # Left mouse button
-                    self.mouse_release_pos = pygame.mouse.get_pos()
-                    if self.mouse_release_pos[0] > config.SIDEBAR_WIDTH and self.mouse_release_pos[0] < config.SCREEN_WIDTH:     #ensures mouse position is on the screen
-                        r, c = self._get_cell_at_mouse_position(self.mouse_release_pos, camera)
-                        self.controller.select_cell(r, c)
-            
+        if event.type == pygame.KEYDOWN:
+            self._handle_keyboard(event)
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:  # Left mouse button
+                self.mouse_release_pos = pygame.mouse.get_pos()
+                if self.mouse_release_pos[0] > config.SIDEBAR_WIDTH and self.mouse_release_pos[0] < config.SCREEN_WIDTH:     #ensures mouse position is on the screen
+                    r, c = self.controller.get_cell_at_mouse_position()
+                    self.controller.select_cell(r, c)
+        
+    
+    def handle_continuous_inputs(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.controller.pan_camera(-config.PAN_STEP, 0)
@@ -31,10 +32,8 @@ class EventHandler:
         self.controller.magnified = keys[pygame.K_LCTRL]
 
 
-        mouse_pos = pygame.mouse.get_pos()
-        r, c = self._get_cell_at_mouse_position(mouse_pos, camera)
+        r, c = self.controller.get_cell_at_mouse_position()
         self.controller.hover_cell(r, c)
-
 
     def _handle_keyboard(self, event):
         """Handle keyboard input."""
@@ -71,23 +70,3 @@ class EventHandler:
         elif event.key == pygame.K_x:
             self.controller.cycle_left_sidebar(1)
 
-
-
-
-    
-
-
-    def _get_cell_at_mouse_position(self, pos, camera):
-        mouse_x, mouse_y = pos
-            
-        # Convert screen coordinates to world coordinates
-        world_x = (mouse_x - config.SIDEBAR_WIDTH) + (camera.x_pos * config.CELL_SIZE)
-        world_y = mouse_y + (camera.y_pos * config.CELL_SIZE)
-
-        # Convert world coordinates to grid cell indices
-        cell_x = int(world_x // config.CELL_SIZE)
-        cell_y = int(world_y // config.CELL_SIZE)
-
-        
-
-        return cell_y, cell_x
