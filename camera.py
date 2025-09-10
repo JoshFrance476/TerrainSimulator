@@ -10,3 +10,7 @@ class Camera:
         max_y = config.WORLD_ROWS - config.CAMERA_ROWS
         self.x_pos = max(0, min(self.x_pos, max_x))
         self.y_pos = max(0, min(self.y_pos, max_y))
+
+    def pan(self, dx, dy):
+        self.x_pos += dx
+        self.y_pos += dy
