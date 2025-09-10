@@ -2,9 +2,8 @@ import pygame
 from utils import config
 
 class AppController:
-    def __init__(self, world, event_handler, camera):
+    def __init__(self, world, camera):
         self.world = world
-        self.event_handler = event_handler
         self.camera = camera
 
         self.active_left_sidebar = 0
