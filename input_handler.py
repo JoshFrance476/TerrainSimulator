@@ -2,8 +2,8 @@ import pygame
 from utils import config
 
 class EventHandler:
-    def __init__(self, controller=None):
-        self.controller = controller or None
+    def __init__(self, controller):
+        self.controller = controller
 
         
     def handle_event(self, event):
