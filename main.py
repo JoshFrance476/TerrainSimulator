@@ -31,12 +31,11 @@ world = World(config.WORLD_ROWS, config.WORLD_COLS)
 fonts = FontManager()
 
 camera = Camera()
-event_handler = EventHandler()
 
-controller = AppController(world, event_handler, camera)
+controller = AppController(world, camera)
 ui_manager = UIManager(fonts, controller)
 map_renderer = MapRenderer(controller)
-event_handler.controller = controller
+event_handler = EventHandler(controller)
 
 clock = pygame.time.Clock()
 
