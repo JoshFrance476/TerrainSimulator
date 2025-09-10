@@ -8,7 +8,7 @@ MAGNIFIER_CELL_SIZE = 6
 MAGNIFIER_CELL_AMOUNT = 12
 SCALE = 70 # Steepness is not synced with scale, will not be as obvious at more zoomed in levels
 
-TEMPERATURE_DEVIATION = 0.18 # Smaller values = higher peak at equator, larger values = flatter curve
+TEMPERATURE_DEVIATION = 0.16 # Smaller values = higher peak at equator, larger values = flatter curve
 ELEVATION_IMPACT_ON_TEMP = 0.2
 STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST = 1
 
@@ -16,7 +16,7 @@ SEA_LEVEL = -0.05
 NUMBER_OF_RIVERS = 25
 RIVER_SOURCE_MIN_ELEVATION = 0.6
 
-STARTING_SETTLEMENT_COUNT = 10
+STARTING_SETTLEMENT_COUNT = 1
 SETTLEMENT_LIMIT = 30
 
 SEED = random.randint(0,10000)
@@ -55,7 +55,8 @@ REGION_LOOKUP = {
     "forest": 6,
     "savanna": 7,
     "tundra": 8,
-    "marsh": 9
+    "marsh": 9,
+    "glacier": 10
 }
 
 REGION_NAMES = {v: k for k, v in REGION_LOOKUP.items()}
@@ -104,10 +105,12 @@ RESOURCE_RULES = {
 }
 
 REGION_CONDITIONS = [
-    {"condition": lambda e, t, r, rp: (e > 0.65), 
+    {"condition": lambda e, t, r, rp: (e > 0.7) & (t < 0.6), 
      "regionID": REGION_LOOKUP["snowy peaks"]},
     {"condition": lambda e, t, r, rp: (e > 0.5), 
      "regionID": REGION_LOOKUP["mountains"]},
+    {"condition": lambda e, t, r, rp: (t < 0.01), 
+     "regionID": REGION_LOOKUP["glacier"]},
     {"condition": lambda e, t, r, rp: (t < 0.09), 
      "regionID": REGION_LOOKUP["tundra"]},
     {"condition": lambda e, t, r, rp: (t > 0.76) & (r < 0.2), 
@@ -129,27 +132,29 @@ REGION_CONDITIONS = [
 REGION_COLORS = {
     0: (0, 0, 180),
     1: (226, 226, 226),
-    2: (130, 130, 130),
-    3: (194, 140, 70),
+    2: (150, 150, 150),
+    3: (194, 140, 80),
     4: (190, 160, 130),
-    5: (34, 139, 34),
+    5: (69, 130, 56),
     6: (34, 112, 34),
     7: (125, 140, 70),
-    8: (79, 130, 66),
-    9: (0, 90, 0)
+    8: (100, 140, 86),
+    9: (0, 90, 0),
+    10: (240, 240, 240)
 }
 
 REGION_BASE_TRAVERSAL_COST = np.array([
-    10,  # 0 grassland
-    10,  # 1 forest
-    10,  # 2 desert
-    1,   # 3 mountains
-    1,   # 4 snowy peaks
-    1,   # 5 tundra
-    1,   # 6 savannah
-    1,   # 7 arid
-    2,   # 8 marsh
-    2    # 9 water
+    10,  
+    10,  
+    10,  
+    1,  
+    1,  
+    1,   
+    1,  
+    1,   
+    2,  
+    2,
+    5  
 ], dtype=np.uint8)
 
 REGIONS_TO_BLEND = {
