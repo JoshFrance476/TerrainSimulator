@@ -17,22 +17,17 @@ class SettlementManager:
     def update(self):
         for s in self.settlements.values():
             s.update()
-        #if len(self.settlements) < SETTLEMENT_LIMIT:
-        #    self.find_eligible_settlements()
     
 
     def create_settlement(self, r, c, name="Unnamed"):
         id = self.next_settlement_id
         self.next_settlement_id += 1
 
-        resources = self.return_settlement_resources(r, c)
-
-        new_settlement = Settlement(id, name, r, c, self._world, resources)
-        if new_settlement.population < 1:
-            new_settlement.population = 1
+        new_settlement = Settlement(id, name, r, c, self._world)
 
         self.settlements[id] = new_settlement
-    
+
+
     def find_eligible_settlements(self):
         population_map = self._world.get_map_data("population")
         settlement_distance_map = self._world.get_map_data("settlement_distance")
@@ -46,15 +41,6 @@ class SettlementManager:
         for s in self.settlements.values():
             mask[s.r, s.c] = False
         return distance_transform_edt(mask)
-    
-    def return_settlement_resources(self, r, c):
-        resource_map = self._world.get_surrounding_data(r, c, radius=3, map="resource")
-
-        ids, counts = np.unique(resource_map, return_counts=True)
-
-        resource_counts = {RESOURCE_NAMES[rid]: int(count) for rid, count in zip(ids, counts) if rid != 0}
-
-        return resource_counts
 
     
     def get_all_settlements(self):
