@@ -25,10 +25,10 @@ class StateManager:
         for state in self.states.values():
             tile_capacity = 0
             for settlement in self._world.get_settlements_in_state(state.id):
-                tile_capacity += settlement.population*60
+                tile_capacity += settlement.population*30
             state.tile_capacity = tile_capacity
 
-    def create_state(self, name, r, c):
+    def create_state(self, r, c, name="New State"):
         new_state = State(self.next_state_id, name)
         self.next_state_id += 1
 
