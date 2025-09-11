@@ -45,25 +45,143 @@ STATE_COLOURS = {
     
 }
 
-REGION_LOOKUP = {
-    "water": 0,
-    "snowy peaks": 1,
-    "mountains": 2,
-    "desert": 3,
-    "arid": 4,
-    "grassland": 5,
-    "forest": 6,
-    "savanna": 7,
-    "tundra": 8,
-    "marsh": 9,
-    "glacier": 10,
-    "lumber mill": 11,
-    "farm": 12,
-    "mine": 13,
-    "fishing spot": 14
-}
 
-REGION_NAMES = {v: k for k, v in REGION_LOOKUP.items()}
+
+REGION_RULES = [
+    {
+        "name": "water",
+        "colour": (0, 0, 180),
+        "base_traversal_cost": 10,
+        "conditions": [{
+            "elevation": {"min": -1.0, "max": 0.0}
+        }]
+    },
+    {
+        "name": "snowy peaks",
+        "colour": (226, 226, 226),
+        "base_traversal_cost": 10,
+        "conditions": [{
+            "elevation": {"min": 0.7, "max": 1.0},
+            "temperature": {"min": 0.0, "max": 0.6}
+        }]
+    },
+    {
+        "name": "mountains",
+        "colour": (150, 150, 150),
+        "base_traversal_cost": 10,
+        "conditions": [{
+            "elevation": {"min": 0.5}
+        }]
+    },
+    {
+        "name": "glacier",
+        "colour": (240, 240, 240),
+        "base_traversal_cost": 5,
+        "conditions": [{
+            "temperature": {"max": 0.01}
+        }]
+    },
+    {
+        "name": "tundra",
+        "colour": (100, 140, 86),
+        "base_traversal_cost": 2,
+        "conditions": [{
+            "temperature": {"max": 0.09}
+        }]
+    },
+    {
+        "name": "desert",
+        "colour": (194, 140, 80),
+        "base_traversal_cost": 1,
+        "conditions": [{
+            "temperature": {"min": 0.76},
+            "rainfall": {"max": 0.2}
+        }]
+    },
+    {
+        "name": "arid",
+        "colour": (190, 160, 130),
+        "base_traversal_cost": 1,
+        "conditions": [{
+            "temperature": {"min": 0.62},
+            "rainfall": {"max": 0.6},
+            "river_proximity": {"min": 4}
+        }]
+    },
+    {
+        "name": "savanna",
+        "colour": (125, 140, 70),
+        "base_traversal_cost": 1,
+        "conditions": [{
+            "elevation": {"max": 0.4},
+            "temperature": {"min": 0.52},
+            "rainfall": {"min": 0.4},
+        },
+        {
+            "elevation": {"max": 0.4},
+            "temperature": {"min": 0.52},
+            "river_proximity": {"max": 4}
+        }
+    ]},
+    {
+        "name": "marsh",
+        "colour": (0, 90, 0),
+        "base_traversal_cost": 2,
+        "conditions": [{
+            "elevation": {"max": 0.1},
+            "temperature": {"min": 0.2, "max": 0.45},
+            "rainfall": {"min": 0.8}
+        }]
+    },
+    {
+        "name": "forest",
+        "colour": (34, 112, 34),
+        "base_traversal_cost": 1,
+        "conditions": [{
+            "rainfall": {"min": 0.5}
+        }]
+    },
+    {
+        "name": "grassland",
+        "colour": (69, 130, 56),
+        "base_traversal_cost": 1,
+        "conditions": [{
+            "elevation": {"max": 0.7},
+        }]
+    },
+    {
+        "name": "farm",
+        "colour": (255, 255, 100),
+        "base_traversal_cost": 1,
+    },
+    {
+        "name": "lumber mill",
+        "colour": (100, 100, 0),
+        "base_traversal_cost": 1,
+    },
+    {
+        "name": "mine",
+        "colour": (40, 40, 40),
+        "base_traversal_cost": 1,
+    },
+    {
+        "name": "fishing spot",
+        "colour": (0, 0, 255),
+        "base_traversal_cost": 1,
+    }
+]
+
+REGION_NAME_TO_ID = {r["name"]: idx for idx, r in enumerate(REGION_RULES)}
+
+REGION_BY_NAME = {r["name"]: r for r in REGION_RULES}
+
+REGION_COLOUR_LOOKUP = [r.get("colour") for r in REGION_RULES]
+
+REGION_COST_LOOKUP = np.array(
+    [r["base_traversal_cost"] for r in REGION_RULES],
+    dtype=np.float32
+)
+
 
 
 RESOURCE_LOOKUP = {
@@ -113,64 +231,3 @@ RESOURCE_RULES = {
     },
 }
 
-
-REGION_CONDITIONS = [
-    {"condition": lambda e, t, r, rp: (e > 0.7) & (t < 0.6), 
-     "regionID": REGION_LOOKUP["snowy peaks"]},
-    {"condition": lambda e, t, r, rp: (e > 0.5), 
-     "regionID": REGION_LOOKUP["mountains"]},
-    {"condition": lambda e, t, r, rp: (t < 0.01), 
-     "regionID": REGION_LOOKUP["glacier"]},
-    {"condition": lambda e, t, r, rp: (t < 0.09), 
-     "regionID": REGION_LOOKUP["tundra"]},
-    {"condition": lambda e, t, r, rp: (t > 0.76) & (r < 0.2), 
-     "regionID": REGION_LOOKUP["desert"]},
-    {"condition": lambda e, t, r, rp: (t > 0.62) & (r < 0.6) & (rp >= 4), 
-     "regionID": REGION_LOOKUP["arid"]},
-    {"condition": lambda e, t, r, rp: (e < 0.4) & (t > 0.52) & ((r > 0.4) | (rp < 4)), 
-     "regionID": REGION_LOOKUP["savanna"]},
-    {"condition": lambda e, t, r, rp: (e < 0.1) & (t < 0.45) & (t > 0.2) & (r > 0.8), 
-     "regionID": REGION_LOOKUP["marsh"]},
-    {"condition": lambda e, t, r, rp: (r > 0.50), 
-     "regionID": REGION_LOOKUP["forest"]},
-     {"condition": lambda e, t, r, rp: True, 
-      "regionID": REGION_LOOKUP["grassland"]},
-]
-
-
-
-REGION_COLORS = {
-    0: (0, 0, 180),
-    1: (226, 226, 226),
-    2: (150, 150, 150),
-    3: (194, 140, 80),
-    4: (190, 160, 130),
-    5: (69, 130, 56),
-    6: (34, 112, 34),
-    7: (125, 140, 70),
-    8: (100, 140, 86),
-    9: (0, 90, 0),
-    10: (240, 240, 240)
-}
-
-REGION_BASE_TRAVERSAL_COST = np.array([
-    10,  
-    10,  
-    10,  
-    1,  
-    1,  
-    1,   
-    1,  
-    1,   
-    2,  
-    2,
-    5  
-], dtype=np.uint8)
-
-REGIONS_TO_BLEND = {
-    3: [4,7],
-    4: [3,7],
-    5: [6, 9],
-    6: [5, 9],
-    7: [3,4]
-}
