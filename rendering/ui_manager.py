@@ -208,7 +208,7 @@ class RightSidebarController:
             self.info_list = {
                 "Row": self.controller.get_selected_cell()[0],
                 "Col": self.controller.get_selected_cell()[1],
-                "Region": config.REGION_NAMES[cell_data["region"]].title(),
+                "Region": config.REGION_RULES[cell_data["region"]]["name"].title(),
                 "Elevation": f"{cell_data['elevation']:.2f}",
                 "Temperature": f"{cell_data['temperature']:.2f}",
                 "Rainfall": f"{cell_data['rainfall']:.2f}",
@@ -217,7 +217,7 @@ class RightSidebarController:
                 "Traversal Cost": f"{cell_data['traversal_cost']:.2f}",
                 "Population": f"{cell_data['population']:.2f}",
                 "Population Capacity": f"{cell_data['population_capacity']:.2f}",
-                "Resource": cell_data['resource'],
+                "Resource": config.RESOURCE_NAMES[cell_data['resource']].title(),
                 "State": cell_data["state"],
                 "Settlement Distance": cell_data['settlement_distance'],
                 "Flip Probability": f"{cell_data['flip_probability']:.3f}",

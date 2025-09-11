@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import RESOURCE_LOOKUP, RESOURCE_RULES, REGION_LOOKUP
+from utils.config import RESOURCE_LOOKUP, RESOURCE_RULES, REGION_NAME_TO_ID
 
 
 def generate_stage_4(fertility_map, temperature_map, river_proximity_map, sea_map, river_map, elevation_map, region_map, rainfall_map):
@@ -47,7 +47,7 @@ def calculate_resource_map(fertility_map, temperature_map, elevation_map, region
 
         if "region" in rules:
             for region_name, weight in rules["region"].items():
-                probability_map[region_map == REGION_LOOKUP[region_name]] += weight
+                probability_map[region_map == REGION_NAME_TO_ID[region_name]] += weight
 
         if "fertility" in rules:
             probability_map *= factor_from_range(fertility_map, rules["fertility"])

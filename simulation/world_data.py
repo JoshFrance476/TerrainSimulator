@@ -131,8 +131,8 @@ class WorldData:
         int_layers[int_layers_index['settlement_distance']] = np.full((self.rows, self.cols), 0, dtype=np.int32)
         int_layers[int_layers_index['neighbor_counts']] = np.full((self.rows, self.cols), 0, dtype=np.int32)
 
-        for region_name, idx in config.REGION_LOOKUP.items():
-            region_map[region_map == region_name] = idx
+        for region_name, idx in config.REGION_BY_NAME.items():
+            region_map[region_map == idx] = config.REGION_NAME_TO_ID[region_name]
         int_layers[int_layers_index['region']] = region_map
 
         colour_map = generate_color_map({

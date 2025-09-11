@@ -21,7 +21,7 @@ def generate_maps(rows, cols):
     logging.debug(f"Stage 2 generation took {time.time() - start_time:.2f} seconds")
     
     start_time = time.time()
-    river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_stage_3(river_map, sea_map, elevation_map, temperature_map, rainfall_map, steepness_map, config.REGION_CONDITIONS)
+    river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_stage_3(river_map, sea_map, elevation_map, temperature_map, rainfall_map, steepness_map)
     logging.debug(f"Stage 3 generation took {time.time() - start_time:.2f} seconds")
 
     start_time = time.time()

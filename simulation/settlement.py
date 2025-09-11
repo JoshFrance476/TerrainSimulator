@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import RESOURCE_NAMES, RESOURCE_RULES, REGION_LOOKUP
+from utils.config import RESOURCE_NAMES, RESOURCE_RULES, REGION_NAME_TO_ID, REGION_RULES
 from dataclasses import dataclass
 
 
@@ -37,6 +37,8 @@ class Settlement:
 
         if self.population < 1:
             self.population = 1
+        
+        self._world.set_map_data_at("colour", (self.r, self.c), (0, 0, 0))
         
     
     def update(self):
@@ -82,7 +84,9 @@ class Settlement:
             if "upgraded_bonuses" in RESOURCE_RULES[resource_to_improve.name]:
                 self.growth_rate += RESOURCE_RULES[resource_to_improve.name]["upgraded_bonuses"]["population_growth"]
             
-            self._world.set_map_data_at("region", resource_to_improve.location, REGION_LOOKUP[RESOURCE_RULES[resource_to_improve.name]["upgraded"]])
+            self._world.set_map_data_at("region", resource_to_improve.location, REGION_NAME_TO_ID[RESOURCE_RULES[resource_to_improve.name]["upgraded"]])
+            if "colour" in REGION_RULES[REGION_NAME_TO_ID[RESOURCE_RULES[resource_to_improve.name]["upgraded"]]]:
+                self._world.set_map_data_at("colour", resource_to_improve.location, REGION_RULES[REGION_NAME_TO_ID[RESOURCE_RULES[resource_to_improve.name]["upgraded"]]]["colour"])
             self.improved_resources.append(resource_to_improve)
             self.available_resources.remove(resource_to_improve)
 
