@@ -38,7 +38,7 @@ def calculate_soil_fertility(region, rainfall, elevation, temperature):
     fertility[elevation > 0.7] *= 0.1
     fertility[elevation < 0.2] *= 1.2
 
-    fertility[region == REGION_NAME_TO_ID['water']] = 0
+    fertility[region == REGION_NAME_TO_ID['ocean']] = 0
     fertility[region == REGION_NAME_TO_ID['desert']] *= 0.1
     fertility[region == REGION_NAME_TO_ID['arid']] *= 0.4
     fertility[region == REGION_NAME_TO_ID['mountains']] *= 0.1
@@ -72,13 +72,11 @@ def determine_region(elevation, temperature, rainfall, sea_proximity, river_prox
         "sea_proximity": sea_proximity
     }
 
-    water_mask = (sea_proximity == 0) | (river_proximity == 0)
+    river_mask = (river_proximity == 0)
+    region_map[river_mask] = REGION_NAME_TO_ID['river']
 
-    region_map = np.where(water_mask, 0, region_map)
 
     for region_data in REGION_RULES:
-        if region_data["name"] == "water":
-            continue
         option_masks = []  # collect masks for each option in the list
         if "conditions" in region_data:
             for option in region_data["conditions"]:   # each option is a dict
