@@ -1,13 +1,16 @@
 import pygame
 from utils import config
-
-class EventHandler:
+import sys
+class InputHandler:
     def __init__(self, controller):
         self.controller = controller
 
         
     def handle_event(self, event):
         """Main event handling loop."""
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
         if event.type == pygame.KEYDOWN:
             self._handle_keyboard(event)
         elif event.type == pygame.MOUSEBUTTONUP:
