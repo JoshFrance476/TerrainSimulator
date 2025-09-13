@@ -40,7 +40,7 @@ class Settlement:
         
         self._world.set_map_data_at("colour", (self.r, self.c), (0, 0, 0))
 
-        self._world.event_manager.generate_event_with_probability("settlement founded", {"name": name}, (self.r, self.c), 0.1)
+        self._world.event_manager.generate_event_with_probability("settlement founded", (self.r, self.c), {"name": name}, 0.1)
         
     
     def update(self):
