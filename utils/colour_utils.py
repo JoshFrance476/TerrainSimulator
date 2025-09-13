@@ -14,7 +14,7 @@ def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
             color = REGION_COLOUR_LOOKUP[region_id]
             colour_map[r, c] = color
 
-            if region_id == REGION_NAME_TO_ID["water"]:
+            if region_id == REGION_NAME_TO_ID["ocean"]:
                 
                 blend_factor = (min(world_data['elevation'][r, c],0) + 1) / 2  # Normalize to 0-1 range for water
                 colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['steepness'][r, c] * 0.2)
@@ -28,7 +28,7 @@ def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
 
 
                 else:
-                    colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['steepness'][r, c] * 0.2)
+                    colour_map[r, c] = blend_colors(colour_map[r, c], (50,50,50), world_data['steepness'][r, c] * 0.3)
                     colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['elevation'][r, c] / 3)
 
 
