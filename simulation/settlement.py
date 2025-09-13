@@ -32,13 +32,15 @@ class Settlement:
         self.cohesion = 1
         
 
-        self.thresholds = [2, 5, 10]
+        self.thresholds = [2, 5, 10, 15, 20, 25]
         self.triggered_thresholds = set()
 
         if self.population < 1:
             self.population = 1
         
         self._world.set_map_data_at("colour", (self.r, self.c), (0, 0, 0))
+
+        self._world.event_manager.generate_event_with_probability("settlement founded", {"name": name}, (self.r, self.c), 0.1)
         
     
     def update(self):
@@ -52,7 +54,7 @@ class Settlement:
 
     def get_available_resources(self):
         available_resources = []
-        resource_map = self._world.get_surrounding_data(self.r, self.c, self.reach, map="resource")
+        resource_map = self._world.get_surrounding_data_map(self.r, self.c, self.reach, map="resource")
 
         masked_resource_map = np.argwhere(resource_map != 0)
 
