@@ -12,7 +12,7 @@ TEMPERATURE_DEVIATION = 0.16 # Smaller values = higher peak at equator, larger v
 ELEVATION_IMPACT_ON_TEMP = 0.2
 STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST = 1
 
-SEA_LEVEL = -0.05
+SEA_LEVEL = 0.05
 NUMBER_OF_RIVERS = 25
 RIVER_SOURCE_MIN_ELEVATION = 0.6
 
@@ -49,11 +49,11 @@ STATE_COLOURS = {
 
 REGION_RULES = [
     {
-        "name": "water",
+        "name": "ocean",
         "colour": (0, 0, 180),
         "base_traversal_cost": 10,
         "conditions": [{
-            "elevation": {"min": -1.0, "max": 0.0}
+            "elevation": {"min": -1.0, "max": SEA_LEVEL}
         }]
     },
     {
@@ -61,7 +61,7 @@ REGION_RULES = [
         "colour": (226, 226, 226),
         "base_traversal_cost": 10,
         "conditions": [{
-            "elevation": {"min": 0.7, "max": 1.0},
+            "elevation": {"min": 0.85, "max": 1.0},
             "temperature": {"min": 0.0, "max": 0.6}
         }]
     },
@@ -70,7 +70,7 @@ REGION_RULES = [
         "colour": (150, 150, 150),
         "base_traversal_cost": 10,
         "conditions": [{
-            "elevation": {"min": 0.5}
+            "elevation": {"min": 0.7}
         }]
     },
     {
@@ -94,7 +94,7 @@ REGION_RULES = [
         "colour": (194, 140, 80),
         "base_traversal_cost": 1,
         "conditions": [{
-            "temperature": {"min": 0.76},
+            "temperature": {"min": 0.8},
             "rainfall": {"max": 0.2}
         }]
     },
@@ -103,7 +103,7 @@ REGION_RULES = [
         "colour": (190, 160, 130),
         "base_traversal_cost": 1,
         "conditions": [{
-            "temperature": {"min": 0.62},
+            "temperature": {"min": 0.72},
             "rainfall": {"max": 0.6},
             "river_proximity": {"min": 4}
         }]
@@ -113,16 +113,26 @@ REGION_RULES = [
         "colour": (125, 140, 70),
         "base_traversal_cost": 1,
         "conditions": [{
-            "elevation": {"max": 0.4},
-            "temperature": {"min": 0.52},
+            "elevation": {"max": 0.5},
+            "temperature": {"min": 0.55},
             "rainfall": {"min": 0.4},
         },
         {
-            "elevation": {"max": 0.4},
-            "temperature": {"min": 0.52},
+            "elevation": {"max": 0.5},
+            "temperature": {"min": 0.55},
             "river_proximity": {"max": 4}
         }
     ]},
+    {
+        "name": "rainforest",
+        "colour": (20, 100, 20),
+        "base_traversal_cost": 1.5,
+        "conditions": [{
+            "elevation": {"max": 0.7},
+            "temperature": {"min": 0.55},
+            "rainfall": {"min": 0.7}
+        }]
+    },
     {
         "name": "marsh",
         "colour": (0, 90, 0),
@@ -138,7 +148,7 @@ REGION_RULES = [
         "colour": (34, 112, 34),
         "base_traversal_cost": 1,
         "conditions": [{
-            "rainfall": {"min": 0.5}
+            "rainfall": {"min": 0.65}
         }]
     },
     {
@@ -148,6 +158,11 @@ REGION_RULES = [
         "conditions": [{
             "elevation": {"max": 0.7},
         }]
+    },
+    {
+        "name": "river",
+        "colour": (100, 100, 255),
+        "base_traversal_cost": 5,
     },
     {
         "name": "farm",
@@ -217,7 +232,7 @@ RESOURCE_RULES = {
     },
     "fertile land": {
         "upgraded": "farm",
-        "upgraded_bonuses": {"population_growth": 0.2},
+        "upgraded_bonuses": {"population_growth": 0.05},
         "region": {"grassland": 0.04, "savanna": 0.01},
         "fertility": {"min": 0.4, "max": 1, "weight": 1},
     },
@@ -227,7 +242,7 @@ RESOURCE_RULES = {
     },
     "fish": {
         "upgraded": "fishing spot",
-        "region": {"water": 0.01},
+        "region": {"ocean": 0.01, "river": 0.02},
     },
 }
 
