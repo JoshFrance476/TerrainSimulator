@@ -21,7 +21,7 @@ class EventManager:
             "event_desc": event
         })
 
-    def generate_event_with_probability(self, event_type, context_dict, location, probability):
+    def generate_event_with_probability(self, event_type, location, context_dict = {}, probability = 1):
         tick = self.world.tick_count
         if event_type == "settlement founded":
             semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), location)
@@ -31,25 +31,31 @@ class EventManager:
 
             #previous_events = [entry["event_desc"] for entry in self.event_log.values() if "event_desc" in entry]
 
-
-           #print(previous_events)
-
             prompt = f"""
+                A settlement has been founded in the area.
                 Context:\n {context_text}
                 Relevant information:
                 {semantic_text}
             """
+        elif event_type == "random event":
+            semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), location)
+            semantic_text = "; ".join(semantic_data)
+
+            prompt = f"""
+                A random event has occurred in the area.
+                Relevant information:\n {semantic_text}
+            """
             
-            future = self.executor.submit(llm_api.ask_deepseek, prompt, desc_schema)
+        future = self.executor.submit(llm_api.ask_deepseek, prompt, desc_schema)
 
-            def on_done(fut, tick_count=tick, event_type=event_type, location=location):
-                try:
-                    result = fut.result()
-                    self.add_new_event(result, tick_count, event_type, location)
-                except Exception as e:
-                    print("LLM call failed:", e)
+        def on_done(fut, tick_count=tick, event_type=event_type, location=location):
+            try:
+                result = fut.result()
+                self.add_new_event(result, tick_count, event_type, location)
+            except Exception as e:
+                print("LLM call failed:", e)
 
-            future.add_done_callback(on_done)
+        future.add_done_callback(on_done)
 
     def get_event_log(self):
         return self.event_log
@@ -75,17 +81,27 @@ class DataProcessor:
     def generate_semantic_data(self, map_types, location):
         semantic_data = []
         for map_type in map_types:
-            raw_data = self.world.get_surrounding_data_map(location[0], location[1], 5, map_type)
+            raw_vicinity_data = self.world.get_surrounding_data_map(location[0], location[1], 5, map_type)
+            raw_adjacent_data = self.world.get_surrounding_data_map(location[0], location[1], 1, map_type)
             if map_type == "region":
-                ids, counts = np.unique(raw_data, return_counts=True)
+                semantic_data.append("The region is " + config.REGION_RULES[self.world.get_cell_data(location)[0]["region"]]["name"])
+                ids, counts = np.unique(raw_adjacent_data, return_counts=True)
+                for id, count in zip(ids, counts):
+                    region_name = config.REGION_RULES[id]["name"]
+                    if count > 1:
+                        semantic_data.append("It is adjacent to " + region_name)
+                ids, counts = np.unique(raw_vicinity_data, return_counts=True)
                 for id, count in zip(ids, counts):
                     region_name = config.REGION_RULES[id]["name"]
                     if count > 60:
-                        semantic_data.append("Majority of the region is " + region_name)
+                        semantic_data.append("Majority of the surrounding region is " + region_name)
+                    elif count > 10:
+                        semantic_data.append("There is some " + region_name + " region in the area")
+                    elif count > 1:
+                        semantic_data.append("There is a small " + region_name + " region in the area")
                     if region_name == "mountains":
                         semantic_data.append("There are mountains in the region")
-                    if region_name == "water":
-                        semantic_data.append("There is sea nearby")
+
 
         return semantic_data
 
