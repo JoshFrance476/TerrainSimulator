@@ -2,7 +2,7 @@ import pygame
 from utils import config
 from widgets import InfoBoxList, CollapsibleInfoBox, Button
 from functools import partial
-
+from utils.ui_utils import wrap_text
 
 
 class UIManager:
@@ -22,7 +22,8 @@ class UIManager:
         hovered_cell = self.controller.hovered_cell
         settlements_dict = world.get_all_settlements()
         states_dict = world.get_all_states()
-        cell_data, settlement_data, selected_cell = world.get_cell_data(selected_cell)
+        world_event_log = world.get_event_log()
+        cell_data, settlement_data, selected_cell, cell_event_log = world.get_cell_data(selected_cell)
         filter_name = self.controller.selected_filter
 
         active_left_sidebar_screen = self.controller.active_left_sidebar
@@ -43,15 +44,18 @@ class UIManager:
         if selected_cell:
             self.draw_selected_cell_border(selected_cell, screen)
 
-        if active_left_sidebar_screen % 2 == 0:
+        if active_left_sidebar_screen % 3 == 0:
             self.left_sidebar.show_settlements(settlements_dict)
-        else:
+        elif active_left_sidebar_screen % 3 == 1:
             self.left_sidebar.show_states(states_dict)
+        elif active_left_sidebar_screen % 3 == 2:
+            self.left_sidebar.show_event_log(world_event_log)
+        
         
         if active_right_sidebar_screen % 3 == 0:
             self.right_sidebar.show_cell_info(cell_data)
         elif active_right_sidebar_screen % 3 == 1:
-            self.right_sidebar.show_settlement_info(settlement_data)
+            self.right_sidebar.show_settlement_info(settlement_data, cell_event_log)
         elif active_right_sidebar_screen % 3 == 2:
             self.right_sidebar.show_state_info(state_data)
 
@@ -118,6 +122,7 @@ class LeftSidebarController:
 
         self.state_info_boxes = {}
         self.settlement_info_boxes = {}
+        self.event_info_boxes = {}
 
     def show_settlements(self, settlements_dict):
         self.title = "Settlements"
@@ -146,6 +151,19 @@ class LeftSidebarController:
             box.set_info(str(s.name), {"Tile Capacity": f"{s.tile_capacity:.0f}"}, {"Tile Count": s.tile_count})
             box.add_text_link_action(partial(self.controller.select_state, s.id))
             self.info_box_list.add_info_box(box)
+    
+    def show_event_log(self, event_log):
+        self.title = "Event Log"
+        self.info_box_list = InfoBoxList(10, 50, config.SIDEBAR_WIDTH - 20)
+        for event in event_log:
+            if event["tick_count"] not in self.event_info_boxes:
+                box = CollapsibleInfoBox(self.fonts.large_font, self.fonts.small_font)
+                self.event_info_boxes[event["tick_count"]] = box
+            else:
+                box = self.event_info_boxes[event["tick_count"]]
+
+            box.set_info(event['event_type'].title(), {"Tick": str(event['tick_count'])}, {"Location": f"{event['location'][0]}, {event['location'][1]}", "Description": event['event_desc']})
+            self.info_box_list.add_info_box(box)
 
     def draw(self, screen):
         pygame.draw.rect(screen, (220,220,220),
@@ -163,7 +181,8 @@ class LeftSidebarController:
         if self.info_box_list:
             self.info_box_list.handle_event(event)
 
-        
+
+
 
 
 class RightSidebarController:
@@ -174,16 +193,21 @@ class RightSidebarController:
         self.info_list = {}
         self.buttons = []
     
-    def show_settlement_info(self, settlement_data):
+    def show_settlement_info(self, settlement_data, settlement_events):
         self.buttons = []
         self.title = "Settlement Info"
         if settlement_data:
             self.info_list = {
                 "Name": settlement_data.name,
-                "Improved Resources": "\n"
+                "Description": "\n".join(wrap_text(settlement_data.description, self.fonts.small_font, config.SIDEBAR_WIDTH - 20)),
+                "Improved Resources": "\n",
+                "Events": "\n"
             }
             for resource in settlement_data.improved_resources:
                 self.info_list["Improved Resources"] += f"{resource.name} ({resource.location[0]}, {resource.location[1]}) ({resource.distance})\n"
+
+            for event in settlement_events:
+                self.info_list["Events"] += "\n".join(wrap_text(event['event_desc'], self.fonts.small_font, config.SIDEBAR_WIDTH - 20))
         else:
             self.info_list = {}
             self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 170, 25, lambda: self.controller.create_settlement(self.controller.get_selected_cell()), "Create Settlement", self.fonts.small_font))
@@ -226,6 +250,7 @@ class RightSidebarController:
             }
         else:
             self.info_list = {}
+    
             
         
     def draw(self, screen, filter_name):
