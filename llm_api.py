@@ -39,7 +39,7 @@ desc_schema = [{
     "type": "function",
     "function": {
         "name": "generate_description",
-        "description": "Generate a realistic description of this settlement",
+        "description": "Generate a realistic description of this event",
         "parameters": {
             "type": "object",
             "properties": {
@@ -54,7 +54,7 @@ def ask_deepseek(prompt, schema, model="deepseek-chat", temperature=1.5):
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": "You are a worldbuilder for a grid-based simulation game. Generate one-sentence settlement descriptions (landscape, culture, architecture)."},
+            {"role": "system", "content": "You are a worldbuilder for a grid-based simulation game. You provide one-sentence summaries of events that take place in the world."},
 
             {"role": "user", "content": prompt}
         ],
