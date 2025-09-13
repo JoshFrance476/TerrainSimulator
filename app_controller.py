@@ -17,7 +17,6 @@ class AppController:
 
         self.paused = True
 
-        self.tick_count = 0
 
 
     
@@ -27,11 +26,10 @@ class AppController:
     def update(self):
         self.camera.clamp_pan()
         if not self.paused:
-            self.world.step(self.tick_count)
-            self.tick_count += 1
+            self.world.step()
     
     def cycle_left_sidebar(self, delta):
-        self.active_left_sidebar = (self.active_left_sidebar + delta) % 2
+        self.active_left_sidebar = (self.active_left_sidebar + delta) % 3
 
     def cycle_right_sidebar(self, delta):
         self.active_right_sidebar = (self.active_right_sidebar + delta) % 3
