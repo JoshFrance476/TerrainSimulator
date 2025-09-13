@@ -5,6 +5,13 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 
+"""
+Given current token usage, we can get 10,000 responses from $1 (£0.82)
+That's with output being one sentence and minimal context
+Using ~50 tokens per response, 64 cache hits and 22 cache misses
+
+Can either double response size, or ~quadruple input and still get 5,000 responses per $1
+"""
 
 event_schema = [{
     "type": "function",
@@ -32,7 +39,7 @@ desc_schema = [{
     "type": "function",
     "function": {
         "name": "generate_description",
-        "description": "Generate a creative description of this settlement",
+        "description": "Generate a realistic description of this settlement",
         "parameters": {
             "type": "object",
             "properties": {
@@ -47,7 +54,7 @@ def ask_deepseek(prompt, schema, model="deepseek-chat", temperature=1.5):
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": "You are a worldbuilder for a grid-based simulation game. Generate settlement descriptions (landscape, culture, architecture, mood)."},
+            {"role": "system", "content": "You are a worldbuilder for a grid-based simulation game. Generate one-sentence settlement descriptions (landscape, culture, architecture)."},
 
             {"role": "user", "content": prompt}
         ],
@@ -55,6 +62,7 @@ def ask_deepseek(prompt, schema, model="deepseek-chat", temperature=1.5):
         temperature=temperature,
         stream=False
     )
+    print(response.usage)
     #print(response.choices[0].message.tool_calls[0].function.arguments)
     return response.choices[0].message.content
 
