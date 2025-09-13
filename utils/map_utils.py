@@ -21,14 +21,14 @@ def calculate_proximity_map(boolean_map):
     return proximity_map
 
 
-def generate_perlin_noise_map(rows, cols, scale, seed, only_positive=False):
+def generate_perlin_noise_map(rows, cols, scale, seed, only_positive=False, octaves=5, persistence=0.5, lacunarity=2.2):
     """
     Generate a noise map using Perlin noise.
     """
     noise_map = np.zeros((rows, cols), dtype=float)
     for r in range(rows):
         for c in range(cols):
-            noise_value = pnoise2((r + seed) / scale, (c + seed) / scale, octaves=5, persistence=0.5, lacunarity=2.2)
+            noise_value = pnoise2((r + seed) / scale, (c + seed) / scale, octaves=octaves, persistence=persistence, lacunarity=lacunarity)
             noise_map[r][c] = noise_value
     
     # Normalises map between 0 and 1
