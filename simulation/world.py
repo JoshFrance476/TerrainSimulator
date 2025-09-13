@@ -115,7 +115,8 @@ class World:
     def filter_event_log_by_location(self, location):
         return self.event_manager.filter_event_log_by_location(location)
 
-
+    def generate_event(self, event_type, cell):
+        return self.event_manager.generate_event_with_probability(event_type, cell, 1)
 
 
 
