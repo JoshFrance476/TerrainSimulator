@@ -4,19 +4,22 @@ from scipy.ndimage import distance_transform_edt
 import numpy as np
 
 class SettlementManager:
-    def __init__(self, world):
+    def __init__(self, world, event_manager):
         self._world = world
+        self.event_manager = event_manager
         self.settlements = {}
         self.next_settlement_id = 0
 
-        # Initialize settlements at the x largest values in the population map
-        top_x_indices = self._world.get_x_largest_values("population", STARTING_SETTLEMENT_COUNT)
-        for i, index in enumerate(top_x_indices):
-            self.create_settlement(index[0], index[1], f"Settlement {i}")
+
     
     def update(self):
-        for s in self.settlements.values():
-            s.update()
+        if len(self.settlements) < STARTING_SETTLEMENT_COUNT:
+            top_x_indices = self._world.get_x_largest_values("population", STARTING_SETTLEMENT_COUNT)
+            for i, index in enumerate(top_x_indices):
+                self.create_settlement(index[0], index[1], f"Settlement {i}")
+        else:
+            for s in self.settlements.values():
+                s.update()
     
 
     def create_settlement(self, r, c, name="Unnamed"):
@@ -24,6 +27,7 @@ class SettlementManager:
         self.next_settlement_id += 1
 
         new_settlement = Settlement(id, name, r, c, self._world)
+
 
         self.settlements[id] = new_settlement
 
