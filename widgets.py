@@ -1,4 +1,5 @@
 import pygame
+from utils.ui_utils import wrap_text
 
 class InfoBoxList:
     def __init__(self, x, y, width):
@@ -48,20 +49,34 @@ class InfoBox:
         lines = len(self.visible_lines) + (len(self.hidden_lines) if self.expanded else 0)
         self.height = self.TITLE_HEIGHT + lines * self.LINE_HEIGHT
 
-    def draw(self, screen, x, y, width):
+    def draw(self, screen, x, y, width):        
+        lines = list(self.visible_lines.items())
+        if self.expanded:
+            lines += list(self.hidden_lines.items())
+
+        max_text_width = width - self.PADDING*2
+
+        all_wrapped_lines = []
+        for label, value in lines:
+            wrapped_lines = wrap_text(f"{label}: {value}", self.small_font, max_text_width)
+            all_wrapped_lines.extend(wrapped_lines)
+
+        self.height = self.TITLE_HEIGHT + len(all_wrapped_lines) * self.LINE_HEIGHT
+
         rect = pygame.Rect(x, y, width, self.height)
         pygame.draw.rect(screen, (220,220,220), rect)
         pygame.draw.rect(screen, (80,80,80), rect, 2)
 
         self.title.draw(screen, x + self.PADDING, y + 5)
 
-        lines = list(self.visible_lines.items())
-        if self.expanded:
-            lines += list(self.hidden_lines.items())
+        y_offset = y + self.TITLE_HEIGHT
 
-        for i, (label, value) in enumerate(lines):
-            text_surface = self.small_font.render(f"{label}: {value}", True, (30,30,30))
-            screen.blit(text_surface, (x + self.PADDING, y + self.TITLE_HEIGHT + i*self.LINE_HEIGHT))
+        for line in all_wrapped_lines:
+                text_surface = self.small_font.render(line, True, (30,30,30))
+                screen.blit(text_surface, (x + self.PADDING, y_offset))
+                y_offset += self.LINE_HEIGHT
+            
+        
 
     def handle_event(self, event):
         pass  # base InfoBox is passive
