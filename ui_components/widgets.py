@@ -1,6 +1,7 @@
 import pygame
 from utils.ui_utils import wrap_text
 
+
 class InfoBoxList:
     def __init__(self, x, y, width):
         self.x = x

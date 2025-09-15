@@ -1,5 +1,5 @@
 import pygame
-from utils import config
+from .. import config
 import sys
 class InputHandler:
     def __init__(self, controller):

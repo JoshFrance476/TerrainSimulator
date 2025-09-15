@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.cm as cm
-from utils import config
+from . import config
 
 
 def apply_heatmap_overlay(coastline_map, data_map, colormap="viridis", alpha=0.6):
