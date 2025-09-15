@@ -28,11 +28,11 @@ class Settlement:
         self.improved_resources = []
         self.population_capacity *= 5
 
-        self.growth_rate = 1.05
+        self.growth_rate = 1.02
         self.cohesion = 1
         
 
-        self.thresholds = [2, 5, 10, 15, 20, 25]
+        self.thresholds = [5, 10, 15, 20, 25]
         self.triggered_thresholds = set()
 
         if self.population < 1:
@@ -50,6 +50,7 @@ class Settlement:
             if self.population > threshold and i not in self.triggered_thresholds:
                 self.triggered_thresholds.add(i)
                 self.improve_tile()
+                self._world.event_manager.generate_event_with_probability("settlement growth", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}"}, 0.1)
 
 
     def get_available_resources(self):
