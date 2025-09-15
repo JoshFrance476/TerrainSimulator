@@ -23,19 +23,40 @@ class EventManager:
 
     def generate_event_with_probability(self, event_type, location, context_dict = {}, probability = 1):
         tick = self.world.tick_count
+        previous_events = [entry["event_desc"] for entry in self.get_event_log_by_vicinity(location, 10)]
+        if previous_events:
+            previous_events = previous_events[-1]
         if event_type == "settlement founded":
             semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), location)
             semantic_text = "; ".join(semantic_data)
 
             context_text = ", ".join(f"{k}: {v}" for k, v in context_dict.items())
 
-            #previous_events = [entry["event_desc"] for entry in self.event_log.values() if "event_desc" in entry]
+            
 
             prompt = f"""
                 A settlement has been founded in the area.
-                Context:\n {context_text}
+                Context:
+                {context_text}
                 Relevant information:
                 {semantic_text}
+                Previous events in the area:
+                {previous_events}
+            """
+        elif event_type == "settlement growth":
+            semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), location)
+            semantic_text = "; ".join(semantic_data)
+
+            context_text = ", ".join(f"{k}: {v}" for k, v in context_dict.items())
+
+            prompt = f"""
+                A settlement has grown in the area.
+                Context:
+                {context_text}
+                Relevant information:
+                {semantic_text}
+                Previous events in the area:
+                {previous_events}
             """
         elif event_type == "random event":
             semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), location)
@@ -43,7 +64,10 @@ class EventManager:
 
             prompt = f"""
                 A random event has occurred in the area.
-                Relevant information:\n {semantic_text}
+                Relevant information:
+                {semantic_text}
+                Previous events in the area:
+                {previous_events}
             """
             
         future = self.executor.submit(llm_api.ask_deepseek, prompt, desc_schema)
@@ -69,6 +93,12 @@ class EventManager:
     def filter_event_log_by_location(self, location):
         return [event for event in self.event_log if event["location"] == location]
     
+    def get_event_log_by_vicinity(self, location, radius):
+        events = []
+        for event in self.event_log:
+            if event["location"][0] in range(location[0] - radius, location[0] + radius) and event["location"][1] in range(location[1] - radius, location[1] + radius):
+                events.append(event)
+        return events
     
             
 
@@ -101,6 +131,10 @@ class DataProcessor:
                         semantic_data.append("There is a small " + region_name + " region in the area")
                     if region_name == "mountains":
                         semantic_data.append("There are mountains in the region")
+            elif map_type == "resource":
+                for resource in config.RESOURCE_RULES:
+                    if resource in raw_vicinity_data:
+                        semantic_data.append("There is " + resource + " in the area")
 
 
         return semantic_data
