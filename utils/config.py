@@ -13,8 +13,8 @@ ELEVATION_IMPACT_ON_TEMP = 0.2
 STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST = 1
 
 SEA_LEVEL = 0.05
-NUMBER_OF_RIVERS = 25
-RIVER_SOURCE_MIN_ELEVATION = 0.6
+NUMBER_OF_RIVERS = 15
+RIVER_SOURCE_MIN_ELEVATION = 0.65
 
 STARTING_SETTLEMENT_COUNT = 1
 SETTLEMENT_LIMIT = 30
@@ -232,7 +232,7 @@ RESOURCE_RULES = {
     },
     "fertile land": {
         "upgraded": "farm",
-        "upgraded_bonuses": {"population_growth": 0.05},
+        "upgraded_bonuses": {"population_growth": 0.02},
         "region": {"grassland": 0.04, "savanna": 0.01},
         "fertility": {"min": 0.4, "max": 1, "weight": 1},
     },
