@@ -207,7 +207,7 @@ class RightSidebarController:
                 self.info_list["Improved Resources"] += f"{resource.name} ({resource.location[0]}, {resource.location[1]}) ({resource.distance})\n"
 
             for event in settlement_events:
-                self.info_list["Events"] += "\n".join(wrap_text(event['event_desc'], self.fonts.small_font, config.SIDEBAR_WIDTH - 20))
+                self.info_list["Events"] += "\n".join(wrap_text(event['event_desc'], self.fonts.small_font, config.SIDEBAR_WIDTH - 20)) + "\n"
         else:
             self.info_list = {}
             self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 170, 25, lambda: self.controller.create_settlement(self.controller.get_selected_cell()), "Create Settlement", self.fonts.small_font))
