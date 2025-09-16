@@ -51,3 +51,18 @@ This project combines large-scale data handling and visualisation, cellular auto
 - **Clean Architecture** - OOP controllers with modular responsibilites.
 - **AI Integration** - Prompt engineering and efficient token usage.
 - **Interactive Design** - GUI for viewing and interacting with a dynamic world.
+
+## Showcase
+
+### Example of a map with multiple settlements (all named 'Unnamed')  
+The left sidebar contains a list of all settlements in the world and the right sidebar displays data on the selected cell
+![Example map generation with settlements](extras/screenshots/ExampleFullViewwithSettlements.png)
+
+### The same map with the 'soil fertility' filter selected.
+This is one of the nine filters used to visualise data. As you can see, grassland areas and areas near coasts or rivers are more fertile.
+![Example soil fertility filter](extras/screenshots/ExampleFullViewwithSoilFertilityFilter.png)
+
+### Example of State Territory Growth.
+Each colour represents the area a state owns. Growth is based on settlement populations and traversal costs.
+![Example state territory growth gif](extras/screenshots/ExampleStateTerritoryGrowth.gif)
+
