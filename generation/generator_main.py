@@ -6,7 +6,7 @@ from generation.stage_4_generator import generate_stage_4
 import numpy as np
 import time
 import logging
-import utils.config as config
+import config as config
 
 logging.basicConfig(level=logging.DEBUG)
 

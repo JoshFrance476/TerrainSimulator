@@ -2,8 +2,8 @@ from simulation.world_data import WorldData
 from simulation.settlement_manager import SettlementManager
 from simulation.state_manager import StateManager
 import numpy as np
-import utils.config as config
-from event_manager import EventManager
+import config as config
+from simulation.event_manager import EventManager
 
 class World:
     """Handles simulator and high level world logic."""

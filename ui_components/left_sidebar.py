@@ -1,5 +1,5 @@
 import pygame
-from . import config
+import config
 from ui_components.widgets import InfoBoxList, CollapsibleInfoBox
 from functools import partial
 

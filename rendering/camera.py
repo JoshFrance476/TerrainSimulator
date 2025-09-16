@@ -1,4 +1,4 @@
-from .. import config
+import config
 
 class Camera:
     def __init__(self):

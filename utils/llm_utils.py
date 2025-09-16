@@ -1,10 +1,10 @@
 from openai import OpenAI
-
+import os
 client = OpenAI(
-    api_key="sk-553c67c3eeb6442ba324f3c72cd44998",
+    api_key= os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com"
 )
-
+"sk-553c67c3eeb6442ba324f3c72cd44998",
 """
 Given current token usage, we can get 10,000 responses from $1 (£0.82)
 That's with output being one sentence and minimal context

@@ -1,6 +1,6 @@
 import pygame
-from utils import config
-from utils.overlay_generator import apply_heatmap_overlay
+import config
+from rendering.overlay_generator import apply_heatmap_overlay
 
 class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""

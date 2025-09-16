@@ -1,7 +1,7 @@
 from generation.generator_main import generate_maps
 from utils.colour_utils import generate_color_map
 import numpy as np
-import utils.config as config
+import config as config
 import utils.map_utils
 
 

@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import RESOURCE_NAMES, RESOURCE_RULES, REGION_NAME_TO_ID, REGION_RULES
+from config import RESOURCE_NAMES, RESOURCE_RULES, REGION_NAME_TO_ID, REGION_RULES
 from dataclasses import dataclass
 
 

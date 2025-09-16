@@ -1,6 +1,6 @@
 import random
 import numpy as np
-import utils.config as config
+import config as config
 from scipy.ndimage import binary_dilation
 
 def generate_stage_2(number_of_rivers, sea_level, elevation_map, river_source_min_elevation):

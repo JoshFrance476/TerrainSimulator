@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import ELEVATION_IMPACT_ON_TEMP, TEMPERATURE_DEVIATION
+from config import ELEVATION_IMPACT_ON_TEMP, TEMPERATURE_DEVIATION
 from utils.map_utils import generate_perlin_noise_map
 
 def generate_stage_1(rows, cols, scale, seed):

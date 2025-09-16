@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import REGION_COLOUR_LOOKUP, REGION_NAME_TO_ID
+from config import REGION_COLOUR_LOOKUP, REGION_NAME_TO_ID
 
 def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
     """

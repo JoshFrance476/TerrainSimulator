@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST, REGION_COST_LOOKUP, REGION_RULES, REGION_NAME_TO_ID
+from config import STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST, REGION_COST_LOOKUP, REGION_RULES, REGION_NAME_TO_ID
 from utils.map_utils import calculate_proximity_map
 
 

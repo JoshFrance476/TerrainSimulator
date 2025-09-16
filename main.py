@@ -1,7 +1,7 @@
 import pygame
-import utils.config as config
-from camera import Camera
-from input_handler import InputHandler
+import config as config
+from rendering.camera import Camera
+from utils.input_handler import InputHandler
 from simulation.world_data import WorldData
 from simulation.world import World
 from rendering.map_renderer import MapRenderer

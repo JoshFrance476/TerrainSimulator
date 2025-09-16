@@ -1,5 +1,5 @@
 import pygame
-from utils import config
+import config
 
 class AppController:
     def __init__(self, world, camera):

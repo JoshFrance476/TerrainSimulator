@@ -1,5 +1,5 @@
 import pygame
-from . import config
+import config
 from ui_components.widgets import Button
 from utils.ui_utils import wrap_text
 
