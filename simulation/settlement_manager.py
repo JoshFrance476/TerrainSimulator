@@ -1,5 +1,5 @@
 from simulation.settlement import Settlement
-from utils.config import STARTING_SETTLEMENT_COUNT, RESOURCE_NAMES, SETTLEMENT_LIMIT
+from config import STARTING_SETTLEMENT_COUNT
 from scipy.ndimage import distance_transform_edt
 import numpy as np
 
