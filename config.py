@@ -21,6 +21,7 @@ SETTLEMENT_LIMIT = 30
 
 SEED = random.randint(0,10000)
 
+TOGGLE_LLM_EVENTS = False
 
 PAN_STEP = 4    # Pan speed in pixels
 
@@ -58,7 +59,7 @@ REGION_RULES = [
     },
     {
         "name": "snowy peaks",
-        "colour": (226, 226, 226),
+        "colour": (206, 206, 206),
         "base_traversal_cost": 10,
         "conditions": [{
             "elevation": {"min": 0.85, "max": 1.0},
@@ -67,7 +68,7 @@ REGION_RULES = [
     },
     {
         "name": "mountains",
-        "colour": (150, 150, 150),
+        "colour": (120, 120, 120),
         "base_traversal_cost": 10,
         "conditions": [{
             "elevation": {"min": 0.7}
@@ -75,7 +76,7 @@ REGION_RULES = [
     },
     {
         "name": "glacier",
-        "colour": (240, 240, 240),
+        "colour": (220, 220, 220),
         "base_traversal_cost": 5,
         "conditions": [{
             "temperature": {"max": 0.01}
@@ -83,7 +84,7 @@ REGION_RULES = [
     },
     {
         "name": "tundra",
-        "colour": (100, 140, 86),
+        "colour": (80, 120, 66),
         "base_traversal_cost": 2,
         "conditions": [{
             "temperature": {"max": 0.09}
@@ -91,7 +92,7 @@ REGION_RULES = [
     },
     {
         "name": "desert",
-        "colour": (194, 140, 80),
+        "colour": (164, 110, 50),
         "base_traversal_cost": 1,
         "conditions": [{
             "temperature": {"min": 0.8},
@@ -100,7 +101,7 @@ REGION_RULES = [
     },
     {
         "name": "arid",
-        "colour": (190, 160, 130),
+        "colour": (160, 130, 100),
         "base_traversal_cost": 1,
         "conditions": [{
             "temperature": {"min": 0.72},
@@ -110,7 +111,7 @@ REGION_RULES = [
     },
     {
         "name": "savanna",
-        "colour": (125, 140, 70),
+        "colour": (95, 110, 40),
         "base_traversal_cost": 1,
         "conditions": [{
             "elevation": {"max": 0.5},
@@ -125,7 +126,7 @@ REGION_RULES = [
     ]},
     {
         "name": "rainforest",
-        "colour": (20, 100, 20),
+        "colour": (0, 80, 0),
         "base_traversal_cost": 1.5,
         "conditions": [{
             "elevation": {"max": 0.7},
@@ -135,7 +136,7 @@ REGION_RULES = [
     },
     {
         "name": "marsh",
-        "colour": (0, 90, 0),
+        "colour": (0, 70, 0),
         "base_traversal_cost": 2,
         "conditions": [{
             "elevation": {"max": 0.1},
@@ -145,7 +146,7 @@ REGION_RULES = [
     },
     {
         "name": "forest",
-        "colour": (34, 112, 34),
+        "colour": (14, 92, 14),
         "base_traversal_cost": 1,
         "conditions": [{
             "rainfall": {"min": 0.65}
@@ -153,7 +154,7 @@ REGION_RULES = [
     },
     {
         "name": "grassland",
-        "colour": (69, 130, 56),
+        "colour": (49, 110, 36),
         "base_traversal_cost": 1,
         "conditions": [{
             "elevation": {"max": 0.7},
