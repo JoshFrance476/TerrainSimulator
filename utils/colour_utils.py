@@ -18,18 +18,18 @@ def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
                 
                 blend_factor = (min(world_data['elevation'][r, c],0) + 1) / 2  # Normalize to 0-1 range for water
                 colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['steepness'][r, c] * 0.2)
-                colour_map[r, c] = blend_colors(colour_map[r, c], (190, 190, 255), blend_factor)
+                colour_map[r, c] = blend_colors(colour_map[r, c], (160, 160, 255), blend_factor)
 
 
             elif variation_toggle:
                 if region_id == REGION_NAME_TO_ID["mountains"]:
                     colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['steepness'][r, c] * 0.3)
-                    colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['elevation'][r, c] / 2)
+                    colour_map[r, c] = blend_colors(colour_map[r, c], (100,100,100), world_data['elevation'][r, c] / 2)
 
 
                 else:
                     colour_map[r, c] = blend_colors(colour_map[r, c], (50,50,50), world_data['steepness'][r, c] * 0.3)
-                    colour_map[r, c] = blend_colors(colour_map[r, c], (0,0,0), world_data['elevation'][r, c] / 3)
+                    colour_map[r, c] = blend_colors(colour_map[r, c], (200,200,200), world_data['elevation'][r, c] / 4)
 
 
 
