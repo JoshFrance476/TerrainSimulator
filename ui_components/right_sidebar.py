@@ -64,7 +64,8 @@ class RightSidebarController:
                 "Settlement Distance": cell_data['settlement_distance'],
                 "Flip Probability": f"{cell_data['flip_probability']:.3f}",
                 "Decay Probability": f"{cell_data['decay_probability']:.3f}",
-                "Neighbor Counts": cell_data["neighbor_counts"]
+                "Neighbor Counts": cell_data["neighbor_counts"],
+                "Colour": tuple(int(x) for x in cell_data["colour"])
             }
         else:
             self.info_list = {}
