@@ -6,6 +6,7 @@ from utils.llm_utils import desc_schema
 import concurrent.futures
 from simulation.data_processor import DataProcessor
 
+
 class EventManager:
     def __init__(self, world):
         self.event_log = []
@@ -70,17 +71,20 @@ class EventManager:
                 Previous events in the area:
                 {previous_events}
             """
-            
-        future = self.executor.submit(llm_utils.ask_deepseek, prompt, desc_schema)
+        
+        if config.TOGGLE_LLM_EVENTS:
+            future = self.executor.submit(llm_utils.ask_deepseek, prompt, desc_schema)
 
-        def on_done(fut, tick_count=tick, event_type=event_type, location=location):
-            try:
-                result = fut.result()
-                self.add_new_event(result, tick_count, event_type, location)
-            except Exception as e:
-                print("LLM call failed:", e)
+            def on_done(fut, tick_count=tick, event_type=event_type, location=location):
+                try:
+                    result = fut.result()
+                    self.add_new_event(result, tick_count, event_type, location)
+                except Exception as e:
+                    print("LLM call failed:", e)
 
-        future.add_done_callback(on_done)
+            future.add_done_callback(on_done)
+        else:
+            self.add_new_event("An unidentified event has occurred in the area.", tick, event_type, location)
 
     def get_event_log(self):
         return self.event_log
