@@ -1,6 +1,7 @@
 import pygame
 import config
 from rendering.overlay_generator import apply_heatmap_overlay
+from utils.colour_utils import hsv_to_rgb_array
 
 class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
@@ -78,15 +79,18 @@ class MapRenderer:
 
     def draw_view(self, screen, display_map):
         """AI code using surfarray to draw the whole map at once."""
-        surface = pygame.surfarray.make_surface(display_map.swapaxes(0, 1))  
-        surface = pygame.transform.scale(surface, (display_map.shape[1] * config.CELL_SIZE,
-                                                display_map.shape[0] * config.CELL_SIZE))
+        rgb_map = hsv_to_rgb_array(display_map)
+
+        surface = pygame.surfarray.make_surface(rgb_map.swapaxes(0, 1))  
+        surface = pygame.transform.scale(surface, (rgb_map.shape[1] * config.CELL_SIZE, 
+                                                rgb_map.shape[0] * config.CELL_SIZE))
         screen.blit(surface, (config.SIDEBAR_WIDTH, 0))
     
     def draw_magnifier(self, screen, magnifier_map, hovered_cell, camera_position):
-        magnifier_surface = pygame.surfarray.make_surface(magnifier_map.swapaxes(0, 1))
-        magnifier_surface = pygame.transform.scale(magnifier_surface, (magnifier_map.shape[1] * config.MAGNIFIER_CELL_SIZE,
-                                                                          magnifier_map.shape[0] * config.MAGNIFIER_CELL_SIZE))
+        rgb_map = hsv_to_rgb_array(magnifier_map)
+        magnifier_surface = pygame.surfarray.make_surface(rgb_map.swapaxes(0, 1))
+        magnifier_surface = pygame.transform.scale(magnifier_surface, (rgb_map.shape[1] * config.MAGNIFIER_CELL_SIZE,
+                                                                          rgb_map.shape[0] * config.MAGNIFIER_CELL_SIZE))
         screen.blit(magnifier_surface, ((hovered_cell[1]*config.CELL_SIZE)+config.SIDEBAR_WIDTH-(camera_position[0]*config.CELL_SIZE) - (config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[1]//2),
                                         (hovered_cell[0]*config.CELL_SIZE)-camera_position[1]*config.CELL_SIZE - (config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[0]//2)))
 
