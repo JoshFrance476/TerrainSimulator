@@ -8,7 +8,7 @@ import time
 import logging
 import config as config
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 
 
 def generate_maps(rows, cols):
