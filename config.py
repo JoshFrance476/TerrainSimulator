@@ -21,7 +21,7 @@ SETTLEMENT_LIMIT = 30
 
 SEED = random.randint(0,10000)
 
-TOGGLE_LLM_EVENTS = False
+TOGGLE_LLM_EVENTS = True
 
 PAN_STEP = 4    # Pan speed in pixels
 
@@ -46,12 +46,17 @@ STATE_COLOURS = {
     
 }
 
-
+SETTLEMENT_TIERS = {
+    0: "settlement",
+    4: "village",
+    8: "town",
+    15: "city"
+    }
 
 REGION_RULES = [
     {
         "name": "ocean",
-        "colour": (0, 0, 180),
+        "colour": (240.0, 1.0, 0.706),
         "base_traversal_cost": 10,
         "conditions": [{
             "elevation": {"min": -1.0, "max": SEA_LEVEL}
@@ -59,7 +64,7 @@ REGION_RULES = [
     },
     {
         "name": "snowy peaks",
-        "colour": (206, 206, 206),
+        "colour": (0.0, 0.0, 0.808),
         "base_traversal_cost": 10,
         "conditions": [{
             "elevation": {"min": 0.85, "max": 1.0},
@@ -68,7 +73,7 @@ REGION_RULES = [
     },
     {
         "name": "mountains",
-        "colour": (120, 120, 120),
+        "colour": (0.0, 0.0, 0.471),
         "base_traversal_cost": 10,
         "conditions": [{
             "elevation": {"min": 0.7}
@@ -76,7 +81,7 @@ REGION_RULES = [
     },
     {
         "name": "glacier",
-        "colour": (220, 220, 220),
+        "colour": (0.0, 0.0, 0.863),
         "base_traversal_cost": 5,
         "conditions": [{
             "temperature": {"max": 0.01}
@@ -84,7 +89,7 @@ REGION_RULES = [
     },
     {
         "name": "tundra",
-        "colour": (80, 120, 66),
+        "colour": (105.0, 0.45, 0.471),
         "base_traversal_cost": 2,
         "conditions": [{
             "temperature": {"max": 0.09}
@@ -92,7 +97,7 @@ REGION_RULES = [
     },
     {
         "name": "desert",
-        "colour": (164, 110, 50),
+        "colour": (30.0, 0.695, 0.643),
         "base_traversal_cost": 1,
         "conditions": [{
             "temperature": {"min": 0.8},
@@ -101,7 +106,7 @@ REGION_RULES = [
     },
     {
         "name": "arid",
-        "colour": (160, 130, 100),
+        "colour": (30.0, 0.375, 0.627),
         "base_traversal_cost": 1,
         "conditions": [{
             "temperature": {"min": 0.72},
@@ -111,7 +116,7 @@ REGION_RULES = [
     },
     {
         "name": "savanna",
-        "colour": (95, 110, 40),
+        "colour": (82.5, 0.636, 0.431), 
         "base_traversal_cost": 1,
         "conditions": [{
             "elevation": {"max": 0.5},
@@ -122,11 +127,11 @@ REGION_RULES = [
             "elevation": {"max": 0.5},
             "temperature": {"min": 0.55},
             "river_proximity": {"max": 4}
-        }
-    ]},
+        }]
+    },
     {
         "name": "rainforest",
-        "colour": (0, 80, 0),
+        "colour": (120.0, 1.0, 0.314),
         "base_traversal_cost": 1.5,
         "conditions": [{
             "elevation": {"max": 0.7},
@@ -136,7 +141,7 @@ REGION_RULES = [
     },
     {
         "name": "marsh",
-        "colour": (0, 70, 0),
+        "colour": (120.0, 1.0, 0.275),
         "base_traversal_cost": 2,
         "conditions": [{
             "elevation": {"max": 0.1},
@@ -146,7 +151,7 @@ REGION_RULES = [
     },
     {
         "name": "forest",
-        "colour": (14, 92, 14),
+        "colour": (120.0, 0.848, 0.361),
         "base_traversal_cost": 1,
         "conditions": [{
             "rainfall": {"min": 0.65}
@@ -154,7 +159,7 @@ REGION_RULES = [
     },
     {
         "name": "grassland",
-        "colour": (49, 110, 36),
+        "colour": (112.9, 0.673, 0.431),
         "base_traversal_cost": 1,
         "conditions": [{
             "elevation": {"max": 0.7},
@@ -162,27 +167,27 @@ REGION_RULES = [
     },
     {
         "name": "river",
-        "colour": (100, 100, 255),
+        "colour": (240.0, 0.68, 0.8),
         "base_traversal_cost": 5,
     },
     {
         "name": "farm",
-        "colour": (255, 255, 100),
+        "colour": (60.0, 1.0, 0.85),
         "base_traversal_cost": 1,
     },
     {
         "name": "lumber mill",
-        "colour": (100, 100, 0),
+        "colour": (45.0, 1.0, 0.45),
         "base_traversal_cost": 1,
     },
     {
         "name": "mine",
-        "colour": (40, 40, 40),
+        "colour": (230.0, 0.0, 0.3),
         "base_traversal_cost": 1,
     },
     {
         "name": "fishing spot",
-        "colour": (0, 0, 255),
+        "colour": (230.0, 1.0, 0.706),
         "base_traversal_cost": 1,
     }
 ]
@@ -211,10 +216,10 @@ RESOURCE_LOOKUP = {
 RESOURCE_NAMES = {v: k for k, v in RESOURCE_LOOKUP.items()}
 
 RESOURCE_COLORS = {
-    1: (100, 100, 0),
-    2: (255, 255, 100),
-    3: (40, 40, 40),
-    4: (0, 0, 255),
+    1: (45.0, 1.0, 0.45),
+    2: (60.0, 1.0, 0.85),
+    3: (230.0, 0.0, 0.15),
+    4: (230.0, 1.0, 0.706),
 }
 """
 Resource rules function as follows:
