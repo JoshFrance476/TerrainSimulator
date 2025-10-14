@@ -17,7 +17,7 @@ class RightSidebarController:
         if settlement_data:
             self.info_list = {
                 "Name": settlement_data.name,
-                "Description": "\n".join(wrap_text(settlement_data.description, self.fonts.small_font, config.SIDEBAR_WIDTH - 20)),
+                "Tier": settlement_data.tier.title(),
                 "Improved Resources": "\n",
                 "Events": "\n"
             }
@@ -57,7 +57,7 @@ class RightSidebarController:
                 "Steepness": f"{cell_data['steepness']:.2f}",
                 "Fertility": f"{cell_data['fertility']:.2f}",
                 "Traversal Cost": f"{cell_data['traversal_cost']:.2f}",
-                "Population": f"{cell_data['population']:.2f}",
+                "Population": f"{cell_data['population']:.3f}",
                 "Population Capacity": f"{cell_data['population_capacity']:.2f}",
                 "Resource": config.RESOURCE_NAMES[cell_data['resource']].title(),
                 "State": cell_data["state"],
@@ -65,7 +65,7 @@ class RightSidebarController:
                 "Flip Probability": f"{cell_data['flip_probability']:.3f}",
                 "Decay Probability": f"{cell_data['decay_probability']:.3f}",
                 "Neighbor Counts": cell_data["neighbor_counts"],
-                "Colour": tuple(int(x) for x in cell_data["colour"])
+                "Colour": tuple(round(float(x),2) for x in cell_data["colour"])
             }
         else:
             self.info_list = {}
