@@ -57,7 +57,7 @@ def ask_deepseek(prompt, schema, model="deepseek-chat", temperature=1.5):
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": "You are a worldbuilder for a grid-based simulation game. You provide one-sentence summaries of events that take place in the world."},
+            {"role": "system", "content": "You are a worldbuilder for a grid-based simulation. You provide one-sentence summaries of events that take place in the world. These events should be grounded in reality but interesting and engaging. You should not assume information that is not provided in the context. The user wants this world to be inspired by game of thrones."},
 
             {"role": "user", "content": prompt}
         ],
