@@ -1,5 +1,5 @@
 import numpy as np
-from config import RESOURCE_NAMES, RESOURCE_RULES, REGION_NAME_TO_ID, REGION_RULES
+from config import RESOURCE_NAMES, RESOURCE_RULES, REGION_NAME_TO_ID, REGION_RULES, SETTLEMENT_TIERS
 from dataclasses import dataclass
 
 
@@ -17,7 +17,7 @@ class Settlement:
     def __init__(self, id, name, r, c, world):
         self.id = id
         self.name = name
-        self.description = ""
+        self.tier = ""
         self.r = r
         self.c = c
         self._world = world
@@ -28,29 +28,30 @@ class Settlement:
         self.improved_resources = []
         self.population_capacity *= 5
 
-        self.growth_rate = 1.02
+        self.growth_rate = 1.00
         self.cohesion = 1
         
-
-        self.thresholds = [5, 10, 15, 20, 25]
-        self.triggered_thresholds = set()
+        self.passed_tiers = set()
 
         if self.population < 1:
             self.population = 1
         
         self._world.set_map_data_at("colour", (self.r, self.c), (0, 0, 0))
 
-        self._world.event_manager.generate_event_with_probability("settlement founded", (self.r, self.c), {"name": name}, 0.1)
         
     
     def update(self):
-        self.population *= self.growth_rate
+        self.population += (self.population_capacity - self.population) / 100
 
-        for i, threshold in enumerate(self.thresholds):
-            if self.population > threshold and i not in self.triggered_thresholds:
-                self.triggered_thresholds.add(i)
+        for tier in SETTLEMENT_TIERS:
+            if self.population > tier and tier not in self.passed_tiers:
+                self.passed_tiers.add(tier)
+                self.tier = SETTLEMENT_TIERS[tier]
                 self.improve_tile()
-                self._world.event_manager.generate_event_with_probability("settlement growth", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}"}, 0.1)
+                if tier > 0:
+                    self._world.event_manager.generate_event_with_probability("settlement growth", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}, tier: {tier}"}, 0.1)
+                else:
+                    self._world.event_manager.generate_event_with_probability("settlement founded", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}"}, 0.1)
 
 
     def get_available_resources(self):
