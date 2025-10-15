@@ -46,13 +46,13 @@ class LeftSidebarController:
         self.title = "Event Log"
         self.info_box_list = InfoBoxList(10, 50, config.SIDEBAR_WIDTH - 20)
         for event in event_log:
-            if event["tick_count"] not in self.event_info_boxes:
+            if event.tick_count not in self.event_info_boxes:
                 box = CollapsibleInfoBox(self.fonts.large_font, self.fonts.small_font)
-                self.event_info_boxes[event["tick_count"]] = box
+                self.event_info_boxes[event.tick_count] = box
             else:
-                box = self.event_info_boxes[event["tick_count"]]
+                box = self.event_info_boxes[event.tick_count]
 
-            box.set_info(event['event_type'].title(), {"Tick": str(event['tick_count'])}, {"Location": f"{event['location'][0]}, {event['location'][1]}", "Description": event['event_desc']})
+            box.set_info(event.event_type.title(), {"Tick": str(event.tick_count)}, {"Location": f"{event.location[0]}, {event.location[1]}", "Description": event.event_type})
             self.info_box_list.add_info_box(box)
 
     def draw(self, screen):
