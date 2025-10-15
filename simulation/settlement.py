@@ -49,9 +49,9 @@ class Settlement:
                 self.tier = SETTLEMENT_TIERS[tier]
                 self.improve_tile()
                 if tier > 0:
-                    self._world.event_manager.generate_event_with_probability("settlement growth", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}, tier: {tier}"}, 0.1)
+                    self._world.add_event("settlement growth", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}, tier: {self.tier}"})
                 else:
-                    self._world.event_manager.generate_event_with_probability("settlement founded", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}"}, 0.1)
+                    self._world.add_event("settlement founded", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}"})
 
 
     def get_available_resources(self):
