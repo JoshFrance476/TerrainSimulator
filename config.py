@@ -23,6 +23,8 @@ SEED = random.randint(0,10000)
 
 TOGGLE_LLM_EVENTS = True
 
+LLM_THEME = "Game of Thrones"
+
 PAN_STEP = 4    # Pan speed in pixels
 
 
@@ -48,10 +50,30 @@ STATE_COLOURS = {
 
 SETTLEMENT_TIERS = {
     0: "settlement",
-    4: "village",
-    8: "town",
-    15: "city"
+    2: "village",
+    4: "town",
+    5: "city"
     }
+
+LLM_ACTIONS = {
+    "increase_population": {
+        "low": {"population": + 10},
+        "medium": {"population": + 20},
+        "high": {"population": + 30}
+    },
+    "decrease_population": {
+        "low": {"population": - 10},
+        "medium": {"population": - 20},
+        "high": {"population": - 30}
+    },
+    "increase_cohesion": {},
+    "decrease_cohesion": {},
+    "settlement_destruction": {},
+    "rebellion": {},
+    "regime_change": {},
+}
+
+LLM_ACTIONS_NAMES = list(LLM_ACTIONS.keys())
 
 REGION_RULES = [
     {
