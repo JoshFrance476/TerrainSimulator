@@ -69,8 +69,8 @@ class AppController:
     def create_state(self, cell):
         self.world.create_state(cell[0], cell[1])
     
-    def generate_event(self, event_type, cell):
-        self.world.generate_event(event_type, (cell[0], cell[1]))
+    def generate_event(self, event_type, location):
+        self.world.add_event(event_type, (location[0], location[1]))
 
     def get_cell_at_mouse_position(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
