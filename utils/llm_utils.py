@@ -2,7 +2,9 @@ from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()  # loads .env into os.environ
 import os
- 
+from config import LLM_ACTIONS_NAMES, LLM_THEME
+import json
+
 client = OpenAI(
     api_key= os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com"
@@ -38,50 +40,62 @@ event_schema = [{
     }
 }]
 
+
 desc_schema = [{
     "type": "function",
     "function": {
         "name": "generate_description",
-        "description": "Generate a realistic description of this event",
+        "description": "Generate a narrative for event",
         "parameters": {
             "type": "object",
             "properties": {
-                "description": {"type": "string"},
+                "narrative": {"type": "string",
+                              "description": f"A short creative description of the event inspired by {LLM_THEME}"},
+                "actions": {"type": "array",
+                            "items": {"type": "object",
+                                      "properties": {
+                                          "action": {"type": "string",
+                                                     "enum": LLM_ACTIONS_NAMES},
+                                          "impact": {"type": "string",
+                                                     "enum": ["low", "medium", "high"]}
+                                      },
+                                      "required": ["action", "impact"],
+                                      "additionalProperties": False
+                                    }
+                           }
             },
-            "required": ["description"]
+            "required": ["narrative", "actions"],
+            "additionalProperties": False
         }
     }
 }]
+
 
 def ask_deepseek(prompt, schema, model="deepseek-chat", temperature=1.5):
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": "You are a worldbuilder for a grid-based simulation. You provide one-sentence summaries of events that take place in the world. These events should be grounded in reality but interesting and engaging. You should not assume information that is not provided in the context. The user wants this world to be inspired by game of thrones."},
+            {"role": "system", "content": f"""
+             You are the chronicler of a living simulation.
+            The world is inspired by {LLM_THEME}.
+            Write one vivid, grounded event in that world.
+            Events should be no longer than 50 words
+            Keep the tone consistent with its culture, technology, and politics.
+            Return JSON with 'narrative' and 'actions'.
+             {LLM_ACTIONS_NAMES}"""},
 
             {"role": "user", "content": prompt}
         ],
+        tools=schema,
         tool_choice={"type": "function", "function": {"name": schema[0]["function"]["name"]}},
         temperature=temperature,
         stream=False
     )
-    print(response.usage)
-    #print(response.choices[0].message.tool_calls[0].function.arguments)
-    return response.choices[0].message.content
-
-if __name__ == "__main__":
-    prompt = """
-    Task:
-        Write a short, one-sentence description of this settlement based on the context. 
-        Describe the terrain, culture, architecture, and atmosphere.
-        Context: Name: Placeholder, Row: 34, Col: 45, Population: 1.789:
-    """
-    event_json = ask_deepseek(prompt, desc_schema)
-    print("LLM Response:", event_json)
-
-#def generate_description(self):
-#        prompt = f"""Task:
-#        Write a short, one-sentence description of this settlement based on the context. 
-#        Context: Name: {self.name}, Row: {self.r}, Col: {self.c}, Population: {self.population}, Region: {self._world_data['region'][self.r, self.c]}
-#        """
-#        self.description = ask_deepseek(prompt, desc_schema)
+    print(response)
+    desc = json.loads(
+        response.choices[0].message.tool_calls[0].function.arguments
+    )["narrative"]
+    actions = json.loads(
+        response.choices[0].message.tool_calls[0].function.arguments
+    )["actions"]
+    return desc, actions
