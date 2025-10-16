@@ -76,12 +76,14 @@ def ask_deepseek(prompt, schema, model="deepseek-chat", temperature=1.5):
         model=model,
         messages=[
             {"role": "system", "content": f"""
-             You are the chronicler of a living simulation.
-            The world is inspired by {LLM_THEME}.
-            Write one vivid, grounded event in that world.
-            Events should be no longer than 50 words
-            Keep the tone consistent with its culture, technology, and politics.
+             You are the worldbuilder of a realistic world simulation.
+            The world is based on {LLM_THEME}.
+            Write one grounded narrative in that world. The narrative should describe the given event.
+            If the event is unspecified, you have creative freedom to generate a narrative, but it must be based solely on the given context and world theme.
+            Narratives should be no longer than 50 words.
+            Keep the tone consistent with the themes culture, technology, and politics.
             Return JSON with 'narrative' and 'actions'.
+            Here is a list of possible actions. Actions can be left empty.
              {LLM_ACTIONS_NAMES}"""},
 
             {"role": "user", "content": prompt}
@@ -91,7 +93,6 @@ def ask_deepseek(prompt, schema, model="deepseek-chat", temperature=1.5):
         temperature=temperature,
         stream=False
     )
-    print(response)
     desc = json.loads(
         response.choices[0].message.tool_calls[0].function.arguments
     )["narrative"]
