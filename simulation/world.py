@@ -117,8 +117,8 @@ class World:
     def filter_event_log_by_location(self, location):
         return self.event_manager.filter_event_log_by_location(location)
 
-    def add_event(self, event_type, location, context_dict = {}):
-        return self.narrative_manager.add_event(event_type, location, context_dict)
+    def add_event(self, type, location, description = ""):
+        return self.narrative_manager.add_event(type, location, description)
 
 
 
