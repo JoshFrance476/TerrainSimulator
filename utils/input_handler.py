@@ -73,4 +73,4 @@ class InputHandler:
         elif event.key == pygame.K_x:
             self.controller.cycle_left_sidebar(1)
         elif event.key == pygame.K_o:
-            self.controller.generate_event("random event", self.controller.get_selected_cell())
+            self.controller.generate_event("random_event", self.controller.get_selected_cell())
