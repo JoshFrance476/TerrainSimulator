@@ -16,17 +16,17 @@ class SettlementManager:
         if len(self.settlements) < STARTING_SETTLEMENT_COUNT:
             top_x_indices = self._world.get_x_largest_values("population", STARTING_SETTLEMENT_COUNT)
             for i, index in enumerate(top_x_indices):
-                self.create_settlement(index[0], index[1], f"Settlement {i}")
+                self.create_settlement(index[0], index[1])
         else:
             for s in self.settlements.values():
                 s.update()
     
 
-    def create_settlement(self, r, c, name="Unnamed"):
+    def create_settlement(self, r, c):
         id = self.next_settlement_id
         self.next_settlement_id += 1
 
-        new_settlement = Settlement(id, name, r, c, self._world)
+        new_settlement = Settlement(id, r, c, self._world)
 
 
         self.settlements[id] = new_settlement
