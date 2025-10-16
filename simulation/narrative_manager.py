@@ -1,4 +1,3 @@
-from simulation.event_manager import EventManager
 from simulation.event import Event
 from simulation.data_processor import DataProcessor
 import concurrent.futures
@@ -15,75 +14,61 @@ class NarrativeManager:
         self.world = world
         self.narrative_log = []
     
-    def add_event(self, event_type, location, context_dict):
+    def add_event(self, type, location, description):
         tick_count = self.world.tick_count
-        new_event = Event(event_type, location, tick_count)
+        new_event = Event(type, location, tick_count, description)
         self.event_manager.add_new_event(new_event)
         #if conditions are met then generate narrative for event
         if TOGGLE_LLM_EVENTS:
-            self.generate_narrative(new_event, context_dict)
+            self.generate_narrative(new_event)
 
     
-    def generate_narrative(self, event, context_dict):
-        prompt = self.generate_prompt(event, context_dict)
+    def generate_narrative(self, event):
+        prompt = self.generate_prompt(event)
+        print(prompt)
 
         future = self.executor.submit(ask_deepseek, prompt, desc_schema)
 
         def on_done(fut):
             try:
                 narrative, actions = fut.result()
-                return narrative, actions
+                event.add_event_narrative(narrative)
+                print(narrative, actions)
             except Exception as e:
                 print("LLM call failed:", e)
 
         future.add_done_callback(on_done)
     
-    def generate_prompt(self, event, context_dict):
-        previous_events = [event.event_type for event in self.event_manager.get_event_log_by_vicinity(event.location, 10)]
+    def generate_prompt(self, event):
+        previous_events = [event for event in self.event_manager.get_event_log_by_vicinity(event.location, 10)]
 
-        if previous_events:
-            previous_events = previous_events[-1] # Gets the most recent event
 
-        if event.event_type == "settlement founded":
-            semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), event.location)
-            semantic_text = "; ".join(semantic_data)
+        previous_event = previous_events[len(previous_events)-2]
 
-            context_text = ", ".join(f"{k}: {v}" for k, v in context_dict.items())
 
-            prompt = f"""
-                A settlement has been founded in the area.
-                Context:
-                {context_text}
-                Relevant information:
-                {semantic_text}
-                Previous events in the area:
-                {previous_events}
-            """
-        elif event.event_type == "settlement growth":
-            semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), event.location)
-            semantic_text = "; ".join(semantic_data)
 
-            context_text = ", ".join(f"{k}: {v}" for k, v in context_dict.items())
-
-            prompt = f"""
-                A settlement has grown in the area.
-                Context:
-                {context_text}
-                Relevant information:
-                {semantic_text}
-                Previous events in the area:
-                {previous_events}
-            """
-        elif event.event_type == "random event":
+        if event.event_type == "random_event":
             semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), event.location)
             semantic_text = "; ".join(semantic_data)
 
             prompt = f"""
-                A random event has occurred in the area.
-                Relevant information:
+                An unspecified event has occurred in the area.
+                Environment context:
                 {semantic_text}
                 Previous events in the area:
-                {previous_events}
+                {previous_event.narrative}
             """
-        
+        else:
+            semantic_data = self.data_processor.generate_semantic_data(("region", "resource"), event.location)
+            semantic_text = "; ".join(semantic_data)
+
+            prompt = f"""
+                Event:
+                {event.description}
+                Environment context:
+                {semantic_text}
+                Previous events in the area:
+                {previous_event.narrative}
+            """
+    
         return prompt
