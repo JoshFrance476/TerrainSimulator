@@ -1,6 +1,7 @@
 import numpy as np
-from config import RESOURCE_NAMES, RESOURCE_RULES, REGION_NAME_TO_ID, REGION_RULES, SETTLEMENT_TIERS
+from config import RESOURCE_NAMES, RESOURCE_RULES, REGION_NAME_TO_ID, REGION_RULES, SETTLEMENT_TIERS, SETTLEMENT_NAMES
 from dataclasses import dataclass
+import random
 
 
 @dataclass
@@ -14,9 +15,9 @@ class Resource:
 
 class Settlement:
 
-    def __init__(self, id, name, r, c, world):
+    def __init__(self, id, r, c, world):
         self.id = id
-        self.name = name
+        self.name = SETTLEMENT_NAMES[random.randint(0, len(SETTLEMENT_NAMES)-1)]
         self.tier = ""
         self.r = r
         self.c = c
@@ -49,9 +50,9 @@ class Settlement:
                 self.tier = SETTLEMENT_TIERS[tier]
                 self.improve_tile()
                 if tier > 0:
-                    self._world.add_event("settlement growth", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}, tier: {self.tier}"})
+                    self._world.add_event("settlement_growth", (self.r, self.c), f"{self.name} has become a {self.tier}")
                 else:
-                    self._world.add_event("settlement founded", (self.r, self.c), {"name": self.name, "population": f"{self.population*1000:.0f}"})
+                    self._world.add_event("settlement_founded", (self.r, self.c), f"A new settlement called {self.name} has been founded")
 
 
     def get_available_resources(self):
