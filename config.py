@@ -23,7 +23,7 @@ SEED = random.randint(0,10000)
 
 TOGGLE_LLM_EVENTS = True
 
-LLM_THEME = "Game of Thrones"
+LLM_THEME = "Star wars"
 
 PAN_STEP = 4    # Pan speed in pixels
 
@@ -50,7 +50,7 @@ STATE_COLOURS = {
 
 SETTLEMENT_TIERS = {
     0: "settlement",
-    2: "village",
+    3: "village",
     4: "town",
     5: "city"
     }
@@ -274,3 +274,15 @@ RESOURCE_RULES = {
     },
 }
 
+SETTLEMENT_NAMES = [
+    "Alderwyn",
+    "Brackenreach",
+    "Eldervale",
+    "Stoneford",
+    "Ravenmoor",
+    "Willowmere",
+    "Foxhollow",
+    "Ashbourne",
+    "Highmere",
+    "Silverstead",
+]
