@@ -3,7 +3,7 @@ from simulation.data_processor import DataProcessor
 import concurrent.futures
 from utils.llm_utils import desc_schema
 from config import TOGGLE_LLM_EVENTS, LLM_THEME
-from utils.llm_utils import ask_deepseek
+from utils.llm_utils import prompt_narrative
 
 class NarrativeManager:
     def __init__(self, world, event_manager):
@@ -27,7 +27,7 @@ class NarrativeManager:
         prompt = self.generate_prompt(event)
         print(prompt)
 
-        future = self.executor.submit(ask_deepseek, prompt, desc_schema)
+        future = self.executor.submit(prompt_narrative, prompt, desc_schema)
 
         def on_done(fut):
             try:
