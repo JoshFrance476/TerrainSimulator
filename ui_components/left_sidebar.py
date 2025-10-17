@@ -52,7 +52,7 @@ class LeftSidebarController:
             else:
                 box = self.event_info_boxes[event.tick_count]
 
-            box.set_info(event.event_type.title(), {"Tick": str(event.tick_count)}, {"Location": f"{event.location[0]}, {event.location[1]}", "Description": event.event_type})
+            box.set_info(event.description, {"Tick": str(event.tick_count)}, {"Location": f"{event.location[0]}, {event.location[1]}", "Narrative": event.narrative})
             self.info_box_list.add_info_box(box)
 
     def draw(self, screen):
