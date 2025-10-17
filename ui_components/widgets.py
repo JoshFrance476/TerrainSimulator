@@ -10,12 +10,13 @@ class InfoBoxList:
         self.info_boxes = []
 
     def add_info_box(self, info_box):
+        info_box.set_width(self.width)
         self.info_boxes.append(info_box)
 
     def draw(self, screen):
         y_offset = self.y
         for box in self.info_boxes:
-            box.draw(screen, self.x, y_offset, self.width)
+            box.draw(screen, self.x, y_offset)
             y_offset += box.height + 5
 
     def handle_event(self, event):
@@ -24,7 +25,6 @@ class InfoBoxList:
 
 
 class InfoBox:
-    TITLE_HEIGHT = 30
     PADDING = 10
     LINE_HEIGHT = 20
 
@@ -34,43 +34,49 @@ class InfoBox:
         self.hidden_lines = hidden_lines or {}
         self.large_font = large_font
         self.small_font = small_font
-        self.height = self.TITLE_HEIGHT + len(self.visible_lines) * self.LINE_HEIGHT
+        self.height = 0
         self.expanded = False
+        self.width = 0
 
     def set_info(self, title, visible_lines, hidden_lines = None):
-        self.title = TextLink(title, None, self.large_font)
+        self.title.text = title
         self.visible_lines = visible_lines
         self.hidden_lines = hidden_lines or {}
         self.update_height()
     
     def add_text_link_action(self, action):
         self.title.action = action
+    
+    def set_width(self, width):
+        self.width = width
+        self.title.set_width(self.width - self.PADDING)
 
     def update_height(self):
         lines = len(self.visible_lines) + (len(self.hidden_lines) if self.expanded else 0)
-        self.height = self.TITLE_HEIGHT + lines * self.LINE_HEIGHT
+        self.title.update_height()
+        self.height = self.title.height + lines * self.LINE_HEIGHT
 
-    def draw(self, screen, x, y, width):        
+    def draw(self, screen, x, y):        
         lines = list(self.visible_lines.items())
         if self.expanded:
             lines += list(self.hidden_lines.items())
 
-        max_text_width = width - self.PADDING*2
+        max_text_width = self.width - self.PADDING*2
 
         all_wrapped_lines = []
         for label, value in lines:
             wrapped_lines = wrap_text(f"{label}: {value}", self.small_font, max_text_width)
             all_wrapped_lines.extend(wrapped_lines)
 
-        self.height = self.TITLE_HEIGHT + len(all_wrapped_lines) * self.LINE_HEIGHT
+        self.height = len(all_wrapped_lines) * self.LINE_HEIGHT + self.title.height
 
-        rect = pygame.Rect(x, y, width, self.height)
+        rect = pygame.Rect(x, y, self.width, self.height)
         pygame.draw.rect(screen, (220,220,220), rect)
         pygame.draw.rect(screen, (80,80,80), rect, 2)
 
         self.title.draw(screen, x + self.PADDING, y + 5)
 
-        y_offset = y + self.TITLE_HEIGHT
+        y_offset = y + self.title.height
 
         for line in all_wrapped_lines:
                 text_surface = self.small_font.render(line, True, (30,30,30))
@@ -87,7 +93,7 @@ class CollapsibleInfoBox(InfoBox):
     def __init__(self, large_font, small_font):
         super().__init__(large_font, small_font)
         self.toggle_button = Button(
-            0, 0, self.TITLE_HEIGHT-8, self.TITLE_HEIGHT-8,
+            0, 0, 20, 20,
             action=self.toggle_expanded,
             toggle=False
         )
@@ -96,9 +102,9 @@ class CollapsibleInfoBox(InfoBox):
         self.expanded = not self.expanded
         self.update_height()
 
-    def draw(self, screen, x, y, width):
-        super().draw(screen, x, y, width)
-        self.toggle_button.rect.topleft = (x + width - self.toggle_button.rect.width - 4, y + 4)
+    def draw(self, screen, x, y):
+        super().draw(screen, x, y)
+        self.toggle_button.rect.topleft = (x + self.width - self.toggle_button.rect.width - 4, y + 4)
         self.toggle_button.draw(screen)
 
     def handle_event(self, event):
@@ -146,16 +152,32 @@ class TextLink:
         self.action = action
         self.font = font
         self.rect = None
-
+        self.height = 0
+        self.width = 0
 
     def draw(self, screen, x, y):
-        text = self.font.render(self.text, True, (30, 30, 30))
-        self.rect = pygame.Rect(x, y, 100, 20)
+        y_offset = y
 
-        screen.blit(text, (x, y))
+        for line in wrap_text(self.text, self.font, self.width):
+            text = self.font.render(line, True, (30, 30, 30))
+            screen.blit(text, (x, y_offset))
+            y_offset += 20
+
+        self.rect = pygame.Rect(x, y, self.width, self.height)
+    
+    def set_width(self, width):
+        self.width = width
+
+    def update_height(self):
+        height = 0
+        for line in wrap_text(self.text, self.font, self.width):
+            height += 20
+        self.height = height + 5
+
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if self.rect.collidepoint(event.pos):
-                self.action()
+                if self.action:
+                    self.action()
 
