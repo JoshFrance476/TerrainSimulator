@@ -71,7 +71,7 @@ desc_schema = [{
 }]
 
 
-def ask_deepseek(prompt, schema, model="deepseek-chat", temperature=1.5):
+def prompt_narrative(prompt, schema, model="deepseek-chat", temperature=1.5):
     response = client.chat.completions.create(
         model=model,
         messages=[
