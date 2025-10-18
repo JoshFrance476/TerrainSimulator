@@ -54,3 +54,35 @@ This is one of the nine filters used to visualise data. As you can see, grasslan
 In this example, the world theme was given as 'Star Wars'. A single settlement was placed in the savannah biome and then a political event was prompted. 
 As you can see, the story the LLM generates is Star Wars themed, and makes reference to the settlement's environment (being in the savannah and next to a river).
 ![Example LLM story generation](extras/screenshots/FullViewWithLLMExplanations.png)
+
+## How LLM Interactions Work
+Here is the system role given to the LLM:   
+> *You are the worldbuilder of a realistic world simulation.   
+The world is based on {LLM_THEME}.   
+Write one grounded narrative in that world. The narrative should describe the given event.   
+If the event is unspecified, you have creative freedom to generate a narrative, but it must be based solely on the given context and world theme.   
+Narratives should be no longer than 50 words.   
+Keep the tone consistent with the themes culture, technology, and politics.   
+Return JSON with 'narrative' and 'actions'.   
+Here is a list of possible actions. Actions can be left empty.   
+{LLM_ACTIONS_NAMES}*   
+
+Here is a prompt that was given to the LLM in the 'Star Wars' themed world used in the screenshot above:   
+> *Event:   
+A political event has occured   
+Environment context:   
+The region is savanna; It is adjacent to savanna; It is adjacent to river; There is some ocean region in the area; There is some arid region in the area; Majority of the surrounding region is savanna; There is some river region in the area   
+Most recent event in the area:   
+On the vast savanna plains where the river meets the ocean winds, settlers established Foxhollow. Prefabricated durasteel structures rose from the grasslands, their solar panels gleaming under twin suns. Moisture vaporators hummed near the riverbank, promising sustainability in this arid frontier outpost.*
+
+The *environment context* is formed by counting every biome around the event's location by a radius of 1 cell (for adjacency) and 5 cells (for vicinity).   
+The ratio of each biome in the vicinity determines how each biome is described e.g. *There is some {biome} in the area*.   
+The *Most recent event in the area* is the most recent response that the LLM generated within a radius of 10 cells. Feeding this back in gets the LLM to build off of its previous events to create dynamic storylines.
+
+Here is the response from the LLM to the prompt:
+> *Imperial tax collectors arrived at Foxhollow, their speeder kicking up red dust from the savanna. The governor announced new tariffs on moisture vaporator parts, threatening the fragile frontier settlement's independence. Settlers gathered near the riverbank, their murmurs barely audible over the hum of vital machinery.   
+[{'action': 'decrease_cohesion', 'impact': 'medium'}]*
+
+The LLM returns a list of *actions* along with the *narrative*. This allows the narratives that the LLM comes up with to have actual impacts on the simulation.   
+The actions are picked from a list of possible actions that is given to the LLM in the system role prompt. An impact of low, medium and high gives the LLM finer control over how events affect the world.    
+Each action's effects are defined in JSON format. In this example, the settlement's cohesion will be lowered by 0.2. 
