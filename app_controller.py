@@ -32,7 +32,7 @@ class AppController:
         self.active_left_sidebar = (self.active_left_sidebar + delta) % 3
 
     def cycle_right_sidebar(self, delta):
-        self.active_right_sidebar = (self.active_right_sidebar + delta) % 3
+        self.active_right_sidebar = (self.active_right_sidebar + delta) % 4
     
     def select_cell(self, r, c):
         self.selected_cell = (r, c)
@@ -69,8 +69,8 @@ class AppController:
     def create_state(self, cell):
         self.world.create_state(cell[0], cell[1])
     
-    def generate_event(self, event_type, location):
-        self.world.add_event(event_type, (location[0], location[1]))
+    def generate_event(self, event_type, location, description = ""):
+        self.world.add_event(event_type, (location[0], location[1]), description)
 
     def get_cell_at_mouse_position(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
