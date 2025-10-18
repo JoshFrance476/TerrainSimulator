@@ -70,7 +70,19 @@ class RightSidebarController:
         else:
             self.info_list = {}
     
-            
+    def show_event_info(self, event_data):
+        self.buttons = []
+        self.title = "Event Info"
+        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 220, 25, lambda: self.controller.generate_event("political_event",self.controller.get_selected_cell(), "A political event has occured"), "Generate Political Event", self.fonts.small_font))
+        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 80, 220, 25, lambda: self.controller.generate_event("econonomic_event",self.controller.get_selected_cell(), "A economic event has occured"), "Generate Economic Event", self.fonts.small_font))
+        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 110, 220, 25, lambda: self.controller.generate_event("military_event",self.controller.get_selected_cell(), "A military event has occured"), "Generate Military Event", self.fonts.small_font))
+        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 140, 220, 25, lambda: self.controller.generate_event("cultural_event",self.controller.get_selected_cell(), "A cultural event has occured"), "Generate Social Event", self.fonts.small_font))
+        if event_data:
+            self.info_list = {
+
+            }
+        else:
+            self.info_list = {}
         
     def draw(self, screen, filter_name):
         # Draw sidebar background
