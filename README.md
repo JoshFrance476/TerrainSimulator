@@ -51,5 +51,6 @@ This is one of the nine filters used to visualise data. As you can see, grasslan
 ![Example soil fertility filter](extras/screenshots/ExampleFullViewwithSoilFertilityFilter.png)
 
 ### A different map, showcasing the LLM story generation with explanations
+In this example, the world theme was given as 'Star Wars'. A single settlement was placed in the savannah biome and then a political event was prompted. 
+As you can see, the story the LLM generates is Star Wars themed, and makes reference to the settlement's environment (being in the savannah and next to a river).
 ![Example LLM story generation](extras/screenshots/FullViewWithLLMExplanations.png)
-
