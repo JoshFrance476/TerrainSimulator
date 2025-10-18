@@ -51,12 +51,14 @@ class UIManager:
             self.left_sidebar.show_event_log(world_event_log)
         
         
-        if active_right_sidebar_screen % 3 == 0:
+        if active_right_sidebar_screen % 4 == 0:
             self.right_sidebar.show_cell_info(cell_data)
-        elif active_right_sidebar_screen % 3 == 1:
+        elif active_right_sidebar_screen % 4 == 1:
             self.right_sidebar.show_settlement_info(settlement_data, cell_event_log)
-        elif active_right_sidebar_screen % 3 == 2:
+        elif active_right_sidebar_screen % 4 == 2:
             self.right_sidebar.show_state_info(state_data)
+        elif active_right_sidebar_screen % 4 == 3:
+            self.right_sidebar.show_event_info({})
 
         self.left_sidebar.draw(screen)
         self.right_sidebar.draw(screen, filter_name)
