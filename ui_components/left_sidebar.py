@@ -1,6 +1,7 @@
 import pygame
 import config
-from ui_components.widgets import InfoBoxList, CollapsibleInfoBox
+from ui_components.widgets.collapsible_info_box import CollapsibleInfoBox
+from ui_components.widgets.info_box_list import InfoBoxList
 from functools import partial
 
 class LeftSidebarController:
@@ -8,7 +9,7 @@ class LeftSidebarController:
         self.fonts = fonts
         self.controller = controller
         self.title = ""
-        self.info_box_list = None
+        self.info_box_list = InfoBoxList(10, 50, config.SIDEBAR_WIDTH - 20)
 
         self.state_info_boxes = {}
         self.settlement_info_boxes = {}
@@ -16,7 +17,7 @@ class LeftSidebarController:
 
     def show_settlements(self, settlements_dict):
         self.title = "Settlements"
-        self.info_box_list = InfoBoxList(10, 50, config.SIDEBAR_WIDTH - 20)
+        self.info_box_list.reset()
         for s in settlements_dict.values():
             if s.id not in self.settlement_info_boxes:
                 box = CollapsibleInfoBox(self.fonts.large_font, self.fonts.small_font)
@@ -30,7 +31,7 @@ class LeftSidebarController:
 
     def show_states(self, states_dict):
         self.title = "States"
-        self.info_box_list = InfoBoxList(10, 50, config.SIDEBAR_WIDTH - 20)
+        self.info_box_list.reset()
         for s in states_dict.values():
             if s.id not in self.state_info_boxes:
                 box = CollapsibleInfoBox(self.fonts.large_font, self.fonts.small_font)
@@ -44,7 +45,7 @@ class LeftSidebarController:
     
     def show_event_log(self, event_log):
         self.title = "Event Log"
-        self.info_box_list = InfoBoxList(10, 50, config.SIDEBAR_WIDTH - 20)
+        self.info_box_list.reset()
         for event in event_log:
             if event.tick_count not in self.event_info_boxes:
                 box = CollapsibleInfoBox(self.fonts.large_font, self.fonts.small_font)
