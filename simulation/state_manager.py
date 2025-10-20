@@ -18,7 +18,7 @@ class StateManager:
         self._world.set_map_data("state", new_state_map)
         self._world.set_map_data("flip_probability", prob)
         self._world.set_map_data("decay_probability", decay_prob)
-        self._world.set_map_data("neighbor_counts", neighbor_counts)
+        self._world.set_map_data("neighbour_counts", neighbor_counts)
         self._world.set_map_data("settlement_distance", settlement_dist_map)
 
 
