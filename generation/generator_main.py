@@ -2,16 +2,17 @@ from generation.stage_1_generator import generate_stage_1
 from generation.stage_2_generator import generate_stage_2
 from generation.stage_3_generator import generate_stage_3
 from generation.stage_4_generator import generate_stage_4
+from utils.colour_utils import generate_color_map
 
 import numpy as np
 import time
 import logging
 import config as config
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.DEBUG)
 
 
-def generate_maps(rows, cols):
+def generate_data_maps(rows, cols):
     start_time = time.time()
     elevation_map, rainfall_map, temperature_map = generate_stage_1(rows, cols, config.SCALE, config.SEED)
     logging.debug(f"Stage 1 generation took {time.time() - start_time:.2f} seconds")
@@ -28,6 +29,48 @@ def generate_maps(rows, cols):
     population_capacity_map, population_map, resource_map = generate_stage_4(fertility_map, temperature_map, river_proximity_map, sea_map, river_map, elevation_map, region_map, rainfall_map)
     logging.debug(f"Stage 4 generation took {time.time() - start_time:.2f} seconds")
 
+
+    colour_map = generate_color_map({
+        'elevation': elevation_map,
+        'region': region_map,
+        'steepness': steepness_map
+    }, True, True)
+
+    world_data = {
+        'colour': colour_map,
+
+        #np.float32 maps
+        'elevation': elevation_map,
+        'temperature': temperature_map,
+        'rainfall': rainfall_map,
+        'traversal_cost': traversal_cost_map,
+        'steepness': steepness_map,
+        'fertility': fertility_map,
+        'population': population_map,
+        'population_capacity': population_capacity_map,
+        'flip_probability': np.zeros((rows, cols), dtype=np.float32),
+        'decay_probability': np.zeros((rows, cols), dtype=np.float32),
+        
+        #np.uint8 maps
+        'region': region_map,
+        'river_proximity': river_proximity_map,
+        'sea_proximity': sea_proximity_map,
+        'coastline': coastline_map,
+        'resource': resource_map,
+
+        #np.int32 maps
+        'state': np.full((rows, cols), 255, dtype=np.int32),
+        'settlement_distance': np.full((rows, cols), 0, dtype=np.int32),
+        'neighbour_counts': np.full((rows, cols), 255, dtype=np.int32),
+
+        #bool maps
+        'river': river_map,
+        'sea': sea_map,
+        }
+
     
-    return elevation_map, rainfall_map, temperature_map, river_map, sea_map, steepness_map, coastline_map, river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map, population_capacity_map, population_map, resource_map
+    return world_data
+
+
+
 
