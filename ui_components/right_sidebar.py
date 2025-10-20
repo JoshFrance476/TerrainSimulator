@@ -1,6 +1,6 @@
 import pygame
 import config
-from ui_components.widgets import Button
+from ui_components.widgets.button import Button
 from utils.ui_utils import wrap_text
 
 class RightSidebarController:
