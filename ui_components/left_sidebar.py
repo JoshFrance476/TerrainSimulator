@@ -9,7 +9,7 @@ class LeftSidebarController:
         self.fonts = fonts
         self.controller = controller
         self.title = ""
-        self.info_box_list = InfoBoxList(10, 50, config.SIDEBAR_WIDTH - 20)
+        self.info_box_list = InfoBoxList(10, 50, config.SIDEBAR_WIDTH - 20, config.SCREEN_HEIGHT-60)
 
         self.state_info_boxes = {}
         self.settlement_info_boxes = {}
