@@ -65,7 +65,8 @@ class RightSidebarController:
                 "Flip Probability": f"{cell_data['flip_probability']:.3f}",
                 "Decay Probability": f"{cell_data['decay_probability']:.3f}",
                 "Neighbour Counts": cell_data["neighbour_counts"],
-                "Colour": tuple(round(float(x),2) for x in cell_data["colour"])
+                "Colour": tuple(round(float(x),2) for x in cell_data["colour"]),
+                "Sea Proximity": cell_data['sea_proximity']
             }
             if cell_data['landmass_label'] != 0:
                 self.info_list["Land Area"] = label_lookups['landmass'][int(cell_data['landmass_label'])]['area']
@@ -80,7 +81,8 @@ class RightSidebarController:
         self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 220, 25, lambda: self.controller.generate_event("political_event",self.controller.get_selected_cell(), "A political event has occured"), "Generate Political Event", self.fonts.small_font))
         self.buttons.append(Button(config.SCREEN_WIDTH + 10, 80, 220, 25, lambda: self.controller.generate_event("econonomic_event",self.controller.get_selected_cell(), "A economic event has occured"), "Generate Economic Event", self.fonts.small_font))
         self.buttons.append(Button(config.SCREEN_WIDTH + 10, 110, 220, 25, lambda: self.controller.generate_event("military_event",self.controller.get_selected_cell(), "A military event has occured"), "Generate Military Event", self.fonts.small_font))
-        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 140, 220, 25, lambda: self.controller.generate_event("cultural_event",self.controller.get_selected_cell(), "A cultural event has occured"), "Generate Social Event", self.fonts.small_font))
+        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 140, 220, 25, lambda: self.controller.generate_event("cultural_event",self.controller.get_selected_cell(), "A cultural event has occured"), "Generate Cultural Event", self.fonts.small_font))
+        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 170, 220, 25, lambda: self.controller.generate_event("random_event",self.controller.get_selected_cell(), "A random event has occured"), "Generate Random Event", self.fonts.small_font))
         if event_data:
             self.info_list = {
 
