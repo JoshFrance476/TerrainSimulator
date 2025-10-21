@@ -43,7 +43,7 @@ class RightSidebarController:
             self.info_list = {}
             self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 170, 25, lambda: self.controller.create_state(self.controller.get_selected_cell()), "Create State", self.fonts.small_font))
     
-    def show_cell_info(self, cell_data):
+    def show_cell_info(self, cell_data, label_lookups):
         self.buttons = []
         self.title = "Cell Info"
         if cell_data:
@@ -67,6 +67,10 @@ class RightSidebarController:
                 "Neighbour Counts": cell_data["neighbour_counts"],
                 "Colour": tuple(round(float(x),2) for x in cell_data["colour"])
             }
+            if cell_data['landmass_label'] != 0:
+                self.info_list["Land Area"] = label_lookups['landmass'][int(cell_data['landmass_label'])]['area']
+            else:
+                self.info_list["Ocean Area"] = label_lookups['water_body'][int(cell_data['water_body_label'])]['area']
         else:
             self.info_list = {}
     
