@@ -2,86 +2,91 @@ import pygame
 import config
 from rendering.overlay_generator import apply_heatmap_overlay
 from utils.colour_utils import hsv_to_rgb_array
+from skimage.color import label2rgb, rgb2hsv
 
 class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
     def __init__(self, controller):
         self.controller = controller
+        self.display_maps = self.produce_display_maps(self.controller.get_world_data())
     
     def render_view(self, screen):
         '''Takes in world data and filter to produce display map, then draws to screen'''
-        display_map = self.apply_overlay(self.controller.get_screen_data(), self.controller.selected_filter)
+        x0, y0, x1, y1 = self.controller.get_camera_boundaries()
+        display_map = self.display_maps[self.controller.selected_filter][y0:y1,x0:x1]
         self.draw_view(screen, display_map)
         
     
     def render_magnifier(self, screen):
-        magnifier_display_map = self.apply_overlay(self.controller.get_magnifier_data(), self.controller.selected_filter)
+        x0, y0, x1, y1 = self.controller.get_magnifier_boundaries()
+        magnifier_display_map = self.display_maps[self.controller.selected_filter][y0:y1,x0:x1]
         self.draw_magnifier(screen, magnifier_display_map, self.controller.hovered_cell, self.controller.get_camera_position())
+    
+    def produce_display_maps(self, world_data):
+        display_maps = {
+            'colour': world_data['colour'],
+            'elevation': apply_heatmap_overlay(
+                        world_data["coastline"],
+                        world_data["elevation"]),
+            'temperature': apply_heatmap_overlay(
+                        world_data["coastline"],
+                        world_data["temperature"]),
+            'rainfall': apply_heatmap_overlay(
+                        world_data["coastline"],
+                        world_data["rainfall"]),
+            'population_capacity': apply_heatmap_overlay(
+                        world_data["coastline"],
+                        world_data["population_capacity"]),
+            'fertility': apply_heatmap_overlay(
+                        world_data["coastline"],
+                        world_data["fertility"]),
+            'traversal_cost': apply_heatmap_overlay(
+                        world_data["coastline"],
+                        world_data["traversal_cost"]),
+            'steepness': apply_heatmap_overlay(
+                        world_data["coastline"],
+                        world_data["steepness"]),
+            'population': apply_heatmap_overlay(
+                        world_data["coastline"],
+                        world_data["population"]),
+            'resource': self.produce_resource_display_map(
+                        world_data['colour'].copy(),
+                        world_data['resource']),
+            'state': self.produce_state_display_map(
+                        world_data['colour'].copy(),
+                        world_data['state']),
+            'landmass': self.produce_landmass_display_map(
+                        world_data['landmass_label']
+            )
+        }
+
+        return display_maps
 
     
-    def apply_overlay(self, view_data, map_filter):
-        '''Applies selected overlay to the base colour map.'''
-        if map_filter == "None":
-            display_map = view_data["colour"]
-        elif map_filter == "Elevation":
-            display_map = apply_heatmap_overlay(
-                    view_data["coastline"],
-                    view_data["elevation"]
-                )
-        elif map_filter == "Temperature":
-            display_map = apply_heatmap_overlay(
-                    view_data["coastline"],
-                    view_data["temperature"]
-                )
-        elif map_filter == "Rainfall":
-            display_map = apply_heatmap_overlay(
-                    view_data["coastline"],
-                    view_data["rainfall"]
-                )
-        elif map_filter == "Population Capacity":
-            display_map = apply_heatmap_overlay(
-                    view_data["coastline"],
-                    view_data["population_capacity"]
-                )
-        elif map_filter == "Fertility":
-            display_map = apply_heatmap_overlay(
-                    view_data["coastline"],
-                    view_data["fertility"]
-                )
-        elif map_filter == "Traversal Cost":
-            display_map = apply_heatmap_overlay(
-                    view_data["coastline"],
-                    view_data["traversal_cost"]
-                )
-        elif map_filter == "Steepness":
-            display_map = apply_heatmap_overlay(
-                    view_data["coastline"],
-                    view_data["steepness"]
-                )
-        elif map_filter == "Population":
-            display_map = apply_heatmap_overlay(
-                    view_data["coastline"],
-                    view_data["population"]
-                )
-        elif map_filter == "Resource":
-            display_map = view_data["colour"].copy()
-            resource_map = view_data["resource"]
-            for rid, color in config.RESOURCE_COLORS.items():
-                display_map[resource_map == rid] = color
-        elif map_filter == "State":
-            display_map = view_data["colour"].copy()
-            state_map = view_data["state"]
-            for state_id, color in config.STATE_COLOURS.items():
-                state_map_mask = state_map != 255
-                display_map[state_map_mask & (state_map % len(config.STATE_COLOURS) == state_id)] = color
-        return display_map
+    def produce_resource_display_map(self, colour_map, resource_map):
+        resource_display_map = colour_map
+        resource_map = resource_map
+        for rid, color in config.RESOURCE_COLORS.items():
+            resource_display_map[resource_map == rid] = color
+        return resource_display_map
 
+    def produce_state_display_map(self, colour_map, state_map):
+        state_display_map = colour_map
+        for state_id, color in config.STATE_COLOURS.items():
+            state_map_mask = state_map != 255
+            state_display_map[state_map_mask & (state_map % len(config.STATE_COLOURS) == state_id)] = color
+        return state_display_map
+    
+    def produce_landmass_display_map(self, landmass_label_map):
+        landmass_display_map = rgb2hsv(label2rgb(landmass_label_map))
+        landmass_display_map[..., 0] *= 360.0
+        return landmass_display_map
 
     def draw_view(self, screen, display_map):
         """AI code using surfarray to draw the whole map at once."""
         rgb_map = hsv_to_rgb_array(display_map)
 
-        surface = pygame.surfarray.make_surface(rgb_map.swapaxes(0, 1))  
+        surface = pygame.surfarray.make_surface(rgb_map.swapaxes(0, 1))
         surface = pygame.transform.scale(surface, (rgb_map.shape[1] * config.CELL_SIZE, 
                                                 rgb_map.shape[0] * config.CELL_SIZE))
         screen.blit(surface, (config.SIDEBAR_WIDTH, 0))
