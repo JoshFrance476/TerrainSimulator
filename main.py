@@ -31,7 +31,7 @@ fonts = FontManager()
 camera = Camera()
 
 controller = AppController(world, camera)
-ui_manager = UIManager(fonts, controller)
+ui_manager = UIManager(fonts, controller, world)
 map_renderer = MapRenderer(controller)
 input_handler = InputHandler(controller)
 
@@ -53,7 +53,7 @@ while True:
 
     map_renderer.render_view(screen)
     
-    ui_manager.render_ui(screen, world)
+    ui_manager.render_ui(screen)
     
     if controller.magnified:
         map_renderer.render_magnifier(screen)
