@@ -12,7 +12,7 @@ class AppController:
         self.selected_cell = None
         self.hovered_cell = None
 
-        self.selected_filter = "None"
+        self.selected_filter = "colour"
         self.magnified = False
 
         self.paused = True
@@ -62,6 +62,12 @@ class AppController:
     
     def get_camera_position(self):
         return self.camera.x_pos, self.camera.y_pos
+
+    def get_camera_boundaries(self):
+        return self.camera.x_pos, self.camera.y_pos, config.CAMERA_COLS+self.camera.x_pos, config.CAMERA_ROWS+self.camera.y_pos
+
+    def get_magnifier_boundaries(self):
+        return self.hovered_cell[1]-config.MAGNIFIER_CELL_AMOUNT, self.hovered_cell[0]-config.MAGNIFIER_CELL_AMOUNT, self.hovered_cell[1]+config.MAGNIFIER_CELL_AMOUNT, self.hovered_cell[0]+config.MAGNIFIER_CELL_AMOUNT
     
     def create_settlement(self, cell):
         self.world.create_settlement(cell[0], cell[1])
@@ -85,16 +91,6 @@ class AppController:
 
         return cell_y, cell_x
 
-
-    def get_screen_data(self):
-        return self.world.get_region_data(self.camera.x_pos, 
-                                        self.camera.y_pos, 
-                                        config.CAMERA_COLS+self.camera.x_pos, 
-                                        config.CAMERA_ROWS+self.camera.y_pos)
-
-
-    def get_magnifier_data(self):
-        return self.world.get_region_data(self.hovered_cell[1]-config.MAGNIFIER_CELL_AMOUNT, 
-                                        self.hovered_cell[0]-config.MAGNIFIER_CELL_AMOUNT, 
-                                        self.hovered_cell[1]+config.MAGNIFIER_CELL_AMOUNT, 
-                                        self.hovered_cell[0]+config.MAGNIFIER_CELL_AMOUNT)
+    
+    def get_world_data(self):
+        return self.world.get_world_data()
