@@ -55,9 +55,24 @@ class MapRenderer:
             'state': self.produce_state_display_map(
                         world_data['colour'].copy(),
                         world_data['state']),
-            'landmass': self.produce_landmass_display_map(
-                        world_data['landmass_label']
-            )
+            'landmass': self.produce_label_display_map(
+                        world_data['colour'].copy(),
+                        world_data['landmass_label']),
+            'water_body': self.produce_label_display_map(
+                        world_data['colour'].copy(),
+                        world_data['water_body_label']),
+            'continent': self.produce_label_display_map(
+                        world_data['colour'].copy(),
+                        world_data['continent_label']),
+            'land_feature': self.produce_label_display_map(
+                        world_data['colour'].copy(),
+                        world_data['land_feature_label']),
+            'ocean': self.produce_label_display_map(
+                        world_data['colour'].copy(),
+                        world_data['ocean_label']),
+            'water_feature': self.produce_label_display_map(
+                        world_data['colour'].copy(),
+                        world_data['water_feature_label'])
         }
 
         return display_maps
@@ -77,10 +92,12 @@ class MapRenderer:
             state_display_map[state_map_mask & (state_map % len(config.STATE_COLOURS) == state_id)] = color
         return state_display_map
     
-    def produce_landmass_display_map(self, landmass_label_map):
-        landmass_display_map = rgb2hsv(label2rgb(landmass_label_map))
+    def produce_label_display_map(self, colour_map, label_map):
+        landmass_display_map = rgb2hsv(label2rgb(label_map))
         landmass_display_map[..., 0] *= 360.0
-        return landmass_display_map
+        mask = label_map != 0
+        colour_map[mask] = landmass_display_map[mask]
+        return colour_map
 
     def draw_view(self, screen, display_map):
         """AI code using surfarray to draw the whole map at once."""
