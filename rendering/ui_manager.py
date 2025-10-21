@@ -2,13 +2,16 @@ import pygame
 import config
 from ui_components.left_sidebar import LeftSidebarController
 from ui_components.right_sidebar import RightSidebarController
+from ui_components.top_bar import TopBarController
 
 
 class UIManager:
-    def __init__(self, fonts, controller):
+    def __init__(self, fonts, controller, world):
         self.controller = controller
         self.left_sidebar = LeftSidebarController(fonts, controller)
         self.right_sidebar = RightSidebarController(fonts, controller)
+        self.top_bar = TopBarController(fonts, controller)
+        self.world = world
         self.fonts = fonts
         
 
@@ -16,13 +19,14 @@ class UIManager:
         self.left_sidebar.handle_event(event)
         self.right_sidebar.handle_event(event)
 
-    def render_ui(self, screen, world):
+    def render_ui(self, screen):
         selected_cell = self.controller.selected_cell
         hovered_cell = self.controller.hovered_cell
-        settlements_dict = world.get_all_settlements()
-        states_dict = world.get_all_states()
-        world_event_log = world.get_event_log()
-        cell_data, settlement_data, selected_cell, cell_event_log = world.get_cell_data(selected_cell)
+        settlements_dict = self.world.get_all_settlements()
+        states_dict = self.world.get_all_states()
+        world_event_log = self.world.get_event_log()
+        cell_data, settlement_data, selected_cell, cell_event_log = self.world.get_cell_data(selected_cell)
+        label_lookups = self.world.get_label_lookups()
         filter_name = self.controller.selected_filter
 
         active_left_sidebar_screen = self.controller.active_left_sidebar
@@ -52,7 +56,7 @@ class UIManager:
         
         
         if active_right_sidebar_screen % 4 == 0:
-            self.right_sidebar.show_cell_info(cell_data)
+            self.right_sidebar.show_cell_info(cell_data, label_lookups)
         elif active_right_sidebar_screen % 4 == 1:
             self.right_sidebar.show_settlement_info(settlement_data, cell_event_log)
         elif active_right_sidebar_screen % 4 == 2:
@@ -62,6 +66,7 @@ class UIManager:
 
         self.left_sidebar.draw(screen)
         self.right_sidebar.draw(screen, filter_name)
+
         
 
     def draw_settlements(self, settlements_dict, screen):
