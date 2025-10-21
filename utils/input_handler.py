@@ -43,27 +43,29 @@ class InputHandler:
         if event.key == pygame.K_SPACE:
             self.controller.toggle_pause()
         elif event.key == pygame.K_0:
-            self.controller.set_selected_filter("None")
+            self.controller.set_selected_filter("colour")
         elif event.key == pygame.K_1:
-            self.controller.set_selected_filter("Elevation")
+            self.controller.set_selected_filter("elevation")
         elif event.key == pygame.K_2:
-            self.controller.set_selected_filter("Temperature")
+            self.controller.set_selected_filter("temperature")
         elif event.key == pygame.K_3:
-            self.controller.set_selected_filter("Rainfall")
+            self.controller.set_selected_filter("rainfall")
         elif event.key == pygame.K_4:
-            self.controller.set_selected_filter("Population Capacity")
+            self.controller.set_selected_filter("population_capacity")
         elif event.key == pygame.K_5:
-            self.controller.set_selected_filter("Fertility")
+            self.controller.set_selected_filter("fertility")
         elif event.key == pygame.K_6:
-            self.controller.set_selected_filter("Traversal Cost")
+            self.controller.set_selected_filter("traversal_cost")
         elif event.key == pygame.K_7:
-            self.controller.set_selected_filter("Steepness")
+            self.controller.set_selected_filter("steepness")
         elif event.key == pygame.K_8:
-            self.controller.set_selected_filter("Population")
+            self.controller.set_selected_filter("population")
         elif event.key == pygame.K_9:
-            self.controller.set_selected_filter("Resource")
+            self.controller.set_selected_filter("resource")
         elif event.key == pygame.K_p:
-            self.controller.set_selected_filter("State")
+            self.controller.set_selected_filter("state")
+        elif event.key == pygame.K_q:
+            self.controller.set_selected_filter("landmass")
         elif event.key == pygame.K_q:
             self.controller.cycle_right_sidebar(-1)
         elif event.key == pygame.K_e:
