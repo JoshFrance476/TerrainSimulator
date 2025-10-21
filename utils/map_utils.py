@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.ndimage import distance_transform_cdt
+from skimage.measure import regionprops, label
 from noise import pnoise2
 
 def find_x_largest_value_locations(data, x):
@@ -47,3 +48,14 @@ def generate_perlin_noise_map(rows, cols, scale, seed, only_positive=False, octa
 def normalize(value, min_value, max_value):
 
     return (value - min_value) / (max_value - min_value) if max_value > min_value else 0
+
+def produce_label_map(map):
+    label_map = label(map, connectivity=1)
+    return label_map
+
+def produce_label_area_dict(label_map):
+    label_area_dict = {}
+    region_props = regionprops(label_map)
+    for prop_list in region_props:
+        label_area_dict[prop_list.label] = {'area':prop_list.area}
+    return label_area_dict
