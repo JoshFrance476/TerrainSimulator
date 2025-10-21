@@ -3,7 +3,7 @@ from generation.stage_2_generator import generate_stage_2
 from generation.stage_3_generator import generate_stage_3
 from generation.stage_4_generator import generate_stage_4
 from utils.colour_utils import generate_color_map
-from utils.map_utils import produce_label_map, produce_label_area_dict
+from utils.map_utils import produce_landmass_label_map, produce_label_dict, produce_continent_label_map, produce_ocean_label_map, produce_water_body_label_map
 
 import numpy as np
 import time
@@ -37,12 +37,17 @@ def generate_data_maps(rows, cols):
         'steepness': steepness_map
     }, True, True)
 
-    landmass_label_map = produce_label_map(~sea_map)
-    continent_label_map = np.zeros_like(sea_map)
+    water_body_label_map = produce_water_body_label_map(sea_map)
+
+    ocean_label_map = produce_ocean_label_map(water_body_label_map)
+
+    landmass_label_map = produce_landmass_label_map(~sea_map, ocean_label_map)
+
+    continent_label_map, test_map = produce_continent_label_map(landmass_label_map)
     land_feature_label_map = np.zeros_like(sea_map)
 
-    water_body_label_map = produce_label_map(sea_map)
-    ocean_label_map = np.zeros_like(sea_map)
+
+
     water_feature_label_map = np.zeros_like(sea_map)
 
     world_data = {
@@ -79,7 +84,7 @@ def generate_data_maps(rows, cols):
         #label maps
         'landmass_label': landmass_label_map,
         'continent_label': continent_label_map,
-        'land_feature_label': land_feature_label_map,
+        'land_feature_label': test_map,
         'water_body_label': water_body_label_map,
         'ocean_label': ocean_label_map,
         'water_feature_label': water_feature_label_map
@@ -89,11 +94,11 @@ def generate_data_maps(rows, cols):
     return world_data
 
 def generate_label_lookups(landmass_label_map, continent_label_map, land_feature_label_map, water_body_label_map, ocean_label_map, water_feature_label_map):
-    landmass_label_lookup = produce_label_area_dict(landmass_label_map)
+    landmass_label_lookup = produce_label_dict(landmass_label_map)
     continent_label_lookup = {}
     land_feature_label_lookup = {}
 
-    water_body_label_lookup = produce_label_area_dict(water_body_label_map)
+    water_body_label_lookup = produce_label_dict(water_body_label_map)
     ocean_label_lookup = {}
     water_feature_label_lookup = {}
 
