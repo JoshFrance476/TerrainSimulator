@@ -3,6 +3,7 @@ from generation.stage_2_generator import generate_stage_2
 from generation.stage_3_generator import generate_stage_3
 from generation.stage_4_generator import generate_stage_4
 from utils.colour_utils import generate_color_map
+from utils.map_utils import produce_label_map, produce_label_area_dict
 
 import numpy as np
 import time
@@ -36,6 +37,14 @@ def generate_data_maps(rows, cols):
         'steepness': steepness_map
     }, True, True)
 
+    landmass_label_map = produce_label_map(~sea_map)
+    continent_label_map = np.zeros_like(sea_map)
+    land_feature_label_map = np.zeros_like(sea_map)
+
+    water_body_label_map = produce_label_map(sea_map)
+    ocean_label_map = np.zeros_like(sea_map)
+    water_feature_label_map = np.zeros_like(sea_map)
+
     world_data = {
         'colour': colour_map,
 
@@ -66,10 +75,38 @@ def generate_data_maps(rows, cols):
         #bool maps
         'river': river_map,
         'sea': sea_map,
+        
+        #label maps
+        'landmass_label': landmass_label_map,
+        'continent_label': continent_label_map,
+        'land_feature_label': land_feature_label_map,
+        'water_body_label': water_body_label_map,
+        'ocean_label': ocean_label_map,
+        'water_feature_label': water_feature_label_map
         }
 
     
     return world_data
+
+def generate_label_lookups(landmass_label_map, continent_label_map, land_feature_label_map, water_body_label_map, ocean_label_map, water_feature_label_map):
+    landmass_label_lookup = produce_label_area_dict(landmass_label_map)
+    continent_label_lookup = {}
+    land_feature_label_lookup = {}
+
+    water_body_label_lookup = produce_label_area_dict(water_body_label_map)
+    ocean_label_lookup = {}
+    water_feature_label_lookup = {}
+
+
+    label_lookups = {
+        'landmass': landmass_label_lookup,
+        'continent': continent_label_lookup,
+        'land_feature': land_feature_label_lookup,
+        'water_body': water_body_label_lookup,
+        'ocean': ocean_label_lookup,
+        'water_feature': water_feature_label_lookup
+    }
+    return label_lookups
 
 
 
