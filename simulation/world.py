@@ -20,17 +20,11 @@ class World:
         self.state_manager = StateManager(self)
         self.narrative_manager = NarrativeManager(self, self.event_manager)
 
-        
-
-        for settlement in self.settlement_manager.get_all_settlements().values():
-            if settlement.id%5 == 0:
-                self.state_manager.create_state(settlement.r, settlement.c, f"State {settlement.id}")
 
         
     def step(self):
         self.tick_count += 1
         if self.tick_count % 30 == 0:
-            self.data.update()
             self.settlement_manager.update()
             self.state_manager.update()
 
@@ -70,6 +64,8 @@ class World:
         else:
             return None, None, None, None
     
+    def get_label_lookups(self):
+        return self.data.get_label_lookups()
 
     def get_surrounding_data_map(self, r, c, radius=3, map="all"):
         r0, r1 = max(0, r-radius), min(self.rows, r+radius+1)
