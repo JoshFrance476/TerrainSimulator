@@ -64,8 +64,18 @@ class InputHandler:
             self.controller.set_selected_filter("resource")
         elif event.key == pygame.K_p:
             self.controller.set_selected_filter("state")
-        elif event.key == pygame.K_q:
+        elif event.key == pygame.K_r:
             self.controller.set_selected_filter("landmass")
+        elif event.key == pygame.K_t:
+            self.controller.set_selected_filter("water_body")
+        elif event.key == pygame.K_y:
+            self.controller.set_selected_filter('continent')
+        elif event.key == pygame.K_u:
+            self.controller.set_selected_filter('land_feature')
+        elif event.key == pygame.K_i:
+            self.controller.set_selected_filter('ocean')
+        elif event.key == pygame.K_o:
+            self.controller.set_selected_filter('water_feature')
         elif event.key == pygame.K_q:
             self.controller.cycle_right_sidebar(-1)
         elif event.key == pygame.K_e:
@@ -74,5 +84,3 @@ class InputHandler:
             self.controller.cycle_left_sidebar(-1)
         elif event.key == pygame.K_x:
             self.controller.cycle_left_sidebar(1)
-        elif event.key == pygame.K_o:
-            self.controller.generate_event("random_event", self.controller.get_selected_cell())
