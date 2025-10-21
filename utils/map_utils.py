@@ -1,6 +1,8 @@
 import numpy as np
-from scipy.ndimage import distance_transform_cdt
+from scipy.ndimage import distance_transform_cdt, distance_transform_edt
 from skimage.measure import regionprops, label
+from skimage.segmentation import watershed
+from skimage.morphology import binary_dilation
 from noise import pnoise2
 
 def find_x_largest_value_locations(data, x):
@@ -49,13 +51,44 @@ def normalize(value, min_value, max_value):
 
     return (value - min_value) / (max_value - min_value) if max_value > min_value else 0
 
-def produce_label_map(map):
+def produce_landmass_label_map(land_map, ocean_label_map):
+    land_map = ocean_label_map == 0
+    label_map = label(land_map, connectivity=1)
+    return label_map
+
+def produce_water_body_label_map(map):
     label_map = label(map, connectivity=1)
     return label_map
 
-def produce_label_area_dict(label_map):
-    label_area_dict = {}
+def produce_continent_label_map(landmass_label_map):
+    landmass_label_map = landmass_label_map
+    continent_label_map = np.zeros_like(landmass_label_map)
+    test_label_map = np.zeros_like(landmass_label_map)
+    for region in regionprops(landmass_label_map):
+        if region.area >= 200:
+            region_mask = landmass_label_map == region.label
+            distance = distance_transform_edt(region_mask)
+            distance_mask = distance > 4
+            distance_mask = binary_dilation(distance_mask)
+            test_label_map[region_mask] = label(distance_mask)[region_mask]
+            labels = watershed(region_mask, markers=label(distance_mask), mask=region_mask)
+            continent_label_map[region_mask] = labels[region_mask]
+    continent_label_map = label(continent_label_map)
+    return continent_label_map, test_label_map
+
+def produce_ocean_label_map(water_body_label_map):
+    ocean_label_map = np.zeros_like(water_body_label_map)
+    for region in regionprops(water_body_label_map):
+        if region.area > 200:
+            region_mask = water_body_label_map == region.label
+            ocean_label_map[region_mask] = region.label
+    return ocean_label_map
+
+def produce_label_dict(label_map):
+    label_dict = {}
     region_props = regionprops(label_map)
     for prop_list in region_props:
-        label_area_dict[prop_list.label] = {'area':prop_list.area}
-    return label_area_dict
+        label_dict[prop_list.label] = {
+            'area':prop_list.area
+        }
+    return label_dict
