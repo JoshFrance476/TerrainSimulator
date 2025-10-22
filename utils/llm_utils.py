@@ -18,33 +18,44 @@ Using ~50 tokens per response, 64 cache hits and 22 cache misses
 Can either double response size, or ~quadruple input and still get 5,000 responses per $1
 """
 
-event_schema = [{
+narrative_schema_with_storyline = [{
     "type": "function",
     "function": {
-        "name": "generate_event",
-        "description": "Generate an event with description and effects",
+        "name": "generate_narrative",
+        "description": "Generate a narrative and storyline for event",
         "parameters": {
             "type": "object",
             "properties": {
-                "description": {"type": "string"},
-                "coords": {"type": "array",
-                           "items": {"type": "integer"},
-                            "minItems": 2,
-                            "maxItems": 2},
-                "effects": {"type": "object",
-                        "properties": {
-                            "population": {"type": "integer"},
-                }}},
-            "required": ["description", "effects"]
+                "narrative": {"type": "string",
+                              "description": f"A short creative description of the event inspired by {LLM_THEME}"},
+                "storyline": {"type": "string",
+                              "description": f"A storyline that the event takes place in"},
+                "storyline_scope": {"type": "string",
+                                    "enum": ["settlement", "region", "continent","global"]},
+                "actions": {"type": "array",
+                            "items": {"type": "object",
+                                      "properties": {
+                                          "action": {"type": "string",
+                                                     "enum": LLM_ACTIONS_NAMES},
+                                          "impact": {"type": "string",
+                                                     "enum": ["low", "medium", "high"]}
+                                      },
+                                      "required": ["action", "impact"],
+                                      "additionalProperties": False
+                                    }
+                           }
+            },
+            "required": ["narrative", "actions", "storyline", "storyline_scope"],
+            "additionalProperties": False
         }
     }
 }]
 
 
-desc_schema = [{
+narrative_schema = [{
     "type": "function",
     "function": {
-        "name": "generate_description",
+        "name": "generate_narrative",
         "description": "Generate a narrative for event",
         "parameters": {
             "type": "object",
@@ -71,7 +82,11 @@ desc_schema = [{
 }]
 
 
-def prompt_narrative(prompt, schema, model="deepseek-chat", temperature=1.5):
+def prompt_narrative(prompt, with_storyline, model="deepseek-chat", temperature=1.5):
+    if with_storyline:
+        schema = narrative_schema_with_storyline
+    else:
+        schema = narrative_schema
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -82,8 +97,11 @@ def prompt_narrative(prompt, schema, model="deepseek-chat", temperature=1.5):
             If the event is unspecified, you have creative freedom to generate a narrative, but it must be based solely on the given context and world theme.
             Narratives should be no longer than 50 words.
             Keep the tone consistent with the themes culture, technology, and politics.
-            Return JSON with 'narrative' and 'actions'.
-            Here is a list of possible actions. Actions can be left empty.
+            Return JSON with 'narrative', 'actions', 'storyline' and 'storyline_scope'.
+            Storylines should be no longer than 20 words and provide a summary of circumstances in which the narrative takes place.
+            Storyline scope should define the area in which the storyline takes place, and can be 'settlement', 'region', 'continent' or 'worldwide'.
+            If a storyline is provided in the prompt, it should be updated to reflect any changes the narrative has made to the story.
+            Here is a list of possible actions:
              {LLM_ACTIONS_NAMES}"""},
 
             {"role": "user", "content": prompt}
@@ -99,4 +117,23 @@ def prompt_narrative(prompt, schema, model="deepseek-chat", temperature=1.5):
     actions = json.loads(
         response.choices[0].message.tool_calls[0].function.arguments
     )["actions"]
-    return desc, actions
+    if with_storyline:
+        storyline = json.loads(
+            response.choices[0].message.tool_calls[0].function.arguments
+    )["storyline"]
+        storyline_scope = json.loads(
+            response.choices[0].message.tool_calls[0].function.arguments
+    )["storyline_scope"]
+    else:
+        storyline = None
+        storyline_scope = None
+    return desc, actions, storyline, storyline_scope
+
+if __name__ == "__main__":
+    desc, actions, storyline, storyline_scope = prompt_narrative(
+        """
+        A unspecified event has occured
+        """,
+        True
+    )
+    print(desc, actions, storyline, storyline_scope)
