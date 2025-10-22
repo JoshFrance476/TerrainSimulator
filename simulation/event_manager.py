@@ -1,10 +1,15 @@
-class EventManager:
-    def __init__(self):
-        self.event_log = []
-    
-    def add_new_event(self, event):
-        self.event_log.append(event)
+from simulation.event import Event
 
+class EventManager:
+    def __init__(self, world):
+        self.event_log = []
+        self.world = world
+    
+    def add_event(self, type, location, description):
+        tick_count = self.world.tick_count
+        new_event = Event(type, location, tick_count, description)
+        self.event_log.append(new_event)
+        return new_event
 
     def get_event_log(self):
         return self.event_log
