@@ -4,7 +4,8 @@ from simulation.state_manager import StateManager
 import numpy as np
 import config as config
 from simulation.event_manager import EventManager
-from simulation.narrative_manager import NarrativeManager
+from simulation.event import Event
+from simulation.storyline_manager import StorylineManager
 
 class World:
     """Handles simulator and high level world logic."""
@@ -15,10 +16,10 @@ class World:
 
         self.tick_count = 0
 
-        self.event_manager = EventManager()
+        self.event_manager = EventManager(self)
         self.settlement_manager = SettlementManager(self, self.event_manager)
         self.state_manager = StateManager(self)
-        self.narrative_manager = NarrativeManager(self, self.event_manager)
+        self.storyline_manager = StorylineManager(self)
 
 
         
@@ -114,7 +115,8 @@ class World:
         return self.event_manager.filter_event_log_by_location(location)
 
     def add_event(self, type, location, description = ""):
-        return self.narrative_manager.add_event(type, location, description)
+        event = self.event_manager.add_event(type, location, description)
+        self.storyline_manager.handle_event(event)
 
 
 
