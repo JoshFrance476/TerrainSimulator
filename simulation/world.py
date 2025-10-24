@@ -118,6 +118,8 @@ class World:
         event = self.event_manager.add_event(type, location, description)
         self.storyline_manager.handle_event(event)
 
+    def get_storylines(self):
+        return self.storyline_manager.get_storylines()
 
 
 
