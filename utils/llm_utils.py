@@ -127,7 +127,15 @@ def prompt_narrative(prompt, with_storyline, model="deepseek-chat", temperature=
     else:
         storyline = None
         storyline_scope = None
+    cache_hits = response.usage.prompt_cache_hit_tokens
+    cache_misses = response.usage.prompt_cache_miss_tokens
+    completion_tokens = response.usage.completion_tokens
+    print(f"Cache hits: {cache_hits}, cache misses: {cache_misses}, output tokens: {completion_tokens}")
+    cost = (((cache_hits/1000000) * 0.028) + ((cache_misses/1000000) * 0.28) + ((completion_tokens/1000000) * 0.42)) * 0.75 * 100
+    print(f"Cost = {cost:.4f}p")
     return desc, actions, storyline, storyline_scope
+
+
 
 if __name__ == "__main__":
     desc, actions, storyline, storyline_scope = prompt_narrative(
