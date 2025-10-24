@@ -1,5 +1,6 @@
 import pygame
 from ui_components.widgets.text_link import TextLink
+from ui_components.widgets.info_box_list import InfoBoxList
 from utils.ui_utils import wrap_text
 
 class InfoBox:
@@ -16,12 +17,17 @@ class InfoBox:
         self.expanded = False
         self.width = 0
         self.wrapped_lines = []
+        self.info_box_list = None
 
     def set_info(self, title, visible_lines, hidden_lines = None):
         self.title.text = title
         self.visible_lines = visible_lines
         self.hidden_lines = hidden_lines or {}
         self.update_height()
+    
+    def update_info_box_list(self, info_boxes):
+        for info_box in info_boxes:
+            self.info_box_list.add_info_box(info_box)
     
     def add_text_link_action(self, action):
         self.title.action = action
@@ -47,9 +53,12 @@ class InfoBox:
         self.height = len(all_wrapped_lines) * self.LINE_HEIGHT + self.title.height
         self.wrapped_lines = all_wrapped_lines
 
+        if self.info_box_list:
+            self.height += self.info_box_list.height
 
 
-    def draw(self, screen, x, y):        
+
+    def draw(self, screen, x, y, parent_clip=None):        
         self.update_height()
 
         rect = pygame.Rect(x, y, self.width, self.height)
@@ -64,6 +73,9 @@ class InfoBox:
                 text_surface = self.small_font.render(line, True, (30,30,30))
                 screen.blit(text_surface, (x + self.PADDING, y_offset))
                 y_offset += self.LINE_HEIGHT
+        
+        if self.info_box_list:
+            self.info_box_list.draw(screen, x+5, y_offset, parent_clip)
             
         
 
