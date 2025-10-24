@@ -103,3 +103,6 @@ class StorylineManager:
             print(storyline.scope)
             for event in storyline.events:
                 print(event.narrative)
+    
+    def get_storylines(self):
+        return self.storylines
