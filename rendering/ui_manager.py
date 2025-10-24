@@ -25,6 +25,7 @@ class UIManager:
         settlements_dict = self.world.get_all_settlements()
         states_dict = self.world.get_all_states()
         world_event_log = self.world.get_event_log()
+        world_storyline_list = self.world.get_storylines()
         cell_data, settlement_data, selected_cell, cell_event_log = self.world.get_cell_data(selected_cell)
         label_lookups = self.world.get_label_lookups()
         filter_name = self.controller.selected_filter
@@ -47,12 +48,14 @@ class UIManager:
         if selected_cell:
             self.draw_selected_cell_border(selected_cell, screen)
 
-        if active_left_sidebar_screen % 3 == 0:
+        if active_left_sidebar_screen % 4 == 0:
             self.left_sidebar.show_settlements(settlements_dict)
-        elif active_left_sidebar_screen % 3 == 1:
+        elif active_left_sidebar_screen % 4 == 1:
             self.left_sidebar.show_states(states_dict)
-        elif active_left_sidebar_screen % 3 == 2:
+        elif active_left_sidebar_screen % 4 == 2:
             self.left_sidebar.show_event_log(world_event_log)
+        elif active_left_sidebar_screen % 4 == 3:
+            self.left_sidebar.show_storylines(world_storyline_list)
         
         
         if active_right_sidebar_screen % 4 == 0:
