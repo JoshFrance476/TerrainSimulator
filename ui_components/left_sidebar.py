@@ -142,9 +142,7 @@ class LeftSidebarController:
             self.info_box_list.handle_event(event)
         
         self.storyline_state["scroll_offset"] = self.info_box_list.scroll_offset
-        print(self.info_box_list.scroll_offset)
         for storyline_id, storyline_obj in self.storyline_info_boxes.items():
-            print(storyline_id)
             if storyline_id not in self.storyline_state["storylines"]:
                 self.storyline_state["storylines"][storyline_id] ={}
             
@@ -157,6 +155,5 @@ class LeftSidebarController:
                 },
             })
 
-        print(self.storyline_state)
 
 
