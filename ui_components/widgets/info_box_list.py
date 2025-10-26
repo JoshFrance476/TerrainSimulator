@@ -41,7 +41,6 @@ class InfoBoxList:
             max_scroll = max(0, total_height - self.height)
             self.scroll_offset -= event.y * self.SCROLL_SPEED
             self.scroll_offset = max(0, min(self.scroll_offset, max_scroll))
-            print(self.height, total_height, max_scroll, self.scroll_offset)
             for box in self.info_boxes:
                 if box.info_box_list:
                     box.info_box_list.handle_event(event)
