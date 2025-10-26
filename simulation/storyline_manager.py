@@ -53,10 +53,8 @@ class StorylineManager:
         semantic_text = "; ".join(semantic_data)
 
         prompt = f"""
-            Event:
-            {event.description}
-            Environment context:
-            {semantic_text}
+            Event: {event.description}.
+            Environment context: {semantic_text}.
         """
         print(prompt)
         narrative, actions, storyline, scope = prompt_narrative(prompt, with_storyline=True)
@@ -75,14 +73,13 @@ class StorylineManager:
         for storyline in relevant_storylines:
             storylines_list.append(storyline.overview)
         storylines_text = "; ".join(storylines_list)
+        previous_event = relevant_storylines[0].events[-1].narrative
 
         prompt = f"""
-            Event:
-            {event.description}
-            Relevant storylines:
-            {storylines_text}
-            Environment context:
-            {semantic_text}
+            Event: {event.description}.
+            Relevant storylines: {storylines_text}.
+            Previous event in storyline: {previous_event}.
+            Environment context: {semantic_text}.
         """
         print(prompt)
         narrative, actions, new_storyline, scope = prompt_narrative(prompt, with_storyline=True)
