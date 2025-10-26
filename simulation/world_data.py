@@ -1,4 +1,4 @@
-from generation.generator_main import generate_data_maps, generate_label_lookups
+from generation.generator_main import generate_data_maps
 import config as config
 from utils.map_utils import find_x_largest_value_locations
 
@@ -6,11 +6,8 @@ from utils.map_utils import find_x_largest_value_locations
 class WorldData:
     def __init__(self, rows, cols):
         self.rows, self.cols = rows, cols
-        self.world_data = generate_data_maps(self.rows, self.cols)
-        self.label_lookups = generate_label_lookups(self.world_data['landmass_label'],self.world_data['continent_label'],self.world_data['land_feature_label'],self.world_data['water_body_label'],self.world_data['ocean_label'],self.world_data['water_feature_label'])
-
-
-    
+        self.world_data, self.label_lookups = generate_data_maps(self.rows, self.cols)
+        
     def get_cell_data(self, pos):
         r, c = pos
 
