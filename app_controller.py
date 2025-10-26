@@ -29,7 +29,7 @@ class AppController:
             self.world.step()
     
     def cycle_left_sidebar(self, delta):
-        self.active_left_sidebar = (self.active_left_sidebar + delta) % 3
+        self.active_left_sidebar = (self.active_left_sidebar + delta) % 4
 
     def cycle_right_sidebar(self, delta):
         self.active_right_sidebar = (self.active_right_sidebar + delta) % 4
