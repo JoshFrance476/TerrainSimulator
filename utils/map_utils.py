@@ -3,6 +3,7 @@ from scipy.ndimage import distance_transform_cdt, distance_transform_edt
 from skimage.measure import regionprops, label
 from skimage.segmentation import watershed
 from skimage.morphology import binary_dilation
+from skimage.graph import merge_hierarchical
 from noise import pnoise2
 
 def find_x_largest_value_locations(data, x):
@@ -53,42 +54,68 @@ def normalize(value, min_value, max_value):
 
 def produce_landmass_label_map(land_map, ocean_label_map):
     land_map = ocean_label_map == 0
-    label_map = label(land_map, connectivity=1)
-    return label_map
+    landmass_dict = {}
 
-def produce_water_body_label_map(map):
-    label_map = label(map, connectivity=1)
-    return label_map
+    landmass_label_map = label(land_map, connectivity=1)
+    for landmass in regionprops(landmass_label_map):
+        landmass_dict[landmass.label] = {
+            'area': landmass.area
+        }
+    return landmass_label_map, landmass_dict
 
-def produce_continent_label_map(landmass_label_map):
-    landmass_label_map = landmass_label_map
+
+def produce_water_body_label_map(water_map):
+    water_map = label(water_map, connectivity=1)
+    water_body_dict = {}
+
+    water_body_label_map = label(water_map, connectivity=1)
+    for water_body in regionprops(water_body_label_map):
+        water_body_dict[water_body.label] = {
+            'area': water_body.area
+        }
+    return water_body_label_map, water_body_dict
+
+
+def produce_continent_label_map(landmass_label_map, threshold):
     continent_label_map = np.zeros_like(landmass_label_map)
-    test_label_map = np.zeros_like(landmass_label_map)
-    for region in regionprops(landmass_label_map):
-        if region.area >= 200:
-            region_mask = landmass_label_map == region.label
+    continent_dict = {}
+
+    continent_threshold = 400
+
+    for landmass in regionprops(landmass_label_map):
+        region_mask = landmass_label_map == landmass.label
+        if landmass.area >= continent_threshold:
             distance = distance_transform_edt(region_mask)
-            distance_mask = distance > 4
+            distance_mask = distance > threshold
             distance_mask = binary_dilation(distance_mask)
-            test_label_map[region_mask] = label(distance_mask)[region_mask]
             labels = watershed(region_mask, markers=label(distance_mask), mask=region_mask)
             continent_label_map[region_mask] = labels[region_mask]
+            for continent in regionprops(continent_label_map):
+                continent_dict
+        else:
+            continent_label_map[region_mask] = landmass.label
+            
     continent_label_map = label(continent_label_map)
-    return continent_label_map, test_label_map
 
-def produce_ocean_label_map(water_body_label_map):
+    for continent in regionprops(continent_label_map):
+            continent_dict[continent.label] = {
+                'area': continent.area
+            }
+            if continent.area > continent_threshold:
+                continent_dict['type'] = 'continent'
+            else:
+                continent_dict['type'] = 'island'
+
+    return continent_label_map, continent_dict
+
+
+def produce_ocean_label_map(water_body_label_map, threshold):
     ocean_label_map = np.zeros_like(water_body_label_map)
+    ocean_dict = {}
     for region in regionprops(water_body_label_map):
-        if region.area > 200:
+        if region.area > threshold:
             region_mask = water_body_label_map == region.label
             ocean_label_map[region_mask] = region.label
-    return ocean_label_map
+    return ocean_label_map, ocean_dict
 
-def produce_label_dict(label_map):
-    label_dict = {}
-    region_props = regionprops(label_map)
-    for prop_list in region_props:
-        label_dict[prop_list.label] = {
-            'area':prop_list.area
-        }
-    return label_dict
+
