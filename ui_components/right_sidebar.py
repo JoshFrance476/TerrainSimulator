@@ -2,6 +2,7 @@ import pygame
 import config
 from ui_components.widgets.button import Button
 from utils.ui_utils import wrap_text
+from biome_config import id_to_biome
 
 class RightSidebarController:
     def __init__(self, fonts, controller):
@@ -50,7 +51,7 @@ class RightSidebarController:
             self.info_list = {
                 "Row": self.controller.get_selected_cell()[0],
                 "Col": self.controller.get_selected_cell()[1],
-                "Region": config.REGION_RULES[cell_data["region"]]["name"].title(),
+                "Region": id_to_biome[cell_data["region"]].title(),
                 "Elevation": f"{cell_data['elevation']:.2f}",
                 "Temperature": f"{cell_data['temperature']:.2f}",
                 "Rainfall": f"{cell_data['rainfall']:.2f}",

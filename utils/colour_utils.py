@@ -1,39 +1,36 @@
 import numpy as np
 from config import REGION_COLOUR_LOOKUP, REGION_NAME_TO_ID
+from biome_config import biome_colours, id_to_biome
 
 def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
     """
-    Generates a color-coded terrain map based on elevation, biomes, and regions.
+    Generates a colour-coded terrain map using biome_colours based on biome IDs.
     """
     rows, cols = world_data['elevation'].shape
     colour_map = np.zeros((rows, cols, 3), dtype=np.float32)
 
     for r in range(rows):
         for c in range(cols):
-            region_id = world_data['region'][r, c]
-            color = REGION_COLOUR_LOOKUP[region_id]
-            colour_map[r, c] = color
+            biome_id = world_data['region'][r, c]
+            biome_name = id_to_biome.get(biome_id) 
+            base_colour = biome_colours.get(biome_name, (0.0, 0.0, 0.0))
+            colour_map[r, c] = base_colour
 
-            if region_id == REGION_NAME_TO_ID["ocean"]:
-                
-                blend_factor = (min(world_data['elevation'][r, c],0) + 1) / 2  # Normalize to 0-1 range for water
-                colour_map[r, c] = blend_colors(colour_map[r, c], (None,0,0), world_data['steepness'][r, c] * 0.2)
+            if biome_name == "ocean":
+                blend_factor = (min(world_data['elevation'][r, c], 0) + 1) / 2
+                colour_map[r, c] = blend_colors(colour_map[r, c], (None, 0, 0), world_data['steepness'][r, c] * 0.2)
                 colour_map[r, c] = blend_colors(colour_map[r, c], (None, 0.37, 1.0), blend_factor)
 
-
             elif variation_toggle:
-                if region_id == REGION_NAME_TO_ID["mountains"]:
-                    colour_map[r, c] = blend_colors(colour_map[r, c], (None,0,0), world_data['steepness'][r, c] * 0.3)
-                    colour_map[r, c] = blend_colors(colour_map[r, c], (None,0,0.4), world_data['elevation'][r, c] / 2)
-
-
+                if biome_name == "mountains":
+                    colour_map[r, c] = blend_colors(colour_map[r, c], (None, 0, 0), world_data['steepness'][r, c] * 0.3)
+                    colour_map[r, c] = blend_colors(colour_map[r, c], (None, 0, 0.4), world_data['elevation'][r, c] / 2)
                 else:
-                    colour_map[r, c] = blend_colors(colour_map[r, c], (None,0,0.2), world_data['steepness'][r, c] * 0.3)
-                    colour_map[r, c] = blend_colors(colour_map[r, c], (None,0,0.8), world_data['elevation'][r, c] / 4)
-
-
+                    colour_map[r, c] = blend_colors(colour_map[r, c], (None, 0, 0.2), world_data['steepness'][r, c] * 0.3)
+                    colour_map[r, c] = blend_colors(colour_map[r, c], (None, 0, 0.8), world_data['elevation'][r, c] / 4)
 
     return colour_map
+
 
 def blend_colors(color1, color2, factor):
     """

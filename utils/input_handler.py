@@ -76,6 +76,8 @@ class InputHandler:
             self.controller.set_selected_filter('ocean')
         elif event.key == pygame.K_o:
             self.controller.set_selected_filter('water_feature')
+        elif event.key == pygame.K_f:
+            self.controller.set_selected_filter('region_boundary')
         elif event.key == pygame.K_q:
             self.controller.cycle_right_sidebar(-1)
         elif event.key == pygame.K_e:

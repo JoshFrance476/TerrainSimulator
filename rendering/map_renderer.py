@@ -72,7 +72,11 @@ class MapRenderer:
                         world_data['ocean_label']),
             'water_feature': self.produce_label_display_map(
                         world_data['colour'].copy(),
-                        world_data['water_feature_label'])
+                        world_data['water_feature_label']),
+            'region_boundary': self.produce_label_display_map(
+                        world_data['colour'].copy(),
+                        world_data['region_boundary'],
+                        label_colours=[(0.0,0.0,0.0)])
         }
 
         return display_maps
@@ -92,8 +96,8 @@ class MapRenderer:
             state_display_map[state_map_mask & (state_map % len(config.STATE_COLOURS) == state_id)] = color
         return state_display_map
     
-    def produce_label_display_map(self, colour_map, label_map):
-        landmass_display_map = rgb2hsv(label2rgb(label_map))
+    def produce_label_display_map(self, colour_map, label_map, label_colours=None):
+        landmass_display_map = rgb2hsv(label2rgb(label_map, colors=label_colours))
         landmass_display_map[..., 0] *= 360.0
         mask = label_map != 0
         colour_map[mask] = landmass_display_map[mask]
