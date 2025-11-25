@@ -91,9 +91,12 @@ def prompt_narrative(prompt, with_storyline, model="deepseek-chat", temperature=
         model=model,
         messages=[
             {"role": "system", "content": f"""
-             You are the worldbuilder of a realistic world simulation.
-            The world is based on {LLM_THEME}.
-            Write one grounded narrative in that world. The narrative should describe the given event.
+            You are the worldbuilder of a procedurally generated world.
+            The user has given the world theme as '{LLM_THEME}'. All narratives and storylines should be relevant to the world theme.
+            Write one narrative in the world based on the given event, relevant storylines and environment context.
+            Narratives should be vivid and bring life to the world.
+            Do not describe singular moments, gestures, or symbolic imagery. Focus on structural outcomes.
+            Do not generate proper nouns unless they appear in the prompt.
             If the event is unspecified, you have creative freedom to generate a narrative, but it must be based solely on the given context and world theme.
             Narratives should be no longer than 50 words.
             Keep the tone consistent with the themes culture, technology, and politics.
