@@ -22,17 +22,18 @@ class InputHandler:
         
     
     def handle_continuous_inputs(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.controller.pan_camera(-config.PAN_STEP, 0)
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.controller.pan_camera(config.PAN_STEP, 0)
-        if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.controller.pan_camera(0, -config.PAN_STEP)
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.controller.pan_camera(0, config.PAN_STEP)
-        
-        self.controller.magnified = keys[pygame.K_LCTRL]
+        if not self.controller.selected_textbox:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                self.controller.pan_camera(-config.PAN_STEP, 0)
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                self.controller.pan_camera(config.PAN_STEP, 0)
+            if keys[pygame.K_UP] or keys[pygame.K_w]:
+                self.controller.pan_camera(0, -config.PAN_STEP)
+            if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+                self.controller.pan_camera(0, config.PAN_STEP)
+            
+            self.controller.magnified = keys[pygame.K_LCTRL]
 
 
         r, c = self.controller.get_cell_at_mouse_position()
@@ -40,47 +41,50 @@ class InputHandler:
 
     def _handle_keyboard(self, event):
         """Handle keyboard input."""
-        if event.key == pygame.K_SPACE:
-            self.controller.toggle_pause()
-        elif event.key == pygame.K_0:
-            self.controller.set_selected_filter("colour")
-        elif event.key == pygame.K_1:
-            self.controller.set_selected_filter("elevation")
-        elif event.key == pygame.K_2:
-            self.controller.set_selected_filter("temperature")
-        elif event.key == pygame.K_3:
-            self.controller.set_selected_filter("rainfall")
-        elif event.key == pygame.K_4:
-            self.controller.set_selected_filter("population_capacity")
-        elif event.key == pygame.K_5:
-            self.controller.set_selected_filter("fertility")
-        elif event.key == pygame.K_6:
-            self.controller.set_selected_filter("traversal_cost")
-        elif event.key == pygame.K_7:
-            self.controller.set_selected_filter("steepness")
-        elif event.key == pygame.K_8:
-            self.controller.set_selected_filter("population")
-        elif event.key == pygame.K_9:
-            self.controller.set_selected_filter("resource")
-        elif event.key == pygame.K_p:
-            self.controller.set_selected_filter("state")
-        elif event.key == pygame.K_r:
-            self.controller.set_selected_filter("landmass")
-        elif event.key == pygame.K_t:
-            self.controller.set_selected_filter("water_body")
-        elif event.key == pygame.K_y:
-            self.controller.set_selected_filter('continent')
-        elif event.key == pygame.K_u:
-            self.controller.set_selected_filter('land_feature')
-        elif event.key == pygame.K_i:
-            self.controller.set_selected_filter('ocean')
-        elif event.key == pygame.K_o:
-            self.controller.set_selected_filter('water_feature')
-        elif event.key == pygame.K_q:
-            self.controller.cycle_right_sidebar(-1)
-        elif event.key == pygame.K_e:
-            self.controller.cycle_right_sidebar(1)
-        elif event.key == pygame.K_z:
-            self.controller.cycle_left_sidebar(-1)
-        elif event.key == pygame.K_x:
-            self.controller.cycle_left_sidebar(1)
+        if self.controller.selected_textbox:
+            self.controller.selected_textbox.handle_text_input(event)
+        else:
+            if event.key == pygame.K_SPACE:
+                self.controller.toggle_pause()
+            elif event.key == pygame.K_0:
+                self.controller.set_selected_filter("colour")
+            elif event.key == pygame.K_1:
+                self.controller.set_selected_filter("elevation")
+            elif event.key == pygame.K_2:
+                self.controller.set_selected_filter("temperature")
+            elif event.key == pygame.K_3:
+                self.controller.set_selected_filter("rainfall")
+            elif event.key == pygame.K_4:
+                self.controller.set_selected_filter("population_capacity")
+            elif event.key == pygame.K_5:
+                self.controller.set_selected_filter("fertility")
+            elif event.key == pygame.K_6:
+                self.controller.set_selected_filter("traversal_cost")
+            elif event.key == pygame.K_7:
+                self.controller.set_selected_filter("steepness")
+            elif event.key == pygame.K_8:
+                self.controller.set_selected_filter("population")
+            elif event.key == pygame.K_9:
+                self.controller.set_selected_filter("resource")
+            elif event.key == pygame.K_p:
+                self.controller.set_selected_filter("state")
+            elif event.key == pygame.K_r:
+                self.controller.set_selected_filter("landmass")
+            elif event.key == pygame.K_t:
+                self.controller.set_selected_filter("water_body")
+            elif event.key == pygame.K_y:
+                self.controller.set_selected_filter('continent')
+            elif event.key == pygame.K_u:
+                self.controller.set_selected_filter('land_feature')
+            elif event.key == pygame.K_i:
+                self.controller.set_selected_filter('ocean')
+            elif event.key == pygame.K_o:
+                self.controller.set_selected_filter('water_feature')
+            elif event.key == pygame.K_q:
+                self.controller.cycle_right_sidebar(-1)
+            elif event.key == pygame.K_e:
+                self.controller.cycle_right_sidebar(1)
+            elif event.key == pygame.K_z:
+                self.controller.cycle_left_sidebar(-1)
+            elif event.key == pygame.K_x:
+                self.controller.cycle_left_sidebar(1)

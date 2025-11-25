@@ -17,8 +17,10 @@ class AppController:
 
         self.paused = True
 
+        self.selected_textbox = None
 
-
+    def select_textbox(self, textbox):
+        self.selected_textbox = textbox
     
     def toggle_pause(self):
         self.paused = not self.paused
@@ -94,3 +96,4 @@ class AppController:
     
     def get_world_data(self):
         return self.world.get_world_data()
+    

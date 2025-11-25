@@ -1,6 +1,7 @@
 import pygame
 import config
 from ui_components.widgets.button import Button
+from ui_components.widgets.textbox import TextBox
 from utils.ui_utils import wrap_text
 
 class RightSidebarController:
@@ -10,9 +11,11 @@ class RightSidebarController:
         self.title = ""
         self.info_list = {}
         self.buttons = []
+        self.textbox = None
     
     def show_settlement_info(self, settlement_data, settlement_events):
         self.buttons = []
+        self.textbox = None
         self.title = "Settlement Info"
         if settlement_data:
             self.info_list = {
@@ -45,6 +48,7 @@ class RightSidebarController:
     
     def show_cell_info(self, cell_data, label_lookups):
         self.buttons = []
+        self.textbox = None
         self.title = "Cell Info"
         if cell_data:
             self.info_list = {
@@ -82,7 +86,9 @@ class RightSidebarController:
         self.buttons.append(Button(config.SCREEN_WIDTH + 10, 80, 220, 25, lambda: self.controller.generate_event("econonomic_event",self.controller.get_selected_cell(), "A economic event has occured"), "Generate Economic Event", self.fonts.small_font))
         self.buttons.append(Button(config.SCREEN_WIDTH + 10, 110, 220, 25, lambda: self.controller.generate_event("military_event",self.controller.get_selected_cell(), "A military event has occured"), "Generate Military Event", self.fonts.small_font))
         self.buttons.append(Button(config.SCREEN_WIDTH + 10, 140, 220, 25, lambda: self.controller.generate_event("cultural_event",self.controller.get_selected_cell(), "A cultural event has occured"), "Generate Cultural Event", self.fonts.small_font))
-        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 170, 220, 25, lambda: self.controller.generate_event("random_event",self.controller.get_selected_cell(), "A random event has occured"), "Generate Random Event", self.fonts.small_font))
+        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 170, 220, 25, lambda: self.controller.generate_event("random_event",self.controller.get_selected_cell(), "An unspecified event has occured"), "Generate Random Event", self.fonts.small_font))
+        if not self.textbox:
+            self.textbox = TextBox(self.controller, self.fonts.small_font, config.SCREEN_WIDTH + 10, 200, 220, 25)
         if event_data:
             self.info_list = {
 
@@ -108,9 +114,14 @@ class RightSidebarController:
         for button in self.buttons:
             button.draw(screen)
         
+        if self.textbox:
+            self.textbox.draw(screen)
+        
         filter_text = self.fonts.small_font.render(f"Filter: {filter_name}", True, (30, 30, 30))
         screen.blit(filter_text, (config.SCREEN_WIDTH + 10, config.SCREEN_HEIGHT - 40))
     
     def handle_event(self, event):
         for b in self.buttons:
             b.handle_event(event)
+        if self.textbox:
+            self.textbox.handle_mouse_input(event)
