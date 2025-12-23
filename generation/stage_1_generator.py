@@ -1,16 +1,5 @@
 import numpy as np
 from config import ELEVATION_IMPACT_ON_TEMP, TEMPERATURE_DEVIATION
-from utils.map_utils import generate_perlin_noise_map
-
-def generate_stage_1(rows, cols, scale, seed):
-    elevation_map = generate_perlin_noise_map(rows, cols, scale*1.3, seed, False, 8, 0.38, 3.3)       
-    rainfall_map = generate_perlin_noise_map(rows, cols, scale*2, seed*2, True, 5, 0.5, 2.2)    
-
-    temperature_map = calculate_temperature(elevation_map, rows)  
-
-    return elevation_map, rainfall_map, temperature_map
-
-
 
 def calculate_temperature(elevation, rows):
     """

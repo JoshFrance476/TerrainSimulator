@@ -3,21 +3,6 @@ from config import STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST, REGION_COST_LOOKUP, R
 from utils.map_utils import calculate_proximity_map
 
 
-def generate_stage_3(river_map, sea_map, elevation_map, temperature_map, rainfall_map, steepness_map):
-
-    river_proximity_map = calculate_proximity_map(river_map)
-    sea_proximity_map = calculate_proximity_map(sea_map)
-
-    region_map = determine_region(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map)
-    fertility_map = calculate_soil_fertility(region_map, rainfall_map, elevation_map, temperature_map)
-    traversal_cost_map = calculate_traversal_cost(region_map, steepness_map)            
-
-    return river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map
-
-
-
-
-
 def calculate_traversal_cost(region_map, steepness_map):
     cost_lookup = REGION_COST_LOOKUP[region_map]
 
@@ -25,8 +10,6 @@ def calculate_traversal_cost(region_map, steepness_map):
     traversal_cost_map = cost_lookup + steepness_cost
 
     return traversal_cost_map
-
-
 
 
 def calculate_soil_fertility(region, rainfall, elevation, temperature):

@@ -1,39 +1,29 @@
 import numpy as np
 from config import RESOURCE_LOOKUP, RESOURCE_RULES, REGION_NAME_TO_ID
 
+def calculate_population_capacity_map(fertility, temperature, proximity_to_water, sea, river, water_threshold=5):
+    # mask of cells that are sea or river
+    water_mask = sea | river
 
-def generate_stage_4(fertility_map, temperature_map, river_proximity_map, sea_map, river_map, elevation_map, region_map, rainfall_map):
+    # temp_factor = 1 - abs(0.4 - temperature)
+    temp_factor = 1 - np.abs(0.4 - temperature)
 
+    # water_bonus = max(0, (water_threshold - proximity) / water_threshold * 0.3)
+    water_bonus = (water_threshold - proximity_to_water) / water_threshold * 0.3
+    water_bonus = np.maximum(water_bonus, 0)
 
-    population_capacity_map = np.vectorize(calculate_population_capacity, otypes=[np.float32])(fertility_map, temperature_map, river_proximity_map, sea_map, river_map)
+    # base capacity
+    capacity = (fertility * 2) * temp_factor + water_bonus
 
-    population_map = init_population(population_capacity_map)
+    # multiply by random field
+    rand = np.random.power(1, size=capacity.shape)
+    capacity *= rand
 
-    resource_map = calculate_resource_map(fertility_map, temperature_map, elevation_map, region_map, rainfall_map)
+    # zero out water + river
+    capacity[water_mask] = 0
 
+    return capacity.astype(np.float32)
 
-    return population_capacity_map, population_map, resource_map
-
-
-
-def calculate_population_capacity(fertility, temperature, proximity_to_water, sea, river, water_threshold=5):
-    """
-    Calculates population capacity based on fertility, temperature, and proximity to water. Can use Numpy vectorization instead in future.
-    """
-    if sea or river:
-        return 0 
-    
-    capacity = 0
-
-    temp_factor = 1 - abs(0.4 - temperature)  # Best temperature around 0.4
-    water_bonus = max(0, (water_threshold - proximity_to_water) / water_threshold * 0.3)
-
-    capacity += (fertility*2) * temp_factor + water_bonus 
-
-    #Multiplies by random float between 0 and 1
-    capacity *= np.random.power(1)
-    
-    return capacity
 
 
 def calculate_resource_map(fertility_map, temperature_map, elevation_map, region_map, rainfall_map):

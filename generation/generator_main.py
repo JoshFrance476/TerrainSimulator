@@ -1,7 +1,3 @@
-from generation.stage_1_generator import generate_stage_1
-from generation.stage_2_generator import generate_stage_2
-from generation.stage_3_generator import generate_stage_3
-from generation.stage_4_generator import generate_stage_4
 from utils.colour_utils import generate_color_map
 from utils.map_utils import produce_landmass_label_map, produce_continent_label_map, produce_ocean_label_map, produce_water_body_label_map
 
@@ -10,25 +6,85 @@ import time
 import logging
 import config as config
 
-logging.basicConfig(level=logging.WARNING)
+from utils.map_utils import generate_perlin_noise_map
+from generation.stage_1_generator import calculate_temperature
+from generation.stage_2_generator import calculate_steepness, generate_coastline_map, generate_sea_map, generate_rivers_map
+from generation.stage_3_generator import calculate_proximity_map, determine_region, calculate_soil_fertility, calculate_traversal_cost
+from generation.stage_4_generator import calculate_population_capacity_map, init_population, calculate_resource_map
+
+logging.basicConfig(level=logging.DEBUG)
+
 
 
 def generate_data_maps(rows, cols):
-    start_time = time.time()
-    elevation_map, rainfall_map, temperature_map = generate_stage_1(rows, cols, config.SCALE, config.SEED)
-    logging.debug(f"Stage 1 generation took {time.time() - start_time:.2f} seconds")
+
+    ## Stage 1
 
     start_time = time.time()
-    river_map, sea_map, steepness_map, coastline_map = generate_stage_2(config.NUMBER_OF_RIVERS, config.SEA_LEVEL, elevation_map, config.RIVER_SOURCE_MIN_ELEVATION)
-    logging.debug(f"Stage 2 generation took {time.time() - start_time:.2f} seconds")
+    elevation_map = generate_perlin_noise_map(rows, cols, config.SCALE*1.3, config.SEED, False, 8, 0.38, 3.3)     
+    logging.debug(f"Elevation map generation took {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
+    rainfall_map = generate_perlin_noise_map(rows, cols, config.SCALE*2, config.SEED*2, True, 5, 0.5, 2.2)    
+    logging.debug(f"Rainfall map generation took {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
+    temperature_map = calculate_temperature(elevation_map, rows) 
+    logging.debug(f"Temperature map generation took {time.time() - start_time:.2f} seconds")
+
+    ## Stage 2
+
+    start_time = time.time()
+    sea_map = generate_sea_map(elevation_map)
+    logging.debug(f"Sea map generation took {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
+    river_map = generate_rivers_map(elevation_map, config.SEA_LEVEL, config.RIVER_SOURCE_MIN_ELEVATION, config.NUMBER_OF_RIVERS)
+    logging.debug(f"River map generation took {time.time() - start_time:.2f} seconds")
     
     start_time = time.time()
-    river_proximity_map, sea_proximity_map, region_map, fertility_map, traversal_cost_map = generate_stage_3(river_map, sea_map, elevation_map, temperature_map, rainfall_map, steepness_map)
-    logging.debug(f"Stage 3 generation took {time.time() - start_time:.2f} seconds")
+    steepness_map = calculate_steepness(elevation_map)
+    logging.debug(f"Steepness map generation took {time.time() - start_time:.2f} seconds")
+    
+    start_time = time.time()
+    coastline_map = generate_coastline_map(elevation_map)
+    logging.debug(f"Coastline map generation took {time.time() - start_time:.2f} seconds")
 
     start_time = time.time()
-    population_capacity_map, population_map, resource_map = generate_stage_4(fertility_map, temperature_map, river_proximity_map, sea_map, river_map, elevation_map, region_map, rainfall_map)
-    logging.debug(f"Stage 4 generation took {time.time() - start_time:.2f} seconds")
+    river_proximity_map = calculate_proximity_map(river_map)
+    logging.debug(f"River proximity map generation took {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
+    sea_proximity_map = calculate_proximity_map(sea_map)
+    logging.debug(f"Sea proximity map generation took {time.time() - start_time:.2f} seconds")
+
+    ## Stage 3
+
+    start_time = time.time()
+    region_map = determine_region(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map)
+    logging.debug(f"Region map generation took {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
+    fertility_map = calculate_soil_fertility(region_map, rainfall_map, elevation_map, temperature_map)
+    logging.debug(f"Fertility map generation took {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
+    traversal_cost_map = calculate_traversal_cost(region_map, steepness_map)  
+    logging.debug(f"Traversal cost map generation took {time.time() - start_time:.2f} seconds")
+
+    # Stage 4
+
+    start_time = time.time()
+    population_capacity_map = calculate_population_capacity_map(fertility_map, temperature_map, river_proximity_map, sea_map, river_map)
+    logging.debug(f"Population capacity map generation took {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
+    population_map = init_population(population_capacity_map)
+    logging.debug(f"Population map generation took {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
+    resource_map = calculate_resource_map(fertility_map, temperature_map, elevation_map, region_map, rainfall_map)   
+    logging.debug(f"Resource map generation took {time.time() - start_time:.2f} seconds")
 
     start_time = time.time()
     colour_map = generate_color_map({
@@ -44,7 +100,6 @@ def generate_data_maps(rows, cols):
     water_body_label_map, water_body_dict = produce_water_body_label_map(sea_map)  #water body map labels every separate water body
 
     ocean_label_map, ocean_dict = produce_ocean_label_map(water_body_label_map, threshold=200)  #ocean map labels all water bodies larger than threshold
-
     landmass_label_map, landmass_dict = produce_landmass_label_map(land_map, ocean_label_map)  #landmass map labels every separate landmass, including lakes (water bodies below ocean threshold)
 
     #continent map labels each section of landmass that is separated by less than (threshold * 2) - 1 cells to the rest of the landmass (ignoring lakes)
