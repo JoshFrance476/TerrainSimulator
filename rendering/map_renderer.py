@@ -113,6 +113,6 @@ class MapRenderer:
         magnifier_surface = pygame.surfarray.make_surface(rgb_map.swapaxes(0, 1))
         magnifier_surface = pygame.transform.scale(magnifier_surface, (rgb_map.shape[1] * config.MAGNIFIER_CELL_SIZE,
                                                                           rgb_map.shape[0] * config.MAGNIFIER_CELL_SIZE))
-        screen.blit(magnifier_surface, ((hovered_cell[1]*config.CELL_SIZE)+config.SIDEBAR_WIDTH-(camera_position[0]*config.CELL_SIZE) - (config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[1]//2),
-                                        (hovered_cell[0]*config.CELL_SIZE)-camera_position[1]*config.CELL_SIZE - (config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[0]//2)))
+        screen.blit(magnifier_surface, ((hovered_cell[1]*config.CELL_SIZE)+config.SIDEBAR_WIDTH-((camera_position[0]*config.CELL_SIZE)+config.MAGNIFIER_CELL_SIZE/2) - (config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[1]//2),
+                                        ((hovered_cell[0]*config.CELL_SIZE)-camera_position[1]*config.CELL_SIZE)-config.MAGNIFIER_CELL_SIZE/2 - (config.MAGNIFIER_CELL_SIZE*magnifier_map.shape[0]//2)))
 
