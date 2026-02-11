@@ -14,69 +14,26 @@ class UIManager:
         
 
     def handle_event(self, event):
-        self.left_sidebar.handle_event(event)
         self.right_sidebar.handle_event(event)
 
     def render_ui(self, screen):
         selected_cell = self.controller.selected_cell
         hovered_cell = self.controller.hovered_cell
-        settlements_dict = self.world.get_all_settlements()
-        states_dict = self.world.get_all_states()
-        world_event_log = self.world.get_event_log()
-        world_storyline_list = self.world.get_storylines()
-        cell_data, settlement_data, selected_cell, cell_event_log = self.world.get_cell_data(selected_cell)
-        label_lookups = self.world.get_label_lookups()
+        cell_data, selected_cell = self.world.get_cell_data(selected_cell)
         filter_name = self.controller.selected_filter
 
-        active_left_sidebar_screen = self.controller.active_left_sidebar
-        active_right_sidebar_screen = self.controller.active_right_sidebar
-
-        if cell_data:
-            if cell_data["state"] != 255:
-                state_data = states_dict[cell_data["state"]]
-            else:
-                state_data = None
-        else:
-            state_data = None
-
-        self.draw_settlements(settlements_dict, screen)
 
         self.draw_hover_highlight(hovered_cell, screen)
 
         if selected_cell:
             self.draw_selected_cell_border(selected_cell, screen)
-
-        if active_left_sidebar_screen % 4 == 0:
-            self.left_sidebar.show_settlements(settlements_dict)
-        elif active_left_sidebar_screen % 4 == 1:
-            self.left_sidebar.show_states(states_dict)
-        elif active_left_sidebar_screen % 4 == 2:
-            self.left_sidebar.show_event_log(world_event_log)
-        elif active_left_sidebar_screen % 4 == 3:
-            self.left_sidebar.show_storylines(world_storyline_list)
         
-        
-        if active_right_sidebar_screen % 4 == 0:
-            self.right_sidebar.show_cell_info(cell_data, label_lookups)
-        elif active_right_sidebar_screen % 4 == 1:
-            self.right_sidebar.show_settlement_info(settlement_data, cell_event_log)
-        elif active_right_sidebar_screen % 4 == 2:
-            self.right_sidebar.show_state_info(state_data)
-        elif active_right_sidebar_screen % 4 == 3:
-            self.right_sidebar.show_event_info({})
+        self.right_sidebar.show_cell_info(cell_data)
 
         self.left_sidebar.draw(screen)
         self.right_sidebar.draw(screen, filter_name)
 
-        
 
-    def draw_settlements(self, settlements_dict, screen):
-        for s in settlements_dict.values():
-            x = (s.c - self.controller.get_camera_position()[0]) * config.CELL_SIZE + config.SIDEBAR_WIDTH
-            y = (s.r - self.controller.get_camera_position()[1]) * config.CELL_SIZE
-            pygame.draw.rect(screen, (0, 0, 0), (x, y, config.CELL_SIZE, config.CELL_SIZE))
-            text_surface = self.fonts.large_font.render(s.name, True, (30, 30, 30))
-            screen.blit(text_surface, (x + 5, y - 5))
     
     
     

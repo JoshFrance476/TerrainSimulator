@@ -6,14 +6,10 @@ class AppController:
         self.world = world
         self.camera = camera
 
-        self.active_left_sidebar = 0
-        self.active_right_sidebar = 0
-
         self.selected_cell = None
         self.hovered_cell = None
 
         self.selected_filter = "colour"
-        self.magnified = False
 
         self.paused = True
 
@@ -45,20 +41,9 @@ class AppController:
     def set_selected_filter(self, filter_name):
         self.selected_filter = filter_name
 
-    def select_settlement(self, r, c):
-        self.selected_cell = (r, c)
-        self.active_right_sidebar = 1
-    
-    def select_state(self, state_id):
-        self.active_right_sidebar = 2
-        settlements_in_state = self.world.get_settlements_in_state(state_id)
-        if len(settlements_in_state) > 0:
-            self.selected_cell = (settlements_in_state[0].r, settlements_in_state[0].c)
-
     def get_selected_cell(self):
         return self.selected_cell
     
-
     def pan_camera(self, dx, dy):
         self.camera.pan(dx, dy)
     
@@ -67,18 +52,6 @@ class AppController:
 
     def get_camera_boundaries(self):
         return self.camera.x_pos, self.camera.y_pos, config.CAMERA_COLS+self.camera.x_pos, config.CAMERA_ROWS+self.camera.y_pos
-
-    def get_magnifier_boundaries(self):
-        return self.hovered_cell[1]-config.MAGNIFIER_CELL_AMOUNT, self.hovered_cell[0]-config.MAGNIFIER_CELL_AMOUNT, self.hovered_cell[1]+config.MAGNIFIER_CELL_AMOUNT, self.hovered_cell[0]+config.MAGNIFIER_CELL_AMOUNT
-    
-    def create_settlement(self, cell):
-        self.world.create_settlement(cell[0], cell[1])
-
-    def create_state(self, cell):
-        self.world.create_state(cell[0], cell[1])
-    
-    def generate_event(self, event_type, location, description = ""):
-        self.world.add_event(event_type, (location[0], location[1]), description)
 
     def get_cell_at_mouse_position(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -92,7 +65,6 @@ class AppController:
         cell_y = int(world_y // config.CELL_SIZE)
 
         return cell_y, cell_x
-
     
     def get_world_data(self):
         return self.world.get_world_data()

@@ -2,7 +2,6 @@ import pygame
 import config as config
 from rendering.camera import Camera
 from utils.input_handler import InputHandler
-from simulation.world_data import WorldData
 from simulation.world import World
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
@@ -55,8 +54,6 @@ while True:
     
     ui_manager.render_ui(screen)
     
-    if controller.magnified:
-        map_renderer.render_magnifier(screen)
 
     pygame.display.flip()
     clock.tick(60)

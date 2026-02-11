@@ -1,8 +1,5 @@
 import pygame
 import config
-from ui_components.widgets.button import Button
-from ui_components.widgets.textbox import TextBox
-from utils.ui_utils import wrap_text
 
 class RightSidebarController:
     def __init__(self, fonts, controller):
@@ -13,40 +10,8 @@ class RightSidebarController:
         self.buttons = []
         self.textbox = None
     
-    def show_settlement_info(self, settlement_data, settlement_events):
-        self.buttons = []
-        self.textbox = None
-        self.title = "Settlement Info"
-        if settlement_data:
-            self.info_list = {
-                "Name": settlement_data.name,
-                "Tier": settlement_data.tier.title(),
-                "Improved Resources": "\n",
-                "Events": "\n"
-            }
-            for resource in settlement_data.improved_resources:
-                self.info_list["Improved Resources"] += f"{resource.name} ({resource.location[0]}, {resource.location[1]}) ({resource.distance})\n"
 
-            for event in settlement_events:
-                self.info_list["Events"] += "\n".join(wrap_text(event.description, self.fonts.small_font, config.SIDEBAR_WIDTH - 20)) + "\n"
-        else:
-            self.info_list = {}
-            self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 170, 25, lambda: self.controller.create_settlement(self.controller.get_selected_cell()), "Create Settlement", self.fonts.small_font))
-
-    def show_state_info(self, state_data):
-        self.buttons = []
-        self.title = "State Info"
-        if state_data:
-            self.info_list = {
-                "Name": state_data.name,
-                "Tile Capacity": f"{state_data.tile_capacity:.1f}",
-                "Tile Count": f"{state_data.tile_count:.0f}"
-            }
-        else:
-            self.info_list = {}
-            self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 170, 25, lambda: self.controller.create_state(self.controller.get_selected_cell()), "Create State", self.fonts.small_font))
-    
-    def show_cell_info(self, cell_data, label_lookups):
+    def show_cell_info(self, cell_data):
         self.buttons = []
         self.textbox = None
         self.title = "Cell Info"
@@ -59,42 +24,13 @@ class RightSidebarController:
                 "Temperature": f"{cell_data['temperature']:.2f}",
                 "Rainfall": f"{cell_data['rainfall']:.2f}",
                 "Steepness": f"{cell_data['steepness']:.2f}",
-                "Fertility": f"{cell_data['fertility']:.2f}",
                 "Traversal Cost": f"{cell_data['traversal_cost']:.2f}",
-                "Population": f"{cell_data['population']:.3f}",
-                "Population Capacity": f"{cell_data['population_capacity']:.2f}",
-                "Resource": config.RESOURCE_NAMES[cell_data['resource']].title(),
-                "State": cell_data["state"],
-                "Settlement Distance": cell_data['settlement_distance'],
-                "Flip Probability": f"{cell_data['flip_probability']:.3f}",
-                "Decay Probability": f"{cell_data['decay_probability']:.3f}",
-                "Neighbour Counts": cell_data["neighbour_counts"],
                 "Colour": tuple(round(float(x),2) for x in cell_data["colour"]),
                 "Sea Proximity": cell_data['sea_proximity']
             }
-            if cell_data['landmass_label'] != 0:
-                self.info_list["Land Area"] = label_lookups['landmass'][int(cell_data['landmass_label'])]['area']
-            else:
-                self.info_list["Ocean Area"] = label_lookups['water_body'][int(cell_data['water_body_label'])]['area']
         else:
             self.info_list = {}
     
-    def show_event_info(self, event_data):
-        self.buttons = []
-        self.title = "Event Info"
-        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 50, 220, 25, lambda: self.controller.generate_event("political_event",self.controller.get_selected_cell(), "A political event has occured"), "Generate Political Event", self.fonts.small_font))
-        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 80, 220, 25, lambda: self.controller.generate_event("econonomic_event",self.controller.get_selected_cell(), "A economic event has occured"), "Generate Economic Event", self.fonts.small_font))
-        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 110, 220, 25, lambda: self.controller.generate_event("military_event",self.controller.get_selected_cell(), "A military event has occured"), "Generate Military Event", self.fonts.small_font))
-        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 140, 220, 25, lambda: self.controller.generate_event("cultural_event",self.controller.get_selected_cell(), "A cultural event has occured"), "Generate Cultural Event", self.fonts.small_font))
-        self.buttons.append(Button(config.SCREEN_WIDTH + 10, 170, 220, 25, lambda: self.controller.generate_event("random_event",self.controller.get_selected_cell(), "An unspecified event has occured"), "Generate Random Event", self.fonts.small_font))
-        if not self.textbox:
-            self.textbox = TextBox(self.controller, self.fonts.small_font, config.SCREEN_WIDTH + 10, 200, 220, 25)
-        if event_data:
-            self.info_list = {
-
-            }
-        else:
-            self.info_list = {}
         
     def draw(self, screen, filter_name):
         # Draw sidebar background

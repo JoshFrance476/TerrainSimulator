@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-CAMERA_ROWS, CAMERA_COLS = 55, 90
+CAMERA_ROWS, CAMERA_COLS = 55, 85
 WORLD_ROWS, WORLD_COLS = CAMERA_ROWS*4, CAMERA_COLS*4
 CELL_SIZE = 16 # Decreasing this by one increases generation time 4 fold
 MAGNIFIER_CELL_SIZE = 10
@@ -15,9 +15,6 @@ STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST = 1
 SEA_LEVEL = 0.05
 NUMBER_OF_RIVERS = 15
 RIVER_SOURCE_MIN_ELEVATION = 0.65
-
-STARTING_SETTLEMENT_COUNT = 0
-SETTLEMENT_LIMIT = 30
 
 SEED = random.randint(0,10000)
 
@@ -33,47 +30,6 @@ FONT_SIZE = 18
 
 SCREEN_WIDTH, SCREEN_HEIGHT = CAMERA_COLS * CELL_SIZE + (SIDEBAR_WIDTH), CAMERA_ROWS * CELL_SIZE
 
-STATE_COLOURS = {
-    0: (255, 0, 0),
-    1: (0, 255, 0),
-    2: (0, 0, 255),
-    3: (255, 255, 0),
-    4: (0, 255, 255),
-    5: (255, 0, 255),
-    6: (255, 255, 255),
-    7: (0, 0, 0),
-    8: (128, 128, 128),
-    9: (192, 192, 192),
-    10: (255, 165, 0),
-    
-}
-
-SETTLEMENT_TIERS = {
-    0: "settlement",
-    3: "village",
-    4: "town",
-    5: "city"
-    }
-
-LLM_ACTIONS = {
-    "increase_population": {
-        "low": {"population": + 10},
-        "medium": {"population": + 20},
-        "high": {"population": + 30}
-    },
-    "decrease_population": {
-        "low": {"population": - 10},
-        "medium": {"population": - 20},
-        "high": {"population": - 30}
-    },
-    "increase_cohesion": {},
-    "decrease_cohesion": {},
-    "settlement_destruction": {},
-    "rebellion": {},
-    "regime_change": {},
-}
-
-LLM_ACTIONS_NAMES = list(LLM_ACTIONS.keys())
 
 REGION_RULES = [
     {
@@ -224,61 +180,3 @@ REGION_COST_LOOKUP = np.array(
     [r["base_traversal_cost"] for r in REGION_RULES],
     dtype=np.float32
 )
-
-
-
-RESOURCE_LOOKUP = {
-    "none": 0,
-    "lumber": 1,
-    "fertile land": 2,
-    "ore": 3,
-    "fish": 4,
-}
-
-RESOURCE_NAMES = {v: k for k, v in RESOURCE_LOOKUP.items()}
-
-RESOURCE_COLORS = {
-    1: (45.0, 1.0, 0.45),
-    2: (60.0, 1.0, 0.85),
-    3: (230.0, 0.0, 0.15),
-    4: (230.0, 1.0, 0.706),
-}
-"""
-Resource rules function as follows:
-
-'Region' - base probability of resource in given regions
-'Factors' - 'min', 'max' - specify the value range where the resource can appear. 
-            'weight' - specify the distribution of the resource within the range. 
-                       0 = uniform distribution
-                       >0 = more weight towards the max
-                       <0 = more weight towards the min
-"""
-RESOURCE_RULES = {
-    "lumber": {
-        "upgraded": "lumber mill",
-        "region": {"forest": 0.04},    
-    },
-    "fertile land": {
-        "upgraded": "farm",
-        "upgraded_bonuses": {"population_growth": 0.02},
-        "region": {"grassland": 0.04, "savanna": 0.01},
-        "fertility": {"min": 0.4, "max": 1, "weight": 1},
-    },
-    "ore": {
-        "upgraded": "mine",
-        "region": {"mountains": 0.01, "snowy peaks": 0.01},
-    },
-    "fish": {
-        "upgraded": "fishing spot",
-        "region": {"ocean": 0.01, "river": 0.02},
-    },
-}
-
-SETTLEMENT_NAMES = [
-    "King's Landing",
-    "Winterfell",
-    "Highgarden",
-    "Oldtown",
-    "Valyria",
-    "Riverrun"
-]
