@@ -1,10 +1,14 @@
 import pygame
 import config
+from rendering.map_renderer import MapRenderer
 
 class AppController:
-    def __init__(self, world, camera, player):
+    def __init__(self, world, camera, player, screen):
         self.world = world
         self.camera = camera
+        self.map_renderer = MapRenderer(self)
+
+        self.screen = screen
 
         self.player = player
 
@@ -14,9 +18,15 @@ class AppController:
         self.selected_filter = "colour"
 
         self.paused = True
-        self.move = False
+        self.interaction_type = "view_tile"
 
         self.selected_textbox = None
+    
+    def tick(self):
+        self.map_renderer.render_view(self.screen)
+    
+    def refresh_map_render(self):
+        self.map_renderer.refresh_view()
 
     def select_textbox(self, textbox):
         self.selected_textbox = textbox
@@ -25,11 +35,30 @@ class AppController:
         self.paused = not self.paused
     
     def toggle_move(self):
-        self.move = not self.move
+        self.interaction_type = "move_player"
+    
+    def toggle_region_place(self):
+        self.interaction_type = "paint_region"
+    
+    def toggle_view_tile(self):
+        self.interaction_type = "view_tile"
+    
+    def interact_with_tile(self, r, c):
+        if self.interaction_type == "move_player":
+            self.move_player_to_cell(r, c)
+        elif self.interaction_type == "view_tile":
+            self.select_cell(r, c)
+        elif self.interaction_type == "paint_region":
+            self.paint_region((r,c))
+    
+    def paint_region(self, location):
+        self.world.region_manager.create_region(location)
+        self.refresh_map_render()
 
     def next_turn(self):
         self.camera.set_location(self.player.get_location())
         self.camera.clamp_pan()
+        self.refresh_map_render()
     
     def cycle_left_sidebar(self, delta):
         self.active_left_sidebar = (self.active_left_sidebar + delta) % 4
@@ -55,7 +84,9 @@ class AppController:
         return self.selected_cell
     
     def pan_camera(self, dx, dy):
-        self.camera.pan(dx, dy)
+        if self.interaction_type != "move_player":
+            self.camera.pan(dx, dy)
+            self.refresh_map_render()
     
     def get_camera_position(self):
         return self.camera.x_pos, self.camera.y_pos
