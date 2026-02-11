@@ -1,12 +1,12 @@
 import random
 import numpy as np
 
-CAMERA_ROWS, CAMERA_COLS = 266, 440 
-WORLD_ROWS, WORLD_COLS = CAMERA_ROWS*2, CAMERA_COLS*2
-CELL_SIZE = 3 # Decreasing this by one increases generation time 4 fold
-MAGNIFIER_CELL_SIZE = 6
-MAGNIFIER_CELL_AMOUNT = 12
-SCALE = 70 # Steepness is not synced with scale, will not be as obvious at more zoomed in levels
+CAMERA_ROWS, CAMERA_COLS = 55, 90
+WORLD_ROWS, WORLD_COLS = CAMERA_ROWS*4, CAMERA_COLS*4
+CELL_SIZE = 16 # Decreasing this by one increases generation time 4 fold
+MAGNIFIER_CELL_SIZE = 10
+MAGNIFIER_CELL_AMOUNT = 13
+SCALE = 60 # Steepness is not synced with scale, will not be as obvious at more zoomed in levels
 
 TEMPERATURE_DEVIATION = 0.16 # Smaller values = higher peak at equator, larger values = flatter curve
 ELEVATION_IMPACT_ON_TEMP = 0.2
@@ -21,11 +21,11 @@ SETTLEMENT_LIMIT = 30
 
 SEED = random.randint(0,10000)
 
-TOGGLE_LLM_EVENTS = True
+TOGGLE_LLM_EVENTS = False
 
-LLM_THEME = "Star wars"
+LLM_THEME = "Game of Thrones on a canonical map, but set 2000 years in the past. Stories should involve suprises and twists."
 
-PAN_STEP = 4    # Pan speed in pixels
+PAN_STEP = 1   # Pan speed in pixels
 
 
 SIDEBAR_WIDTH = 250  
@@ -275,14 +275,10 @@ RESOURCE_RULES = {
 }
 
 SETTLEMENT_NAMES = [
-    "Alderwyn",
-    "Brackenreach",
-    "Eldervale",
-    "Stoneford",
-    "Ravenmoor",
-    "Willowmere",
-    "Foxhollow",
-    "Ashbourne",
-    "Highmere",
-    "Silverstead",
+    "King's Landing",
+    "Winterfell",
+    "Highgarden",
+    "Oldtown",
+    "Valyria",
+    "Riverrun"
 ]
