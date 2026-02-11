@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-CAMERA_ROWS, CAMERA_COLS = 55, 85
+CAMERA_ROWS, CAMERA_COLS = 57, 87
 WORLD_ROWS, WORLD_COLS = CAMERA_ROWS*4, CAMERA_COLS*4
 CELL_SIZE = 16 # Decreasing this by one increases generation time 4 fold
 MAGNIFIER_CELL_SIZE = 10
