@@ -28,12 +28,6 @@ class DataProcessor:
                         semantic_data.append("There is a small " + region_name + " region in the area")
                     if region_name == "mountains":
                         semantic_data.append("There are mountains in the region")
-            elif map_type == "resource":
-                for resource in config.RESOURCE_RULES:
-                    if resource in raw_vicinity_data:
-                        semantic_data.append("There is " + resource + " in the area")
-
-
         return semantic_data
 
 
