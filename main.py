@@ -32,7 +32,7 @@ camera = Camera()
 
 player = MapEntity((50,50))
 
-controller = AppController(world, camera, player)
+controller = AppController(world, camera, player, screen)
 ui_manager = UIManager(fonts, controller, world)
 map_renderer = MapRenderer(controller)
 input_handler = InputHandler(controller)
@@ -51,7 +51,7 @@ while True:
     
     input_handler.handle_continuous_inputs()
 
-    map_renderer.render_view(screen)
+    controller.tick()
     
     ui_manager.render_ui(screen)
     
