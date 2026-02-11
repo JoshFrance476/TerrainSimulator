@@ -1,5 +1,5 @@
 import numpy as np
-from config import REGION_COLOUR_LOOKUP, REGION_NAME_TO_ID
+from config import BIOME_COLOUR_LOOKUP, BIOME_NAME_TO_ID
 
 def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
     """
@@ -7,28 +7,28 @@ def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
     """
     elevation = world_data["elevation"]
     steepness = world_data["steepness"]
-    region = world_data["region"]
+    biome = world_data["biome"]
 
     rows, cols = elevation.shape
 
-    # REGION_COLOUR_LOOKUP is already a list such that:
-    # REGION_COLOUR_LOOKUP[region_id] -> (R,G,B)
+    # BIOME_COLOUR_LOOKUP is already a list such that:
+    # BIOME_COLOUR_LOOKUP[biome_id] -> (R,G,B)
 
-    lookup = np.asarray(REGION_COLOUR_LOOKUP, dtype=np.float32)
+    lookup = np.asarray(BIOME_COLOUR_LOOKUP, dtype=np.float32)
 
     # Vectorised lookup:
-    # region has shape (rows, cols)
+    # biome has shape (rows, cols)
     # result becomes (rows, cols, 3)
-    colour_map = lookup[region]
+    colour_map = lookup[biome]
 
     # -------------------------
     # 2. Masks
     # -------------------------
-    ocean_id = REGION_NAME_TO_ID["ocean"]
-    mountains_id = REGION_NAME_TO_ID["mountains"]
+    ocean_id = BIOME_NAME_TO_ID["ocean"]
+    mountains_id = BIOME_NAME_TO_ID["mountains"]
 
-    ocean_mask = region == ocean_id
-    mountains_mask = region == mountains_id
+    ocean_mask = biome == ocean_id
+    mountains_mask = biome == mountains_id
     land_mask = ~ocean_mask
 
     # -------------------------
@@ -81,7 +81,7 @@ def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
             colour_map[mountains_mask] = out * (1 - f[mountains_mask, None]) + new * f[mountains_mask, None]
 
         # ----- Non-mountain land -----
-        non_mtn_land_mask = land_mask & (region != mountains_id)
+        non_mtn_land_mask = land_mask & (biome != mountains_id)
         if non_mtn_land_mask.any():
             # A) blend with (None, 0, 0.2) using steepness * 0.3
             f = steepness * 0.3

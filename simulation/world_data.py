@@ -1,7 +1,5 @@
 from generation.generator_main import generate_data_maps
 import config as config
-from utils.map_utils import find_x_largest_value_locations
-
 
 class WorldData:
     def __init__(self, rows, cols):
@@ -16,19 +14,18 @@ class WorldData:
         for map in self.world_data:
             cell_data[map] = self.world_data[map][r, c]
 
-
         return cell_data
 
     def get_world_data(self):
         return self.world_data
     
-    def get_region_data(self, x0, y0, x1, y1):
-        region_data = {}
+    def get_biome_data(self, x0, y0, x1, y1):
+        biome_data = {}
 
         for map in self.world_data:
-            region_data[map] = self.world_data[map][y0:y1, x0:x1]
+            biome_data[map] = self.world_data[map][y0:y1, x0:x1]
 
-        return region_data
+        return biome_data
     
     def set_map_data(self, map_name, data):
         self.world_data[map_name][:] = data

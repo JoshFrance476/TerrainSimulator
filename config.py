@@ -31,7 +31,7 @@ FONT_SIZE = 18
 SCREEN_WIDTH, SCREEN_HEIGHT = CAMERA_COLS * CELL_SIZE + (SIDEBAR_WIDTH), CAMERA_ROWS * CELL_SIZE
 
 
-REGION_RULES = [
+BIOME_RULES = [
     {
         "name": "ocean",
         "colour": (240.0, 1.0, 0.706),
@@ -170,13 +170,13 @@ REGION_RULES = [
     }
 ]
 
-REGION_NAME_TO_ID = {r["name"]: idx for idx, r in enumerate(REGION_RULES)}
+BIOME_NAME_TO_ID = {r["name"]: idx for idx, r in enumerate(BIOME_RULES)}
 
-REGION_BY_NAME = {r["name"]: r for r in REGION_RULES}
+BIOME_BY_NAME = {r["name"]: r for r in BIOME_RULES}
 
-REGION_COLOUR_LOOKUP = [r.get("colour") for r in REGION_RULES]
+BIOME_COLOUR_LOOKUP = [r.get("colour") for r in BIOME_RULES]
 
-REGION_COST_LOOKUP = np.array(
-    [r["base_traversal_cost"] for r in REGION_RULES],
+BIOME_COST_LOOKUP = np.array(
+    [r["base_traversal_cost"] for r in BIOME_RULES],
     dtype=np.float32
 )

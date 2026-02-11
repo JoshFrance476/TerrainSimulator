@@ -9,7 +9,6 @@ class MapRenderer:
         self.display_map = self.controller.get_world_data()['colour']
     
     def render_view(self, screen):
-        '''Takes in world data and filter to produce display map, then draws to screen'''
         x0, y0, x1, y1 = self.controller.get_camera_boundaries()
         display_map = self.display_map[y0:y1,x0:x1]
         self.draw_view(screen, display_map)

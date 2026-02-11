@@ -19,7 +19,7 @@ class RightSidebarController:
             self.info_list = {
                 "Row": self.controller.get_selected_cell()[0],
                 "Col": self.controller.get_selected_cell()[1],
-                "Region": config.REGION_RULES[cell_data["region"]]["name"].title(),
+                "Biome": config.BIOME_RULES[cell_data["biome"]]["name"].title(),
                 "Elevation": f"{cell_data['elevation']:.2f}",
                 "Temperature": f"{cell_data['temperature']:.2f}",
                 "Rainfall": f"{cell_data['rainfall']:.2f}",

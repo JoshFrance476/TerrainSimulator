@@ -27,8 +27,8 @@ class World:
     def set_map_data_at(self, map_name, pos, data):
         self.data.set_map_data_at(map_name, pos, data)
     
-    def get_region_data(self, x0, y0, x1, y1):
-        return self.data.get_region_data(x0, y0, x1, y1)
+    def get_biome_data(self, x0, y0, x1, y1):
+        return self.data.get_biome_data(x0, y0, x1, y1)
 
     def get_cell_data(self, selected_cell):
         if selected_cell:
@@ -41,17 +41,17 @@ class World:
         c0, c1 = max(0, c-radius), min(self.cols, c+radius+1)
 
         if map == "all":
-            return self.data.get_region_data(c0, r0, c1, r1)
+            return self.data.get_biome_data(c0, r0, c1, r1)
         else:
-            return self.data.get_region_data(c0, r0, c1, r1)[map]
+            return self.data.get_biome_data(c0, r0, c1, r1)[map]
     
-    def get_surrounding_data_dict(self, r, c, radius=3, map="region"):
+    def get_surrounding_data_dict(self, r, c, radius=3, map="biome"):
         data_map = self.get_surrounding_data_map(r, c, radius, map)
         ids, counts = np.unique(data_map, return_counts=True)
         result = {}
         for id, count in zip(ids, counts):
-            region_name = config.REGION_RULES[id]["name"]
-            result[region_name] = int(count)
+            biome_name = config.BIOME_RULES[id]["name"]
+            result[biome_name] = int(count)
         return result
 
 

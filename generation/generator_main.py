@@ -8,7 +8,7 @@ import config as config
 from utils.map_utils import generate_perlin_noise_map
 from generation.stage_1_generator import calculate_temperature
 from generation.stage_2_generator import calculate_steepness, generate_sea_map, generate_rivers_map
-from generation.stage_3_generator import calculate_proximity_map, determine_region, calculate_traversal_cost
+from generation.stage_3_generator import calculate_proximity_map, determine_biome, calculate_traversal_cost
 
 
 
@@ -54,19 +54,19 @@ def generate_data_maps(rows, cols):
     ## Stage 3
 
     start_time = time.time()
-    region_map = determine_region(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map)
-    logging.debug(f"Region map generation took {time.time() - start_time:.2f} seconds")
+    biome_map = determine_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map)
+    logging.debug(f"biome map generation took {time.time() - start_time:.2f} seconds")
 
 
     start_time = time.time()
-    traversal_cost_map = calculate_traversal_cost(region_map, steepness_map)  
+    traversal_cost_map = calculate_traversal_cost(biome_map, steepness_map)  
     logging.debug(f"Traversal cost map generation took {time.time() - start_time:.2f} seconds")
 
 
     start_time = time.time()
     colour_map = generate_color_map({
         'elevation': elevation_map,
-        'region': region_map,
+        'biome': biome_map,
         'steepness': steepness_map
     }, True, True)
     logging.debug(f"Colour map generation took {time.time() - start_time:.2f} seconds")
@@ -85,7 +85,7 @@ def generate_data_maps(rows, cols):
         'steepness': steepness_map,
         
         #np.uint8 maps
-        'region': region_map,
+        'biome': biome_map,
         'river_proximity': river_proximity_map,
         'sea_proximity': sea_proximity_map,
 
@@ -97,6 +97,8 @@ def generate_data_maps(rows, cols):
         #bool maps
         'river': river_map,
         'sea': sea_map,
+
+        
         }
 
     

@@ -1,5 +1,5 @@
 import numpy as np
-from config import RESOURCE_LOOKUP, RESOURCE_RULES, REGION_NAME_TO_ID
+from config import RESOURCE_LOOKUP, RESOURCE_RULES, BIOME_NAME_TO_ID
 
 def calculate_population_capacity_map(fertility, temperature, proximity_to_water, sea, river, water_threshold=5):
     # mask of cells that are sea or river
@@ -26,7 +26,7 @@ def calculate_population_capacity_map(fertility, temperature, proximity_to_water
 
 
 
-def calculate_resource_map(fertility_map, temperature_map, elevation_map, region_map, rainfall_map):
+def calculate_resource_map(fertility_map, temperature_map, elevation_map, biome_map, rainfall_map):
     # Thank you ChatGPT. Applies all rules set out in RESOURCE_RULES to generate resource map
     rows, cols = fertility_map.shape
     probability_stack = np.zeros((rows, cols, len(RESOURCE_LOOKUP)))
@@ -35,9 +35,9 @@ def calculate_resource_map(fertility_map, temperature_map, elevation_map, region
         resource_id = RESOURCE_LOOKUP[resource]
         probability_map = np.zeros((rows, cols), dtype=np.float32)
 
-        if "region" in rules:
-            for region_name, weight in rules["region"].items():
-                probability_map[region_map == REGION_NAME_TO_ID[region_name]] += weight
+        if "biome" in rules:
+            for biome_name, weight in rules["biome"].items():
+                probability_map[biome_map == BIOME_NAME_TO_ID[biome_name]] += weight
 
         if "fertility" in rules:
             probability_map *= factor_from_range(fertility_map, rules["fertility"])

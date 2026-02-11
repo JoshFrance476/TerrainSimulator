@@ -31,7 +31,7 @@ narrative_schema_with_storyline = [{
                 "storyline": {"type": "string",
                               "description": f"A storyline that the event takes place in"},
                 "storyline_scope": {"type": "string",
-                                    "enum": ["settlement", "region", "continent","global"]},
+                                    "enum": ["settlement", "biome", "continent","global"]},
                 "actions": {"type": "array",
                             "items": {"type": "object",
                                       "properties": {
@@ -102,7 +102,7 @@ def prompt_narrative(prompt, with_storyline, model="deepseek-chat", temperature=
             Keep the tone consistent with the themes culture, technology, and politics.
             Return JSON with 'narrative', 'actions', 'storyline' and 'storyline_scope'.
             Storylines should be no longer than 20 words and provide a summary of circumstances in which the narrative takes place.
-            Storyline scope should define the area in which the storyline takes place, and can be 'settlement', 'region', 'continent' or 'worldwide'.
+            Storyline scope should define the area in which the storyline takes place, and can be 'settlement', 'biome', 'continent' or 'worldwide'.
             If a storyline is provided in the prompt, it should be updated to reflect any changes the narrative has made to the story.
             Here is a list of possible actions:
              {LLM_ACTIONS_NAMES}"""},
