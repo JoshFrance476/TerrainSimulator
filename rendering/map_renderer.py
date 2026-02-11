@@ -6,17 +6,31 @@ class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
     def __init__(self, controller):
         self.controller = controller
-        self.display_map = self.controller.get_world_data()['colour']
+        self.colour_map = self.controller.get_world_data()['colour']
+        self.region_map = self.controller.world.get_region_map()
+
+        self.display_map = None
+        self.refresh_view()
     
-    def render_view(self, screen):
+    def refresh_view(self):
         x0, y0, x1, y1 = self.controller.get_camera_boundaries()
-        display_map = self.display_map[y0:y1,x0:x1]
-        self.draw_view(screen, display_map)
+        colour_map = self.colour_map[y0:y1,x0:x1]
+        region_map = [row[x0:x1] for row in self.controller.world.get_region_map()[y0:y1]]
+
+        display_map = colour_map.copy()
+
+        for y, row in enumerate(region_map):
+            for x, cell in enumerate(row):
+                if cell:
+                    display_map[y][x] = 0
+
+        self.display_map = display_map
 
 
-    def draw_view(self, screen, display_map):
+
+    def render_view(self, screen):
         """AI code using surfarray to draw the whole map at once."""
-        rgb_map = hsv_to_rgb_array(display_map)
+        rgb_map = hsv_to_rgb_array(self.display_map)
 
         surface = pygame.surfarray.make_surface(rgb_map.swapaxes(0, 1))
         surface = pygame.transform.scale(surface, (rgb_map.shape[1] * config.CELL_SIZE, 
