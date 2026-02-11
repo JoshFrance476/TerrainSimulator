@@ -2,7 +2,6 @@ import pygame
 import config
 from ui_components.left_sidebar import LeftSidebarController
 from ui_components.right_sidebar import RightSidebarController
-from ui_components.top_bar import TopBarController
 
 
 class UIManager:
@@ -10,7 +9,6 @@ class UIManager:
         self.controller = controller
         self.left_sidebar = LeftSidebarController(fonts, controller)
         self.right_sidebar = RightSidebarController(fonts, controller)
-        self.top_bar = TopBarController(fonts, controller)
         self.world = world
         self.fonts = fonts
         
