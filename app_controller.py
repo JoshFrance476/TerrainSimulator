@@ -2,9 +2,11 @@ import pygame
 import config
 
 class AppController:
-    def __init__(self, world, camera):
+    def __init__(self, world, camera, player):
         self.world = world
         self.camera = camera
+
+        self.player = player
 
         self.selected_cell = None
         self.hovered_cell = None
@@ -12,6 +14,7 @@ class AppController:
         self.selected_filter = "colour"
 
         self.paused = True
+        self.move = False
 
         self.selected_textbox = None
 
@@ -20,11 +23,13 @@ class AppController:
     
     def toggle_pause(self):
         self.paused = not self.paused
+    
+    def toggle_move(self):
+        self.move = not self.move
 
-    def update(self):
+    def next_turn(self):
+        self.camera.set_location(self.player.get_location())
         self.camera.clamp_pan()
-        if not self.paused:
-            self.world.step()
     
     def cycle_left_sidebar(self, delta):
         self.active_left_sidebar = (self.active_left_sidebar + delta) % 4
@@ -37,6 +42,11 @@ class AppController:
     
     def hover_cell(self, r, c):
         self.hovered_cell = (r, c)
+    
+    def move_player_to_cell(self, r, c):
+        self.player.set_location((r, c))
+        self.select_cell(r, c)
+        self.next_turn()
     
     def set_selected_filter(self, filter_name):
         self.selected_filter = filter_name

@@ -14,3 +14,6 @@ class Camera:
     def pan(self, dx, dy):
         self.x_pos += dx
         self.y_pos += dy
+
+    def set_location(self, location):
+        self.x_pos, self.y_pos = int(location[1]-config.CAMERA_COLS/2)+1, int(location[0]-config.CAMERA_ROWS/2)+1   #The extra '+1' are to compensate for rounding down in odd division

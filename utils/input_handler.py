@@ -18,7 +18,10 @@ class InputHandler:
                 self.mouse_release_pos = pygame.mouse.get_pos()
                 if self.mouse_release_pos[0] > config.SIDEBAR_WIDTH and self.mouse_release_pos[0] < config.SCREEN_WIDTH:     #ensures mouse position is on the screen
                     r, c = self.controller.get_cell_at_mouse_position()
-                    self.controller.select_cell(r, c)
+                    if self.controller.move:
+                        self.controller.move_player_to_cell(r, c)
+                    else:
+                        self.controller.select_cell(r, c)
         
     
     def handle_continuous_inputs(self):
@@ -44,3 +47,5 @@ class InputHandler:
         else:
             if event.key == pygame.K_SPACE:
                 self.controller.toggle_pause()
+            if event.key == pygame.K_m:
+                self.controller.toggle_move()

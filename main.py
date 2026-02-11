@@ -6,6 +6,7 @@ from simulation.world import World
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
 from app_controller import AppController
+from map_entity import MapEntity
 
 #import tracemalloc
 #tracemalloc.start()
@@ -29,7 +30,9 @@ fonts = FontManager()
 
 camera = Camera()
 
-controller = AppController(world, camera)
+player = MapEntity((50,50))
+
+controller = AppController(world, camera, player)
 ui_manager = UIManager(fonts, controller, world)
 map_renderer = MapRenderer(controller)
 input_handler = InputHandler(controller)
@@ -47,8 +50,6 @@ while True:
         ui_manager.handle_event(event)
     
     input_handler.handle_continuous_inputs()
-
-    controller.update()
 
     map_renderer.render_view(screen)
     
