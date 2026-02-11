@@ -1,4 +1,5 @@
 from simulation.world_data import WorldData
+from simulation.region_manager import RegionManager
 import numpy as np
 import config as config
 
@@ -9,8 +10,12 @@ class World:
         self.rows, self.cols = rows, cols
         self.data = WorldData(rows, cols)
 
+        self.region_manager = RegionManager()
+
         self.tick_count = 0
 
+    def get_region_map(self):
+        return self.region_manager.get_region_map()
         
     def step(self):
         self.tick_count += 1
