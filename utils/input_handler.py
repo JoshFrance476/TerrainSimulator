@@ -11,14 +11,23 @@ class InputHandler:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        if event.type == pygame.KEYDOWN:
-            self._handle_keyboard(event)
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:  # Left mouse button
-                self.mouse_release_pos = pygame.mouse.get_pos()
-                if self.mouse_release_pos[0] > config.SIDEBAR_WIDTH and self.mouse_release_pos[0] < config.SCREEN_WIDTH:     #ensures mouse position is on the screen
-                    r, c = self.controller.get_cell_at_mouse_position()
-                    self.controller.interact_with_tile(r, c)
+        self.mouse_release_pos = pygame.mouse.get_pos()
+        if self.mouse_release_pos[0] > config.SIDEBAR_WIDTH and self.mouse_release_pos[0] < config.SCREEN_WIDTH:     #ensures mouse position is on the screen
+            r, c = self.controller.get_cell_at_mouse_position()
+            if event.type == pygame.KEYDOWN:
+                self._handle_keyboard(event)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if self.controller.interaction_type == "paint_region":
+                        self.controller.create_new_region((r, c))
+                    else:
+                        self.controller.interact_with_tile(r, c)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:  # Left mouse button
+                    if self.controller.interaction_type == "paint_region":
+                        self.controller.active_region_paint = None
+                        self.controller.interact_with_tile(r, c)
         
     
     def handle_continuous_inputs(self):
@@ -33,9 +42,10 @@ class InputHandler:
             if keys[pygame.K_DOWN] or keys[pygame.K_s]:
                 self.controller.pan_camera(0, config.PAN_STEP)
 
-
         r, c = self.controller.get_cell_at_mouse_position()
-        self.controller.hover_cell(r, c)
+
+        if not self.controller.matches_hovered_tile((r, c)):
+            self.controller.new_hovered_tile((r, c))
 
     def _handle_keyboard(self, event):
         """Handle keyboard input."""
@@ -50,3 +60,5 @@ class InputHandler:
                 self.controller.toggle_region_place()
             if event.key == pygame.K_b:
                 self.controller.toggle_view_tile()
+            if event.key == pygame.K_z:
+                print("Debug Trigger")

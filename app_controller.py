@@ -20,7 +20,10 @@ class AppController:
         self.paused = True
         self.interaction_type = "view_tile"
 
+        self.active_region_paint = None
+
         self.selected_textbox = None
+
     
     def tick(self):
         self.map_renderer.render_view(self.screen)
@@ -48,11 +51,14 @@ class AppController:
             self.move_player_to_cell(r, c)
         elif self.interaction_type == "view_tile":
             self.select_cell(r, c)
-        elif self.interaction_type == "paint_region":
-            self.paint_region((r,c))
     
-    def paint_region(self, location):
-        self.world.region_manager.create_region(location)
+    def paint_region(self, location, rid):
+        self.world.region_manager.add_region_to_location(location, rid)
+        self.refresh_map_render()
+    
+    def create_new_region(self, location):
+        region_id = self.world.region_manager.create_region(location)
+        self.active_region_paint = region_id
         self.refresh_map_render()
 
     def next_turn(self):
@@ -109,4 +115,13 @@ class AppController:
     
     def get_world_data(self):
         return self.world.get_world_data()
+    
+    def matches_hovered_tile(self, location):
+        return self.hovered_cell == location
+
+    def new_hovered_tile(self, location):
+        if self.active_region_paint != None:
+            self.paint_region(location, self.active_region_paint)        
+        
+        self.hover_cell(location[0], location[1])
     
