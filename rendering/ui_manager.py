@@ -22,8 +22,8 @@ class UIManager:
         cell_data, selected_cell = self.world.get_cell_data(selected_cell)
         filter_name = self.controller.selected_filter
 
-
-        self.draw_hover_highlight(hovered_cell, screen)
+        if hovered_cell:
+            self.draw_hover_highlight(hovered_cell, screen)
 
         if selected_cell:
             self.draw_selected_cell_border(selected_cell, screen)
