@@ -18,16 +18,11 @@ class InputHandler:
                 self._handle_keyboard(event)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if self.controller.interaction_type == "paint_region":
-                        self.controller.create_new_region((r, c))
-                    else:
-                        self.controller.interact_with_tile(r, c)
+                    self.controller.mouse_down((r, c))
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:  # Left mouse button
-                    if self.controller.interaction_type == "paint_region":
-                        self.controller.active_region_paint = None
-                        self.controller.interact_with_tile(r, c)
+                    self.controller.mouse_up((r, c))
         
     
     def handle_continuous_inputs(self):

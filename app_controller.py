@@ -46,15 +46,26 @@ class AppController:
     def toggle_view_tile(self):
         self.interaction_type = "view_tile"
     
-    def interact_with_tile(self, r, c):
+    def interact_with_tile(self, location):
         if self.interaction_type == "move_player":
-            self.move_player_to_cell(r, c)
+            self.move_player_to_cell(location)
         elif self.interaction_type == "view_tile":
-            self.select_cell(r, c)
+            self.select_cell(location)
     
     def paint_region(self, location, rid):
         self.world.region_manager.add_region_to_location(location, rid)
         self.refresh_map_render()
+    
+    def mouse_down(self, location):
+        if self.interaction_type == "paint_region":
+            self.create_new_region(location)
+        else:
+            self.interact_with_tile(location)
+
+    def mouse_up(self, location):
+        if self.interaction_type == "paint_region":
+            self.active_region_paint = None
+            self.interact_with_tile(location)
     
     def create_new_region(self, location):
         region_id = self.world.region_manager.create_region(location)
@@ -72,15 +83,15 @@ class AppController:
     def cycle_right_sidebar(self, delta):
         self.active_right_sidebar = (self.active_right_sidebar + delta) % 4
     
-    def select_cell(self, r, c):
-        self.selected_cell = (r, c)
+    def select_cell(self, location):
+        self.selected_cell = location
     
-    def hover_cell(self, r, c):
-        self.hovered_cell = (r, c)
+    def hover_cell(self, location):
+        self.hovered_cell = location
     
-    def move_player_to_cell(self, r, c):
-        self.player.set_location((r, c))
-        self.select_cell(r, c)
+    def move_player_to_cell(self, location):
+        self.player.set_location(location)
+        self.select_cell(location)
         self.next_turn()
     
     def set_selected_filter(self, filter_name):
@@ -123,5 +134,5 @@ class AppController:
         if self.active_region_paint != None:
             self.paint_region(location, self.active_region_paint)        
         
-        self.hover_cell(location[0], location[1])
+        self.hover_cell(location)
     
