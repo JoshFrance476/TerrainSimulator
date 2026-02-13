@@ -1,16 +1,25 @@
 import pygame
 import config
 from rendering.map_renderer import MapRenderer
+from rendering.ui_manager import UIManager
+from rendering.camera import Camera
+from simulation.world import World
+from simulation.map_entity import MapEntity
+import sys
 
 class AppController:
-    def __init__(self, world, camera, player, screen):
-        self.world = world
-        self.camera = camera
+    def __init__(self, screen, fonts):
+        self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
+        self.camera = Camera()
+
+        self.fonts = fonts
+
         self.map_renderer = MapRenderer(self)
+        self.ui_manager = UIManager(self, fonts, self.world)
 
         self.screen = screen
 
-        self.player = player
+        self.player = MapEntity((50,50))
 
         self.selected_cell = None
         self.hovered_cell = None
@@ -22,12 +31,92 @@ class AppController:
 
         self.active_region_paint = None
 
-        self.selected_textbox = None
+        self.focused_entity = None
 
     
-    def tick(self):
+    def tick(self, events):
+        self.handle_continuous_inputs()
+
+        for event in events:
+            self.handle_event(event)
+
         self.map_renderer.render_view(self.screen)
-    
+        self.ui_manager.render_ui(self.screen)
+
+
+    def handle_continuous_inputs(self):
+        if not self.focused_entity:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                self.pan_camera(-config.PAN_STEP, 0)
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                self.pan_camera(config.PAN_STEP, 0)
+            if keys[pygame.K_UP] or keys[pygame.K_w]:
+                self.pan_camera(0, -config.PAN_STEP)
+            if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+                self.pan_camera(0, config.PAN_STEP)
+
+        location = self.get_cell_at_mouse_position()
+
+        if not self.matches_hovered_tile(location):
+            self.new_hovered_tile(location)
+
+    def handle_event(self, event):
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        
+        self.mouse_release_pos = pygame.mouse.get_pos()
+
+        location = self.get_cell_at_mouse_position()
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                if self.focused_entity:
+                    self.focused_entity.focused = False
+                    self.focused_entity = None
+                
+                clicked_component = self.ui_manager.get_clicked_component(event.pos)
+
+                if clicked_component:
+                    clicked_component.focused = True
+                    self.focused_entity = clicked_component
+                else:
+                    self.mouse_down(location)
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:  # Left mouse button
+                self.mouse_up(location)
+        
+        elif event.type == pygame.KEYDOWN:
+            if self.focused_entity:
+                if hasattr(self.focused_entity, "handle_event"):
+                    self.focused_entity.handle_event(event)
+            else:
+                if event.key == pygame.K_SPACE:
+                    self.toggle_pause()
+                if event.key == pygame.K_m:
+                    self.toggle_move()
+                if event.key == pygame.K_n:
+                    self.toggle_region_place()
+                if event.key == pygame.K_b:
+                    self.toggle_view_tile()
+                if event.key == pygame.K_z:
+                    print("Debug Trigger")
+
+    def get_cell_at_mouse_position(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+            
+        # Convert screen coordinates to world coordinates
+        world_x = (mouse_x - config.SIDEBAR_WIDTH) + (self.camera.x_pos * config.CELL_SIZE)
+        world_y = mouse_y + (self.camera.y_pos * config.CELL_SIZE)
+
+        # Convert world coordinates to grid cell indices
+        cell_x = int(world_x // config.CELL_SIZE)
+        cell_y = int(world_y // config.CELL_SIZE)
+
+        return (cell_y, cell_x)
+
     def refresh_map_render(self):
         self.map_renderer.refresh_view()
 
@@ -111,18 +200,6 @@ class AppController:
     def get_camera_boundaries(self):
         return self.camera.x_pos, self.camera.y_pos, config.CAMERA_COLS+self.camera.x_pos, config.CAMERA_ROWS+self.camera.y_pos
 
-    def get_cell_at_mouse_position(self):
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-            
-        # Convert screen coordinates to world coordinates
-        world_x = (mouse_x - config.SIDEBAR_WIDTH) + (self.camera.x_pos * config.CELL_SIZE)
-        world_y = mouse_y + (self.camera.y_pos * config.CELL_SIZE)
-
-        # Convert world coordinates to grid cell indices
-        cell_x = int(world_x // config.CELL_SIZE)
-        cell_y = int(world_y // config.CELL_SIZE)
-
-        return cell_y, cell_x
     
     def get_world_data(self):
         return self.world.get_world_data()

@@ -1,12 +1,6 @@
 import pygame
 import config as config
-from rendering.camera import Camera
-from utils.input_handler import InputHandler
-from simulation.world import World
-from rendering.map_renderer import MapRenderer
-from rendering.ui_manager import UIManager
 from app_controller import AppController
-from map_entity import MapEntity
 
 #import tracemalloc
 #tracemalloc.start()
@@ -24,18 +18,9 @@ class FontManager:
 screen = pygame.display.set_mode((config.SCREEN_WIDTH + config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Terrain Generation")
 
-# Initialize core objects
-world = World(config.WORLD_ROWS, config.WORLD_COLS)
 fonts = FontManager()
 
-camera = Camera()
-
-player = MapEntity((50,50))
-
-controller = AppController(world, camera, player, screen)
-ui_manager = UIManager(fonts, controller, world)
-map_renderer = MapRenderer(controller)
-input_handler = InputHandler(controller)
+controller = AppController(screen, fonts)
 
 clock = pygame.time.Clock()
 
@@ -45,16 +30,7 @@ tick_count = 0
 while True:
     events = pygame.event.get()
 
-    for event in events:
-        input_handler.handle_event(event)
-        ui_manager.handle_event(event)
-    
-    input_handler.handle_continuous_inputs()
-
-    controller.tick()
-    
-    ui_manager.render_ui(screen)
-    
+    controller.tick(events)
 
     pygame.display.flip()
     clock.tick(60)
