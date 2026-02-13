@@ -5,16 +5,23 @@ from ui_components.right_sidebar import RightSidebarController
 
 
 class UIManager:
-    def __init__(self, fonts, controller, world):
+    def __init__(self, controller, fonts, world):
         self.controller = controller
         self.left_sidebar = LeftSidebarController(fonts, controller)
         self.right_sidebar = RightSidebarController(fonts, controller)
         self.world = world
         self.fonts = fonts
         
+    def get_clicked_component(self, event_pos):
+        clicked_component = False
+        for component in self.left_sidebar.component_list:
+            if component.collide_with(event_pos):
+                clicked_component = component
+        #for component in self.right_sidebar.component_list:
+        #    if component.collide_with(event_pos):
+        #        clicked_component = component
+        return clicked_component
 
-    def handle_event(self, event):
-        self.right_sidebar.handle_event(event)
 
     def render_ui(self, screen):
         selected_cell = self.controller.selected_cell
