@@ -15,11 +15,9 @@ class UIManager:
     def get_clicked_component(self, event_pos):
         clicked_component = False
         for component in self.left_sidebar.component_list:
-            if component.collide_with(event_pos):
-                clicked_component = component
-        #for component in self.right_sidebar.component_list:
-        #    if component.collide_with(event_pos):
-        #        clicked_component = component
+            if hasattr(component, "collide_with"):
+                if component.collide_with(event_pos):
+                    clicked_component = component
         return clicked_component
 
 
