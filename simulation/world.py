@@ -37,9 +37,9 @@ class World:
 
     def get_cell_data(self, selected_cell):
         if selected_cell:
-            return self.data.get_cell_data(selected_cell), selected_cell,
+            return self.data.get_cell_data(selected_cell)
         else:
-            return None, None
+            return None
     
     def get_surrounding_data_map(self, r, c, radius=3, map="all"):
         r0, r1 = max(0, r-radius), min(self.rows, r+radius+1)
