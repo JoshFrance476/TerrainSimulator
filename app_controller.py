@@ -67,7 +67,6 @@ class AppController:
             pygame.quit()
             sys.exit()
         
-        self.mouse_release_pos = pygame.mouse.get_pos()
 
         location = self.get_cell_at_mouse_position()
 
@@ -180,7 +179,6 @@ class AppController:
             region.hidden_desc = hidden_desc
 
             self.ui_manager.clear_left_page()
-            print(region.title, region.visible_desc, region.hidden_desc)
 
     def next_turn(self):
         self.camera.set_location(self.player.get_location())
@@ -233,4 +231,7 @@ class AppController:
             self.paint_region(location, self.active_region_paint)        
         
         self.hover_cell(location)
+
+        
+        self.ui_manager.render_tooltip(location)
     
