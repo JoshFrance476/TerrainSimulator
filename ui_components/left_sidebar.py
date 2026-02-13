@@ -14,12 +14,12 @@ class LeftSidebarController:
 
     def show_add_region_page(self):
         self.component_list = []
-        self.component_list.append(Label("Add Region", self.fonts.large_font, 220, 25))
-        self.component_list.append(Label("Title:", self.fonts.small_font, 220, 25))
+        self.component_list.append(Label("Add Region", self.fonts.large_font, 25))
+        self.component_list.append(Label("Title:", self.fonts.small_font, 25))
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
-        self.component_list.append(Label("Visible Description:", self.fonts.small_font, 220, 25))
+        self.component_list.append(Label("Visible Description:", self.fonts.small_font, 25))
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
-        self.component_list.append(Label("Hidden Description:", self.fonts.small_font, 220, 25))
+        self.component_list.append(Label("Hidden Description:", self.fonts.small_font, 25))
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
 
     def draw(self, screen):
