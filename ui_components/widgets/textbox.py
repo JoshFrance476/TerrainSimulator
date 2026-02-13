@@ -17,9 +17,7 @@ class TextBox:
             self.text = self.text[:-1]
 
         elif event.key == pygame.K_RETURN:
-            self.controller.generate_event('user_event', self.controller.get_selected_cell(), self.text)
-            self.text = ""
-            self.wrapped_text = []
+            self.controller.clear_focus()
 
         elif event.unicode:
             self.text += event.unicode

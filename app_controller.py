@@ -103,6 +103,11 @@ class AppController:
                     self.toggle_view_tile()
                 if event.key == pygame.K_z:
                     print("Debug Trigger")
+    
+    def clear_focus(self):
+        if self.focused_entity:
+            self.focused_entity.focused = False
+            self.focused_entity = None
 
     def get_cell_at_mouse_position(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
