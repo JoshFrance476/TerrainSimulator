@@ -2,6 +2,8 @@ import pygame
 import config
 from ui_components.left_sidebar import LeftSidebarController
 from ui_components.right_sidebar import RightSidebarController
+from ui_components.widgets.tooltip import Tooltip
+from ui_components.widgets.label import Label
 
 
 class UIManager:
@@ -30,7 +32,7 @@ class UIManager:
     def render_ui(self, screen):
         selected_cell = self.controller.selected_cell
         hovered_cell = self.controller.hovered_cell
-        cell_data, selected_cell = self.world.get_cell_data(selected_cell)
+        cell_data = self.world.get_cell_data(selected_cell)
         filter_name = self.controller.selected_filter
 
         if hovered_cell:
@@ -44,9 +46,33 @@ class UIManager:
         self.left_sidebar.draw(screen)
         self.right_sidebar.draw(screen, filter_name)
 
+        self.draw_tooltip_list(screen)
+
+
+    def render_tooltip(self, location):
+        self.tooltip_list = []
+        regions = self.world.region_manager.get_regions_at_location(location)
+
+        biome = config.BIOME_RULES[self.world.get_cell_data(location)["biome"]]["name"].title()
+        tooltip = Tooltip(self.controller, self.fonts.small_font)
+        tooltip.add_components([Label(biome, self.fonts.large_font, tooltip.max_width)])
+        self.tooltip_list.append(tooltip)
+
+        for region in regions:
+            tooltip = Tooltip(self.controller, self.fonts.small_font)
+            if region.title != "":
+                tooltip.add_components([Label(region.title, self.fonts.large_font, tooltip.max_width)])
+            if region.visible_desc != "":
+                tooltip.add_components([Label(region.visible_desc, self.fonts.small_font, tooltip.max_width)])
+            self.tooltip_list.append(tooltip)
 
     
-    
+    def draw_tooltip_list(self, screen):
+        mouse_pos = pygame.mouse.get_pos()
+        y_offset = 5
+        for tooltip in self.tooltip_list:
+            tooltip.draw(screen, mouse_pos[0], mouse_pos[1]-y_offset-tooltip.height)
+            y_offset += tooltip.height + 5
     
     def draw_hover_highlight(self, hovered_cell, screen, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""
