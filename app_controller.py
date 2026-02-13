@@ -31,6 +31,8 @@ class AppController:
 
         self.active_region_paint = None
 
+        self.most_recent_region_paint = None
+
         self.focused_entity = None
 
     
@@ -42,7 +44,6 @@ class AppController:
 
         self.map_renderer.render_view(self.screen)
         self.ui_manager.render_ui(self.screen)
-
 
     def handle_continuous_inputs(self):
         if not self.focused_entity:
@@ -79,14 +80,17 @@ class AppController:
                 clicked_component = self.ui_manager.get_clicked_component(event.pos)
 
                 if clicked_component:
-                    clicked_component.focused = True
-                    self.focused_entity = clicked_component
+                    if hasattr(clicked_component, "is_clicked"):
+                        clicked_component.is_clicked()
+                    else:
+                        clicked_component.focused = True
+                        self.focused_entity = clicked_component
                 else:
                     self.mouse_down(location)
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:  # Left mouse button
-                self.mouse_up(location)
+                self.mouse_up()
         
         elif event.type == pygame.KEYDOWN:
             if self.focused_entity:
@@ -156,15 +160,27 @@ class AppController:
         else:
             self.interact_with_tile(location)
 
-    def mouse_up(self, location):
+    def mouse_up(self):
         if self.interaction_type == "paint_region":
+            self.interaction_type = "view_tile"
+            self.ui_manager.show_region_setup_page()
+            self.most_recent_region_paint = self.active_region_paint
             self.active_region_paint = None
-            self.interact_with_tile(location)
     
     def create_new_region(self, location):
         region_id = self.world.region_manager.create_region(location)
         self.active_region_paint = region_id
         self.refresh_map_render()
+    
+    def set_painted_region_info(self, title, visible_desc, hidden_desc):
+        if self.most_recent_region_paint != None:
+            region = self.world.region_manager.region_list[self.most_recent_region_paint]
+            region.title = title
+            region.visible_desc = visible_desc
+            region.hidden_desc = hidden_desc
+
+            self.ui_manager.clear_left_page()
+            print(region.title, region.visible_desc, region.hidden_desc)
 
     def next_turn(self):
         self.camera.set_location(self.player.get_location())

@@ -20,6 +20,12 @@ class UIManager:
                     clicked_component = component
         return clicked_component
 
+    def show_region_setup_page(self):
+        self.left_sidebar.show_region_setup_page()
+    
+    def clear_left_page(self):
+        self.left_sidebar.clear_page()
+
 
     def render_ui(self, screen):
         selected_cell = self.controller.selected_cell
