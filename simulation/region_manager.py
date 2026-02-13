@@ -1,5 +1,4 @@
 from simulation.region import Region
-import numpy as np
 from config import WORLD_COLS, WORLD_ROWS
 
 class RegionManager:
@@ -20,12 +19,6 @@ class RegionManager:
         grid_address = self.region_map[location[0]][location[1]]
         if rid not in grid_address:
             grid_address.append(rid)
-
-
-
-    def get_values(self, r, c):
-        cell = self.region_map[r][c]
-        return cell
     
     def get_region_map(self):
         return self.region_map
