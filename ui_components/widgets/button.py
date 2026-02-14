@@ -10,6 +10,7 @@ class Button:
         self.toggled = False
         self.width = width
         self.height = height
+        self.padding = 10
 
     def draw(self, screen, x, y):
         self.rect = pygame.Rect(x, y, self.width, self.height)
@@ -29,7 +30,7 @@ class Button:
             text_rect = text.get_rect(center=self.rect.center)
             screen.blit(text, text_rect)
 
-    def is_clicked(self):
+    def is_clicked(self, event):
         if self.toggle:
             self.toggled = not self.toggled
         self.action()
