@@ -40,7 +40,7 @@ class LeftSidebarController:
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 150, 20))
 
         self.component_list.append(Label("Traversal Cost:", self.fonts.large_font, config.SIDEBAR_WIDTH))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 150, 20))
+        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 150, 20, "0"))
 
         self.component_list.append(Label("Colour:", self.fonts.large_font, config.SIDEBAR_WIDTH))
 
@@ -52,6 +52,8 @@ class LeftSidebarController:
 
         self.component_list.append(Label("Value:", self.fonts.small_font, config.SIDEBAR_WIDTH))
         self.component_list.append(val_slider)
+
+        self.component_list.append(Button(50, 25, lambda: self.controller.add_biome(self.component_list[3].text, self.component_list[8].value, self.component_list[10].value/100, self.component_list[12].value/100, int(self.component_list[5].text))))
 
         
     def show_tile_manager_page(self):
