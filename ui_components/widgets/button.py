@@ -10,7 +10,7 @@ class Button:
         self.toggled = False
         self.width = width
         self.height = height
-        self.padding = 10
+        self.left_padding = 10
 
     def draw(self, screen, x, y):
         self.rect = pygame.Rect(x, y, self.width, self.height)
