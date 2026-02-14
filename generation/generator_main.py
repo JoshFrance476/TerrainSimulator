@@ -3,14 +3,15 @@ from utils.colour_utils import generate_color_map
 import numpy as np
 import time
 import logging
-import config as config
+import config
 
 from utils.map_utils import generate_perlin_noise_map
 from generation.stage_1_generator import calculate_temperature
 from generation.stage_2_generator import calculate_steepness, generate_sea_map, generate_rivers_map
 from generation.stage_3_generator import calculate_proximity_map, determine_biome, calculate_traversal_cost
 
-
+if config.LOGGING:
+    logging.basicConfig(level=logging.DEBUG)
 
 
 def generate_data_maps(rows, cols):
