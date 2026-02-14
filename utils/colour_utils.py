@@ -1,4 +1,5 @@
 import numpy as np
+import colorsys
 from config import BIOME_COLOUR_LOOKUP, BIOME_NAME_TO_ID
 
 def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
@@ -160,3 +161,6 @@ def hsv_to_rgb_array(hsv_map):
     rgb += m[..., None]  # add m to all channels
     rgb = (rgb * 255).astype(np.uint8)
     return rgb
+
+def hsv2rgb(h,s,v):
+        return tuple(round(i * 255) for i in colorsys.hsv_to_rgb(h,s,v))
