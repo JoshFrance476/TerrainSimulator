@@ -8,6 +8,7 @@ class Label:
         self.width = 0
         self.wrapped_text = wrap_text(self.text, font, max_width)
         self.height = 25 + (15 * max(0,(len(self.wrapped_text)-1)))
+        self.padding = 10
 
         for line in self.wrapped_text:
             if self.width < font.size(line)[0]:
