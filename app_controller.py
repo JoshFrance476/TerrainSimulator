@@ -9,13 +9,14 @@ import sys
 
 class AppController:
     def __init__(self, screen, fonts, biome_config):
-        self.world = World(config.WORLD_ROWS, config.WORLD_COLS, biome_config)
+        self.biome_config = biome_config
+        self.world = World(config.WORLD_ROWS, config.WORLD_COLS, self.biome_config)
         self.camera = Camera()
 
         self.fonts = fonts
 
         self.map_renderer = MapRenderer(self)
-        self.ui_manager = UIManager(self, fonts, self.world, biome_config)
+        self.ui_manager = UIManager(self, fonts, self.world, self.biome_config)
 
         self.ui_manager.show_tile_setup_page()
 
@@ -46,6 +47,9 @@ class AppController:
 
         self.map_renderer.render_view(self.screen)
         self.ui_manager.render_ui(self.screen)
+
+    def add_biome(self, name, h, s, v, traversal_cost):
+        self.biome_config.add_biome(name, h, s, v, traversal_cost)
 
     def handle_continuous_inputs(self):
         if not self.focused_entity:
