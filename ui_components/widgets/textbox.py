@@ -11,6 +11,7 @@ class TextBox:
         self.controller = controller
         self.focused = False
         self.rect = None
+        self.padding = 10
     
     def handle_event(self, event):
         if event.key == pygame.K_BACKSPACE:
