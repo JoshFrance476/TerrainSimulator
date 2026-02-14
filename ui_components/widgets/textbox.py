@@ -2,8 +2,8 @@ from utils.ui_utils import wrap_text
 import pygame
 
 class TextBox:
-    def __init__(self, controller, small_font, width, height):
-        self.text = ""
+    def __init__(self, controller, small_font, width, height, default_text=""):
+        self.text = default_text
         self.wrapped_text = []
         self.small_font = small_font
         self.width = width
@@ -12,6 +12,9 @@ class TextBox:
         self.focused = False
         self.rect = None
         self.left_padding = 10
+
+        self.wrapped_text = wrap_text(self.text, self.small_font, self.width-5)
+        self.height = 25 + (15 * max(0,(len(self.wrapped_text)-1)))
     
     def handle_event(self, event):
         if event.key == pygame.K_BACKSPACE:
