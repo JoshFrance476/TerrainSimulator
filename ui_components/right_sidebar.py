@@ -2,13 +2,14 @@ import pygame
 import config
 
 class RightSidebarController:
-    def __init__(self, fonts, controller):
+    def __init__(self, fonts, controller, biome_config):
         self.fonts = fonts
         self.controller = controller
         self.title = ""
         self.info_list = {}
         self.buttons = []
         self.textbox = None
+        self.biome_config = biome_config
     
 
     def show_cell_info(self, cell_data):
@@ -19,7 +20,7 @@ class RightSidebarController:
             self.info_list = {
                 "Row": self.controller.get_selected_cell()[0],
                 "Col": self.controller.get_selected_cell()[1],
-                "Biome": config.BIOME_RULES[cell_data["biome"]]["name"].title(),
+                "Biome": self.biome_config.config[cell_data["biome"]]["name"].title(),
                 "Elevation": f"{cell_data['elevation']:.2f}",
                 "Temperature": f"{cell_data['temperature']:.2f}",
                 "Rainfall": f"{cell_data['rainfall']:.2f}",

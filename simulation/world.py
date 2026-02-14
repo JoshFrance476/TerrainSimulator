@@ -6,9 +6,9 @@ import config as config
 class World:
     """Handles simulator and high level world logic."""
 
-    def __init__(self, rows, cols):
+    def __init__(self, rows, cols, biome_config):
         self.rows, self.cols = rows, cols
-        self.data = WorldData(rows, cols)
+        self.data = WorldData(rows, cols, biome_config)
 
         self.region_manager = RegionManager()
 

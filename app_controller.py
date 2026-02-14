@@ -8,14 +8,14 @@ from simulation.map_entity import MapEntity
 import sys
 
 class AppController:
-    def __init__(self, screen, fonts):
-        self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
+    def __init__(self, screen, fonts, biome_config):
+        self.world = World(config.WORLD_ROWS, config.WORLD_COLS, biome_config)
         self.camera = Camera()
 
         self.fonts = fonts
 
         self.map_renderer = MapRenderer(self)
-        self.ui_manager = UIManager(self, fonts, self.world)
+        self.ui_manager = UIManager(self, fonts, self.world, biome_config)
 
         self.ui_manager.show_tile_setup_page()
 
@@ -105,9 +105,9 @@ class AppController:
             if self.focused_entity:
                 if hasattr(self.focused_entity, "handle_event"):
                     self.focused_entity.handle_event(event)
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT and hasattr(self.focused_entity, "increment"):
+                if (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and hasattr(self.focused_entity, "increment"):
                     self.focused_entity.increment()
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT and hasattr(self.focused_entity, "decrement"):
+                if (event.key == pygame.K_a or event.key == pygame.K_LEFT) and hasattr(self.focused_entity, "decrement"):
                     self.focused_entity.decrement()
             else:
                 if event.key == pygame.K_SPACE:

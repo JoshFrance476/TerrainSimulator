@@ -1,10 +1,9 @@
 from generation.generator_main import generate_data_maps
-import config as config
 
 class WorldData:
-    def __init__(self, rows, cols):
+    def __init__(self, rows, cols, biome_config):
         self.rows, self.cols = rows, cols
-        self.world_data = generate_data_maps(self.rows, self.cols)
+        self.world_data = generate_data_maps(self.rows, self.cols, biome_config)
         
     def get_cell_data(self, pos):
         r, c = pos

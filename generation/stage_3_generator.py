@@ -1,10 +1,10 @@
 import numpy as np
-from config import STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST, BIOME_COST_LOOKUP, BIOME_RULES, BIOME_NAME_TO_ID
+from config import STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST
 from utils.map_utils import calculate_proximity_map
 
 
-def calculate_traversal_cost(biome_map, steepness_map):
-    cost_lookup = BIOME_COST_LOOKUP[biome_map]
+def calculate_traversal_cost(biome_map, steepness_map, biome_config):
+    cost_lookup = biome_config.cost_lookup[biome_map]
 
     steepness_cost = steepness_map * STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST
     traversal_cost_map = cost_lookup + steepness_cost
@@ -12,7 +12,7 @@ def calculate_traversal_cost(biome_map, steepness_map):
     return traversal_cost_map
 
 
-def calculate_soil_fertility(biome, rainfall, elevation, temperature):
+def calculate_soil_fertility(biome, rainfall, elevation, temperature, biome_config):
     """
     Determines soil fertility based on rainfall, elevation, temperature and biome.
     """
@@ -21,14 +21,14 @@ def calculate_soil_fertility(biome, rainfall, elevation, temperature):
     fertility[elevation > 0.7] *= 0.1
     fertility[elevation < 0.2] *= 1.2
 
-    fertility[biome == BIOME_NAME_TO_ID['ocean']] = 0
-    fertility[biome == BIOME_NAME_TO_ID['desert']] *= 0.1
-    fertility[biome == BIOME_NAME_TO_ID['arid']] *= 0.4
-    fertility[biome == BIOME_NAME_TO_ID['mountains']] *= 0.1
-    fertility[biome == BIOME_NAME_TO_ID['snowy peaks']] *= 0.05
-    fertility[biome == BIOME_NAME_TO_ID['marsh']] *= 0.5
-    fertility[biome == BIOME_NAME_TO_ID['savanna']] *= 0.5
-    fertility[biome == BIOME_NAME_TO_ID['grassland']] *= 1.2
+    fertility[biome == biome_config.name_to_id['ocean']] = 0
+    fertility[biome == biome_config.name_to_id['desert']] *= 0.1
+    fertility[biome == biome_config.name_to_id['arid']] *= 0.4
+    fertility[biome == biome_config.name_to_id['mountains']] *= 0.1
+    fertility[biome == biome_config.name_to_id['snowy peaks']] *= 0.05
+    fertility[biome == biome_config.name_to_id['marsh']] *= 0.5
+    fertility[biome == biome_config.name_to_id['savanna']] *= 0.5
+    fertility[biome == biome_config.name_to_id['grassland']] *= 1.2
 
 
 
@@ -45,7 +45,7 @@ def calculate_soil_fertility(biome, rainfall, elevation, temperature):
 
 
 
-def determine_biome(elevation, temperature, rainfall, sea_proximity, river_proximity):
+def determine_biome(elevation, temperature, rainfall, sea_proximity, river_proximity, biome_config):
     biome_map = np.full(elevation.shape, -1, dtype=np.int8)
     factors = {
         "elevation": elevation,
@@ -56,10 +56,10 @@ def determine_biome(elevation, temperature, rainfall, sea_proximity, river_proxi
     }
 
     river_mask = (river_proximity == 0)
-    biome_map[river_mask] = BIOME_NAME_TO_ID['river']
+    biome_map[river_mask] = biome_config.name_to_id['river']
 
 
-    for biome_data in BIOME_RULES:
+    for biome_data in biome_config.config:
         option_masks = []  # collect masks for each option in the list
         if "conditions" in biome_data:
             for option in biome_data["conditions"]:   # each option is a dict
@@ -76,7 +76,7 @@ def determine_biome(elevation, temperature, rainfall, sea_proximity, river_proxi
             # OR together the option masks (any of the dicts can match)
             combined_mask = np.logical_or.reduce(option_masks)
             # Only fill unassigned cells
-            biome_map[(biome_map == -1) & combined_mask] = BIOME_NAME_TO_ID[biome_data["name"]]
+            biome_map[(biome_map == -1) & combined_mask] = biome_config.name_to_id[biome_data["name"]]
 
     return biome_map
 

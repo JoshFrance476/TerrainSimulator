@@ -1,8 +1,8 @@
 import numpy as np
 import colorsys
-from config import BIOME_COLOUR_LOOKUP, BIOME_NAME_TO_ID
 
-def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
+
+def generate_color_map(world_data, biome_config, blend_toggle=False, variation_toggle=True):
     """
     This function has been vectorised by AI. Haven't reviewed the code, but it works and cuts run time by 80%. Original, non-vectorised function can be found in earlier commits if needed.
     """
@@ -12,21 +12,13 @@ def generate_color_map(world_data, blend_toggle=False, variation_toggle=True):
 
     rows, cols = elevation.shape
 
-    # BIOME_COLOUR_LOOKUP is already a list such that:
-    # BIOME_COLOUR_LOOKUP[biome_id] -> (R,G,B)
-
-    lookup = np.asarray(BIOME_COLOUR_LOOKUP, dtype=np.float32)
-
-    # Vectorised lookup:
-    # biome has shape (rows, cols)
-    # result becomes (rows, cols, 3)
-    colour_map = lookup[biome]
+    colour_map = biome_config.colour_lookup[biome]
 
     # -------------------------
     # 2. Masks
     # -------------------------
-    ocean_id = BIOME_NAME_TO_ID["ocean"]
-    mountains_id = BIOME_NAME_TO_ID["mountains"]
+    ocean_id = biome_config.name_to_id["ocean"]
+    mountains_id = biome_config.name_to_id["mountains"]
 
     ocean_mask = biome == ocean_id
     mountains_mask = biome == mountains_id

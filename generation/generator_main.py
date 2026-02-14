@@ -14,7 +14,7 @@ if config.LOGGING:
     logging.basicConfig(level=logging.DEBUG)
 
 
-def generate_data_maps(rows, cols):
+def generate_data_maps(rows, cols, biome_config):
 
     ## Stage 1
 
@@ -55,12 +55,12 @@ def generate_data_maps(rows, cols):
     ## Stage 3
 
     start_time = time.time()
-    biome_map = determine_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map)
+    biome_map = determine_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, biome_config)
     logging.debug(f"biome map generation took {time.time() - start_time:.2f} seconds")
 
 
     start_time = time.time()
-    traversal_cost_map = calculate_traversal_cost(biome_map, steepness_map)  
+    traversal_cost_map = calculate_traversal_cost(biome_map, steepness_map, biome_config)  
     logging.debug(f"Traversal cost map generation took {time.time() - start_time:.2f} seconds")
 
 
@@ -69,7 +69,9 @@ def generate_data_maps(rows, cols):
         'elevation': elevation_map,
         'biome': biome_map,
         'steepness': steepness_map
-    }, True, True)
+    },
+    biome_config,
+    True, True)
     logging.debug(f"Colour map generation took {time.time() - start_time:.2f} seconds")
 
 
