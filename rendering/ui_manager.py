@@ -25,6 +25,9 @@ class UIManager:
     def show_region_setup_page(self):
         self.left_sidebar.show_region_setup_page()
     
+    def show_tile_setup_page(self):
+        self.left_sidebar.show_tile_setup_page()
+    
     def clear_left_page(self):
         self.left_sidebar.clear_page()
 
@@ -34,19 +37,20 @@ class UIManager:
         hovered_cell = self.controller.hovered_cell
         cell_data = self.world.get_cell_data(selected_cell)
         filter_name = self.controller.selected_filter
-
-        if hovered_cell:
-            self.draw_hover_highlight(hovered_cell, screen)
-
-        if selected_cell:
-            self.draw_selected_cell_border(selected_cell, screen)
         
         self.right_sidebar.show_cell_info(cell_data)
 
         self.left_sidebar.draw(screen)
         self.right_sidebar.draw(screen, filter_name)
 
-        self.draw_tooltip_list(screen)
+        if selected_cell:
+                self.draw_selected_cell_border(selected_cell, screen)
+
+        if self.mouse_on_map():
+            if hovered_cell:
+                self.draw_hover_highlight(hovered_cell, screen)
+            
+            self.draw_tooltip_list(screen)
 
 
     def render_tooltip(self, location):
@@ -113,4 +117,6 @@ class UIManager:
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
 
-
+    def mouse_on_map(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT
