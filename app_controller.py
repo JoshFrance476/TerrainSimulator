@@ -89,11 +89,13 @@ class AppController:
                 elif self.ui_manager.mouse_on_map():
                     self.mouse_down(location)
 
-        elif event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:  # Left mouse button
+                if self.focused_entity and hasattr(self.focused_entity, "stop_drag"):
+                    self.focused_entity.stop_drag()
                 self.mouse_up()
         
-        elif event.type == pygame.MOUSEMOTION:
+        if event.type == pygame.MOUSEMOTION:
             if pygame.mouse.get_pressed()[0]:
                 if self.focused_entity:
                     if hasattr(self.focused_entity, "is_dragged"):
@@ -103,6 +105,10 @@ class AppController:
             if self.focused_entity:
                 if hasattr(self.focused_entity, "handle_event"):
                     self.focused_entity.handle_event(event)
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT and hasattr(self.focused_entity, "increment"):
+                    self.focused_entity.increment()
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT and hasattr(self.focused_entity, "decrement"):
+                    self.focused_entity.decrement()
             else:
                 if event.key == pygame.K_SPACE:
                     self.toggle_pause()
