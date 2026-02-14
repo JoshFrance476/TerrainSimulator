@@ -19,6 +19,19 @@ class BiomeConfigManager:
 
         self.config = self.resolve_constants(BIOME_RULES, BIOME_CONSTANTS)
 
+        self.update_lookups()
+    
+    def add_biome(self, name, h, s, v, traversal_cost):
+        new_biome = {
+            "name": name,
+            "colour": {"h": h, "s": s, "v": v},
+            "base_traversal_cost": traversal_cost
+        }
+        self.config.append(new_biome)
+        self.update_lookups()
+        print(self.by_name)
+    
+    def update_lookups(self):
         self.name_to_id = {r["name"]: idx for idx, r in enumerate(self.config)}
 
         self.by_name = {r["name"]: r for r in self.config}
@@ -28,12 +41,10 @@ class BiomeConfigManager:
             dtype=np.float32
         )  # shape (N, 3)
 
-
-
         self.cost_lookup = np.array(
             [r["base_traversal_cost"] for r in self.config],
             dtype=np.float32
-)
+        )
 
     
     def resolve_constants(self, obj, constants):
