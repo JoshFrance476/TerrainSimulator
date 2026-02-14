@@ -3,6 +3,7 @@ import config
 from ui_components.widgets.textbox import TextBox
 from ui_components.widgets.label import Label
 from ui_components.widgets.button import Button
+from ui_components.widgets.slider import Slider
 
 class LeftSidebarController:
     def __init__(self, fonts, controller):
@@ -22,6 +23,9 @@ class LeftSidebarController:
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
         self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text)))
     
+    def show_tile_setup_page(self):
+        self.component_list.append(Slider(0, 100, config.SIDEBAR_WIDTH-60))
+
     def clear_page(self):
         self.component_list = []
 
@@ -33,7 +37,7 @@ class LeftSidebarController:
 
         y_offset = 10
         for component in self.component_list:
-            component.draw(screen, 10, y_offset)
+            component.draw(screen, component.padding, y_offset)
             y_offset += component.height
 
 
