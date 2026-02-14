@@ -7,16 +7,22 @@ from ui_components.widgets.label import Label
 
 
 class UIManager:
-    def __init__(self, controller, fonts, world):
+    def __init__(self, controller, fonts, world, biome_config):
         self.controller = controller
-        self.left_sidebar = LeftSidebarController(fonts, controller)
-        self.right_sidebar = RightSidebarController(fonts, controller)
+        self.biome_config = biome_config
+        self.left_sidebar = LeftSidebarController(fonts, controller, biome_config)
+        self.right_sidebar = RightSidebarController(fonts, controller, biome_config)
         self.world = world
         self.fonts = fonts
         
     def get_clicked_component(self, event_pos):
         clicked_component = False
         for component in self.left_sidebar.component_list:
+            if isinstance(component, list):
+                for subcomponent in component:
+                    if hasattr(subcomponent, "collide_with"):
+                        if subcomponent.collide_with(event_pos):
+                            clicked_component = subcomponent
             if hasattr(component, "collide_with"):
                 if component.collide_with(event_pos):
                     clicked_component = component
@@ -57,7 +63,7 @@ class UIManager:
         self.tooltip_list = []
         regions = self.world.region_manager.get_regions_at_location(location)
 
-        biome = config.BIOME_RULES[self.world.get_cell_data(location)["biome"]]["name"].title()
+        biome = self.biome_config.config[self.world.get_cell_data(location)["biome"]]["name"].title()
         tooltip = Tooltip(self.controller, self.fonts.small_font)
         tooltip.add_components([Label(biome, self.fonts.large_font, tooltip.max_width)])
         self.tooltip_list.append(tooltip)
