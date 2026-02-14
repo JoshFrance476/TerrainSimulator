@@ -17,6 +17,8 @@ class AppController:
         self.map_renderer = MapRenderer(self)
         self.ui_manager = UIManager(self, fonts, self.world)
 
+        self.ui_manager.show_tile_setup_page()
+
         self.screen = screen
 
         self.player = MapEntity((50,50))
@@ -80,16 +82,22 @@ class AppController:
 
                 if clicked_component:
                     if hasattr(clicked_component, "is_clicked"):
-                        clicked_component.is_clicked()
-                    else:
+                        clicked_component.is_clicked(event)
+                    if hasattr(clicked_component, "focused"):
                         clicked_component.focused = True
                         self.focused_entity = clicked_component
-                else:
+                elif self.ui_manager.mouse_on_map():
                     self.mouse_down(location)
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:  # Left mouse button
                 self.mouse_up()
+        
+        elif event.type == pygame.MOUSEMOTION:
+            if pygame.mouse.get_pressed()[0]:
+                if self.focused_entity:
+                    if hasattr(self.focused_entity, "is_dragged"):
+                        self.focused_entity.is_dragged(event)
         
         elif event.type == pygame.KEYDOWN:
             if self.focused_entity:
