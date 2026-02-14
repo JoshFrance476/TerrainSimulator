@@ -1,0 +1,147 @@
+{
+  "constants": {
+    "SEA_LEVEL": 0.0
+  },
+  "biomes": [
+    {
+      "name": "ocean",
+      "colour": { "h": 240.0, "s": 1.0, "v": 0.706 },
+      "base_traversal_cost": 10,
+      "conditions": [
+        {
+          "elevation": { "min": -1.0, "max": "SEA_LEVEL" }
+        }
+      ]
+    },
+    {
+      "name": "snowy peaks",
+      "colour": { "h": 0.0, "s": 0.0, "v": 0.808 },
+      "base_traversal_cost": 10,
+      "conditions": [
+        {
+          "elevation": { "min": 0.85, "max": 1.0 },
+          "temperature": { "min": 0.0, "max": 0.6 }
+        }
+      ]
+    },
+    {
+      "name": "mountains",
+      "colour": { "h": 0.0, "s": 0.0, "v": 0.471 },
+      "base_traversal_cost": 10,
+      "conditions": [
+        {
+          "elevation": { "min": 0.7 }
+        }
+      ]
+    },
+    {
+      "name": "glacier",
+      "colour": { "h": 0.0, "s": 0.0, "v": 0.863 },
+      "base_traversal_cost": 5,
+      "conditions": [
+        {
+          "temperature": { "max": 0.01 }
+        }
+      ]
+    },
+    {
+      "name": "tundra",
+      "colour": { "h": 105.0, "s": 0.45, "v": 0.471 },
+      "base_traversal_cost": 2,
+      "conditions": [
+        {
+          "temperature": { "max": 0.09 }
+        }
+      ]
+    },
+    {
+      "name": "desert",
+      "colour": { "h": 30.0, "s": 0.695, "v": 0.643 },
+      "base_traversal_cost": 1,
+      "conditions": [
+        {
+          "temperature": { "min": 0.8 },
+          "rainfall": { "max": 0.2 }
+        }
+      ]
+    },
+    {
+      "name": "arid",
+      "colour": { "h": 30.0, "s": 0.375, "v": 0.627 },
+      "base_traversal_cost": 1,
+      "conditions": [
+        {
+          "temperature": { "min": 0.72 },
+          "rainfall": { "max": 0.6 },
+          "river_proximity": { "min": 4 }
+        }
+      ]
+    },
+    {
+      "name": "savanna",
+      "colour": { "h": 82.5, "s": 0.636, "v": 0.431 },
+      "base_traversal_cost": 1,
+      "conditions": [
+        {
+          "elevation": { "max": 0.5 },
+          "temperature": { "min": 0.55 },
+          "rainfall": { "min": 0.4 }
+        },
+        {
+          "elevation": { "max": 0.5 },
+          "temperature": { "min": 0.55 },
+          "river_proximity": { "max": 4 }
+        }
+      ]
+    },
+    {
+      "name": "rainforest",
+      "colour": { "h": 120.0, "s": 1.0, "v": 0.314 },
+      "base_traversal_cost": 1.5,
+      "conditions": [
+        {
+          "elevation": { "max": 0.7 },
+          "temperature": { "min": 0.55 },
+          "rainfall": { "min": 0.7 }
+        }
+      ]
+    },
+    {
+      "name": "marsh",
+      "colour": { "h": 120.0, "s": 1.0, "v": 0.275 },
+      "base_traversal_cost": 2,
+      "conditions": [
+        {
+          "elevation": { "max": 0.1 },
+          "temperature": { "min": 0.2, "max": 0.45 },
+          "rainfall": { "min": 0.8 }
+        }
+      ]
+    },
+    {
+      "name": "forest",
+      "colour": { "h": 120.0, "s": 0.848, "v": 0.361 },
+      "base_traversal_cost": 1,
+      "conditions": [
+        {
+          "rainfall": { "min": 0.65 }
+        }
+      ]
+    },
+    {
+      "name": "grassland",
+      "colour": { "h": 112.9, "s": 0.673, "v": 0.431 },
+      "base_traversal_cost": 1,
+      "conditions": [
+        {
+          "elevation": { "max": 0.7 }
+        }
+      ]
+    },
+    {
+      "name": "river",
+      "colour": { "h": 240.0, "s": 0.68, "v": 0.8 },
+      "base_traversal_cost": 5
+    }
+  ]
+}
