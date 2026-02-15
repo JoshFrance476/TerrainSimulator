@@ -10,8 +10,6 @@ def generate_color_map(world_data, biome_config, blend_toggle=False, variation_t
     steepness = world_data["steepness"]
     biome = world_data["biome"]
 
-    rows, cols = elevation.shape
-
     colour_map = biome_config.colour_lookup[biome].copy()
 
     # -------------------------
