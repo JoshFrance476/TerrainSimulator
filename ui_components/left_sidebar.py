@@ -27,23 +27,35 @@ class LeftSidebarController:
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
         self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text)))
     
-    def show_tile_setup_page(self):
+    def show_tile_manager_page(self, biome_info = None, biome_index = -1):
+
+        if biome_info and biome_index != -1:
+            tile_name = TextBox(self.controller, self.fonts.small_font, 150, 20, biome_info["name"])
+            tile_trav_cost = TextBox(self.controller, self.fonts.small_font, 150, 20, str(biome_info["base_traversal_cost"]))
+            hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["h"])
+            sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["s"]*100)
+            val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["v"]*100)
+            submit_button = Button(50, 25, lambda: self.controller.edit_biome(biome_index, tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, int(tile_trav_cost.text)))
+        else:
+            tile_name = TextBox(self.controller, self.fonts.small_font, 150, 20)
+            tile_trav_cost = TextBox(self.controller, self.fonts.small_font, 150, 20, "0")
+            hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120)
+            sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100)
+            val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100)
+            submit_button = Button(50, 25, lambda: self.controller.add_biome(tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, int(tile_trav_cost.text)))
+
         self.component_list = []
         self.component_list.append(
-            Label("Tile Setup", self.fonts.large_font, config.SIDEBAR_WIDTH)
+            Label("Tile Manager", self.fonts.large_font, config.SIDEBAR_WIDTH)
         )
-
-        hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120)
-        sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100)
-        val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100)
 
         self.component_list.append(ColourPreview(50, 50, hue_slider, sat_slider, val_slider))
 
         self.component_list.append(Label("Tile name:", self.fonts.large_font, config.SIDEBAR_WIDTH))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 150, 20))
+        self.component_list.append(tile_name)
 
         self.component_list.append(Label("Traversal Cost:", self.fonts.large_font, config.SIDEBAR_WIDTH))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 150, 20, "0"))
+        self.component_list.append(tile_trav_cost)
 
         self.component_list.append(Label("Colour:", self.fonts.large_font, config.SIDEBAR_WIDTH))
 
@@ -56,21 +68,22 @@ class LeftSidebarController:
         self.component_list.append(Label("Value:", self.fonts.small_font, config.SIDEBAR_WIDTH))
         self.component_list.append(val_slider)
 
-        self.component_list.append(Button(50, 25, lambda: self.controller.add_biome(self.component_list[3].text, self.component_list[8].value, self.component_list[10].value, self.component_list[12].value, int(self.component_list[5].text))))
+        self.component_list.append(submit_button)
 
         
-    def show_tile_manager_page(self):
+    def show_biome_manager_page(self):
         self.component_list = []
-        self.component_list.append(Label("Tile Manager", self.fonts.large_font, config.SIDEBAR_WIDTH))
+        self.component_list.append(Label("Biome Manager", self.fonts.large_font, config.SIDEBAR_WIDTH))
         biome_container_list = ContainerList(config.SIDEBAR_WIDTH-10, 500)
-        for biome in self.biome_config.config:
+        for index, biome in enumerate(self.biome_config.config):
             biome_container = ComponentContainer(True)
             biome_container.add_component(Label(biome["name"], self.fonts.large_font, 150))
-            biome_container.add_component(ColourPreview(20, 20, biome["colour"]["h"], biome["colour"]["s"], biome["colour"]["v"], ))
-            biome_container.add_component(Button(50, 20, lambda: self.controller.show_tile_setup_page(), "Edit", self.fonts.small_font))
+            biome_container.add_component(ColourPreview(20, 20, biome["colour"]["h"], biome["colour"]["s"], biome["colour"]["v"]))
+            biome_container.add_component(Button(50, 20, lambda b = biome, i = index: self.controller.show_tile_manager_page(b, i), "Edit", self.fonts.small_font))
             biome_container_list.add_container(biome_container)
         
         self.component_list.append(biome_container_list)
+        self.component_list.append(Button(100, 20, lambda: self.controller.show_tile_manager_page(), "Add Region", self.fonts.small_font))
 
 
     def clear_page(self):
