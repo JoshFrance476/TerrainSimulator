@@ -1,9 +1,10 @@
-from generation.generator_main import generate_data_maps
+from generation.generator_main import generate_data_maps, update_stage_3
 
 class WorldData:
     def __init__(self, rows, cols, biome_config):
         self.rows, self.cols = rows, cols
-        self.world_data = generate_data_maps(self.rows, self.cols, biome_config)
+        self.biome_config = biome_config
+        self.world_data = generate_data_maps(self.rows, self.cols, self.biome_config)
         
     def get_cell_data(self, pos):
         r, c = pos
@@ -31,6 +32,17 @@ class WorldData:
     
     def set_map_data_at(self, map_name, pos, data):
         self.world_data[map_name][pos] = data
+    
+    def update_stage_3(self):
+        new_trav_map, new_colour_map = update_stage_3(self.world_data["elevation"],
+                                                    self.world_data["temperature"],
+                                                    self.world_data["rainfall"],
+                                                    self.world_data["sea_proximity"],
+                                                    self.world_data["river_proximity"],
+                                                    self.world_data["steepness"],
+                                                    self.biome_config)
+        self.world_data["colour"] = new_colour_map
+        self.world_data["traversal_cost"] = new_trav_map
 
 
     
