@@ -103,9 +103,7 @@ def generate_data_maps(rows, cols, biome_config):
     return world_data
 
 
-def update_stage_3(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, steepness_map, biome_config):
-    biome_map = determine_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, biome_config)
-
+def update_stage_3(elevation_map, biome_map, steepness_map, biome_config):
     traversal_cost_map = calculate_traversal_cost(biome_map, steepness_map, biome_config.cost_lookup)  
 
     colour_map = generate_color_map({
