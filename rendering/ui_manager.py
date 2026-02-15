@@ -47,6 +47,9 @@ class UIManager:
     def show_biome_manager_page(self):
         self.left_sidebar.show_biome_manager_page()
     
+    def show_location_info_page(self):
+        self.right_sidebar.show_location_info_page()
+    
     def clear_left_page(self):
         self.left_sidebar.clear_page()
 
@@ -54,17 +57,13 @@ class UIManager:
     def render_ui(self, screen):
         selected_cell = self.controller.selected_cell
         hovered_cell = self.controller.hovered_cell
-        cell_data = self.world.get_cell_data(selected_cell)
         filter_name = self.controller.selected_filter
-        
-        self.right_sidebar.show_cell_info(cell_data)
-
 
         if selected_cell:
                 self.draw_selected_cell_border(selected_cell, screen)
         
         self.left_sidebar.draw(screen)
-        self.right_sidebar.draw(screen, filter_name)
+        self.right_sidebar.draw(screen)
 
         if self.mouse_on_map():
             if hovered_cell:
