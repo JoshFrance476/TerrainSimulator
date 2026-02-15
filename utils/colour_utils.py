@@ -155,4 +155,5 @@ def hsv_to_rgb_array(hsv_map):
     return rgb
 
 def hsv2rgb(h,s,v):
+        h = h / 360
         return tuple(round(i * 255) for i in colorsys.hsv_to_rgb(h,s,v))
