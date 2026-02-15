@@ -18,7 +18,7 @@ class AppController:
         self.map_renderer = MapRenderer(self)
         self.ui_manager = UIManager(self, fonts, self.world, self.biome_config)
 
-        self.ui_manager.show_tile_setup_page()
+        self.ui_manager.show_tile_manager_page()
 
         self.screen = screen
 
@@ -105,6 +105,11 @@ class AppController:
                     if hasattr(self.focused_entity, "is_dragged"):
                         self.focused_entity.is_dragged(event)
         
+        if event.type == pygame.MOUSEWHEEL:
+            if self.focused_entity:
+                if hasattr(self.focused_entity, "scroll"):
+                    self.focused_entity.scroll(event.y)
+        
         elif event.type == pygame.KEYDOWN:
             if self.focused_entity:
                 if hasattr(self.focused_entity, "handle_event"):
@@ -184,6 +189,9 @@ class AppController:
             self.most_recent_region_paint = self.active_region_paint
             self.active_region_paint = None
     
+    def show_tile_setup_page(self):
+        self.ui_manager.show_tile_setup_page()
+    
     def create_new_region(self, location):
         region_id = self.world.region_manager.create_region(location)
         self.active_region_paint = region_id
@@ -202,12 +210,7 @@ class AppController:
         self.camera.set_location(self.player.get_location())
         self.camera.clamp_pan()
         self.refresh_map_render()
-    
-    def cycle_left_sidebar(self, delta):
-        self.active_left_sidebar = (self.active_left_sidebar + delta) % 4
 
-    def cycle_right_sidebar(self, delta):
-        self.active_right_sidebar = (self.active_right_sidebar + delta) % 4
     
     def select_cell(self, location):
         self.selected_cell = location
