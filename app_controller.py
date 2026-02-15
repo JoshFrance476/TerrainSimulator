@@ -32,11 +32,14 @@ class AppController:
         self.paused = True
         self.interaction_type = "view_tile"
 
-        self.active_region_paint = None
+        self.tile_paint_id = None
+        self.tile_paint_enabled = False
 
+        self.active_region_paint = None
         self.most_recent_region_paint = None
 
         self.focused_entity = None
+        self.ui_locked = False
 
     
     def tick(self, events):
@@ -47,20 +50,6 @@ class AppController:
 
         self.map_renderer.render_view(self.screen)
         self.ui_manager.render_ui(self.screen)
-
-    def add_biome(self, name, h, s, v, traversal_cost):
-        self.biome_config.add_biome(name, h, s, v, traversal_cost)
-        self.ui_manager.show_biome_manager_page()
-        self.process_updated_map()
-    
-    def edit_biome(self, index, name, h, s, v, traversal_cost):
-        self.biome_config.edit_biome(index, name, h, s, v, traversal_cost)
-        self.ui_manager.show_biome_manager_page()
-        self.process_updated_map()
-    
-    def process_updated_map(self):
-        self.world.data.update_stage_3()
-        self.map_renderer.refresh_view()
         
 
     def handle_continuous_inputs(self):
@@ -79,6 +68,7 @@ class AppController:
 
         if not self.matches_hovered_tile(location):
             self.new_hovered_tile(location)
+    
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
@@ -90,11 +80,19 @@ class AppController:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                if self.focused_entity:
-                    self.focused_entity.focused = False
-                    self.focused_entity = None
-                
                 clicked_component = self.ui_manager.get_clicked_component(event.pos)
+
+                if self.ui_locked:
+                    if clicked_component == self.focused_entity:
+                        clicked_component.is_clicked(event)
+                        self.ui_locked = False
+                        self.clear_focus()
+                    else:
+                        if self.ui_manager.mouse_on_map():
+                            self.mouse_down(location)
+                    return
+
+                self.clear_focus()
 
                 if clicked_component:
                     if hasattr(clicked_component, "is_clicked"):
@@ -104,12 +102,14 @@ class AppController:
                         self.focused_entity = clicked_component
                 elif self.ui_manager.mouse_on_map():
                     self.mouse_down(location)
+        
 
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:  # Left mouse button
                 if self.focused_entity and hasattr(self.focused_entity, "stop_drag"):
                     self.focused_entity.stop_drag()
                 self.mouse_up()
+        
         
         if event.type == pygame.MOUSEMOTION:
             if pygame.mouse.get_pressed()[0]:
@@ -122,7 +122,7 @@ class AppController:
                 if hasattr(self.focused_entity, "scroll"):
                     self.focused_entity.scroll(event.y)
         
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             if self.focused_entity:
                 if hasattr(self.focused_entity, "handle_event"):
                     self.focused_entity.handle_event(event)
@@ -141,6 +141,7 @@ class AppController:
                     self.toggle_view_tile()
                 if event.key == pygame.K_z:
                     print("Debug Trigger")
+
     
     def clear_focus(self):
         if self.focused_entity:
@@ -175,6 +176,15 @@ class AppController:
     def toggle_region_place(self):
         self.interaction_type = "paint_region"
     
+    def toggle_tile_paint(self, tid):
+        if self.interaction_type == "paint_tile":
+            self.tile_paint_id = None
+            self.interaction_type = "view_tile"
+        else:
+            self.ui_locked = True
+            self.interaction_type = "paint_tile"
+            self.tile_paint_id = tid
+    
     def toggle_view_tile(self):
         self.interaction_type = "view_tile"
     
@@ -184,6 +194,24 @@ class AppController:
         elif self.interaction_type == "view_tile":
             self.select_cell(location)
     
+    def add_biome(self, name, h, s, v, traversal_cost):
+        self.biome_config.add_biome(name, h, s, v, traversal_cost)
+        self.ui_manager.show_biome_manager_page()
+        self.process_updated_map()
+    
+    def edit_biome(self, index, name, h, s, v, traversal_cost):
+        self.biome_config.edit_biome(index, name, h, s, v, traversal_cost)
+        self.ui_manager.show_biome_manager_page()
+        self.process_updated_map()
+    
+    def process_updated_map(self):
+        self.world.data.update_stage_3()
+        self.refresh_map_render()
+    
+    def paint_tile(self, location, tid):
+        self.world.data.set_map_data_at("biome", location, tid)
+        self.process_updated_map()
+    
     def paint_region(self, location, rid):
         self.world.region_manager.add_region_to_location(location, rid)
         self.refresh_map_render()
@@ -191,6 +219,9 @@ class AppController:
     def mouse_down(self, location):
         if self.interaction_type == "paint_region":
             self.create_new_region(location)
+        elif self.interaction_type == "paint_tile":
+            self.tile_paint_enabled = True
+            self.paint_tile(location, self.tile_paint_id)
         else:
             self.interact_with_tile(location)
 
@@ -200,6 +231,8 @@ class AppController:
             self.ui_manager.show_region_setup_page()
             self.most_recent_region_paint = self.active_region_paint
             self.active_region_paint = None
+        elif self.interaction_type == "paint_tile" and self.tile_paint_enabled:
+            self.tile_paint_enabled = False
     
     def show_tile_manager_page(self, biome_info = {}, index = -1):
         self.ui_manager.show_tile_manager_page(biome_info, index)
@@ -261,8 +294,11 @@ class AppController:
         return self.hovered_cell == location
 
     def new_hovered_tile(self, location):
-        if self.active_region_paint != None:
+        if self.active_region_paint:
             self.paint_region(location, self.active_region_paint)        
+        
+        if self.tile_paint_id is not None and self.tile_paint_enabled:
+            self.paint_tile(location, self.tile_paint_id)
         
         self.hover_cell(location)
 
