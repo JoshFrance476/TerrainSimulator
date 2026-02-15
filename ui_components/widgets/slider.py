@@ -75,5 +75,7 @@ class Slider:
     def decrement(self):
         self.value -= 1
     
+    def get_normalised_value(self):
+        return self.value/(self.max-self.min)
 
     
