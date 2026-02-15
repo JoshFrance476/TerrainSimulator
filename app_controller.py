@@ -5,6 +5,7 @@ from rendering.ui_manager import UIManager
 from rendering.camera import Camera
 from simulation.world import World
 from simulation.map_entity import MapEntity
+from utils.fps_monitor import FPSMonitor
 import sys
 
 class AppController:
@@ -17,6 +18,8 @@ class AppController:
 
         self.map_renderer = MapRenderer(self)
         self.ui_manager = UIManager(self, fonts, self.world, self.biome_config)
+
+        self.fps_monitor = FPSMonitor()
 
         self.ui_manager.show_biome_manager_page()
 
@@ -50,6 +53,10 @@ class AppController:
 
         self.map_renderer.render_view(self.screen)
         self.ui_manager.render_ui(self.screen)
+
+        self.fps_monitor.tick()
+        self.ui_manager.draw_fps_counter(self.screen, self.fps_monitor.get_fps())
+       
         
 
     def handle_continuous_inputs(self):

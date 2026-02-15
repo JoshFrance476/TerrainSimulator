@@ -88,6 +88,14 @@ class UIManager:
             if region.visible_desc != "":
                 tooltip.add_components([Label(region.visible_desc, self.fonts.small_font, tooltip.max_width)])
             self.tooltip_list.append(tooltip)
+    
+    def draw_fps_counter(self, screen, fps):
+        pygame.draw.rect(screen, (220,220,220),
+                         (config.SCREEN_WIDTH-58, config.SCREEN_HEIGHT-30, 60, 30))
+        pygame.draw.rect(screen, (80,80,80),
+                         (config.SCREEN_WIDTH-58, config.SCREEN_HEIGHT-30, 60, 30), 3)
+        fps_text = self.fonts.small_font.render(str(fps), True, (30,30,30))
+        screen.blit(fps_text, (config.SCREEN_WIDTH-38, config.SCREEN_HEIGHT-23))
 
     
     def draw_tooltip_list(self, screen):
