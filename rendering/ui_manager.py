@@ -4,6 +4,7 @@ from ui_components.left_sidebar import LeftSidebarController
 from ui_components.right_sidebar import RightSidebarController
 from ui_components.widgets.tooltip import Tooltip
 from ui_components.widgets.label import Label
+from ui_components.widgets.container_list import ContainerList
 
 
 class UIManager:
@@ -16,23 +17,37 @@ class UIManager:
         self.fonts = fonts
         
     def get_clicked_component(self, event_pos):
-        clicked_component = False
         for component in self.left_sidebar.component_list:
             if isinstance(component, list):
                 for subcomponent in component:
                     if hasattr(subcomponent, "collide_with"):
                         if subcomponent.collide_with(event_pos):
-                            clicked_component = subcomponent
+                            return subcomponent
+            
             if hasattr(component, "collide_with"):
                 if component.collide_with(event_pos):
-                    clicked_component = component
-        return clicked_component
+                    return component
+            
+            if isinstance(component, ContainerList):
+                container_list = component
+                for component_container in container_list.containers:
+                    for container_component in component_container.components:
+                        if hasattr(container_component, "collide_with"):
+                            if container_component.collide_with(event_pos):
+                                return container_component
+                return container_list
+                    
+        return None
+
 
     def show_region_setup_page(self):
         self.left_sidebar.show_region_setup_page()
     
     def show_tile_setup_page(self):
         self.left_sidebar.show_tile_setup_page()
+    
+    def show_tile_manager_page(self):
+        self.left_sidebar.show_tile_manager_page()
     
     def clear_left_page(self):
         self.left_sidebar.clear_page()
