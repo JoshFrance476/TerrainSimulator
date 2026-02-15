@@ -18,7 +18,7 @@ class AppController:
         self.map_renderer = MapRenderer(self)
         self.ui_manager = UIManager(self, fonts, self.world, self.biome_config)
 
-        self.ui_manager.show_tile_manager_page()
+        self.ui_manager.show_biome_manager_page()
 
         self.screen = screen
 
@@ -50,6 +50,18 @@ class AppController:
 
     def add_biome(self, name, h, s, v, traversal_cost):
         self.biome_config.add_biome(name, h, s, v, traversal_cost)
+        self.ui_manager.show_biome_manager_page()
+        self.process_updated_map()
+    
+    def edit_biome(self, index, name, h, s, v, traversal_cost):
+        self.biome_config.edit_biome(index, name, h, s, v, traversal_cost)
+        self.ui_manager.show_biome_manager_page()
+        self.process_updated_map()
+    
+    def process_updated_map(self):
+        self.world.data.update_stage_3()
+        self.map_renderer.refresh_view()
+        
 
     def handle_continuous_inputs(self):
         if not self.focused_entity:
@@ -189,8 +201,8 @@ class AppController:
             self.most_recent_region_paint = self.active_region_paint
             self.active_region_paint = None
     
-    def show_tile_setup_page(self):
-        self.ui_manager.show_tile_setup_page()
+    def show_tile_manager_page(self, biome_info = {}, index = -1):
+        self.ui_manager.show_tile_manager_page(biome_info, index)
     
     def create_new_region(self, location):
         region_id = self.world.region_manager.create_region(location)
