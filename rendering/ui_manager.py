@@ -18,11 +18,21 @@ class UIManager:
         
     def get_clicked_component(self, event_pos):
         for component in self.left_sidebar.component_list:
+
             if isinstance(component, list):
                 for subcomponent in component:
                     if hasattr(subcomponent, "collide_with"):
                         if subcomponent.collide_with(event_pos):
                             return subcomponent
+                    
+            if isinstance(component, ContainerList):
+                for subcomponent in component.containers:
+                    for subsubcomponent in subcomponent.components:
+                        if isinstance(subsubcomponent, list):
+                            for subsubsubcomponent in subsubcomponent:
+                                if hasattr(subsubsubcomponent, "collide_with"):
+                                    if subsubsubcomponent.collide_with(event_pos):
+                                        return subsubsubcomponent
             
             if hasattr(component, "collide_with"):
                 if component.collide_with(event_pos):
@@ -57,7 +67,6 @@ class UIManager:
     def render_ui(self, screen):
         selected_cell = self.controller.selected_cell
         hovered_cell = self.controller.hovered_cell
-        filter_name = self.controller.selected_filter
 
         if selected_cell:
                 self.draw_selected_cell_border(selected_cell, screen)
@@ -79,15 +88,15 @@ class UIManager:
 
         biome = self.biome_config.config[self.world.get_cell_data(location)["biome"]]["name"].title()
         tooltip = Tooltip(self.controller, self.fonts.small_font)
-        tooltip.add_components([Label(biome, self.fonts.large_font, tooltip.max_width)])
+        tooltip.add_components([Label(biome, self.fonts.large_font, tooltip.max_width, left_padding=0)])
         self.tooltip_list.append(tooltip)
 
         for region in regions:
             tooltip = Tooltip(self.controller, self.fonts.small_font)
             if region.title != "":
-                tooltip.add_components([Label(region.title, self.fonts.large_font, tooltip.max_width)])
+                tooltip.add_components([Label(region.title, self.fonts.large_font, tooltip.max_width, left_padding=0)])
             if region.visible_desc != "":
-                tooltip.add_components([Label(region.visible_desc, self.fonts.small_font, tooltip.max_width)])
+                tooltip.add_components([Label(region.visible_desc, self.fonts.small_font, tooltip.max_width, left_padding=0)])
             self.tooltip_list.append(tooltip)
     
     def draw_fps_counter(self, screen, fps):
