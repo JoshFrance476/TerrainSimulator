@@ -33,11 +33,11 @@ def generate_data_maps(rows, cols, biome_config):
     ## Stage 2
 
     start_time = time.time()
-    sea_map = generate_sea_map(elevation_map)
+    sea_map = generate_sea_map(elevation_map, biome_config.constants["SEA_LEVEL"])
     logging.debug(f"Sea map generation took {time.time() - start_time:.2f} seconds")
 
     start_time = time.time()
-    river_map = generate_rivers_map(elevation_map, config.SEA_LEVEL, config.RIVER_SOURCE_MIN_ELEVATION, config.NUMBER_OF_RIVERS)
+    river_map = generate_rivers_map(elevation_map, biome_config.constants["SEA_LEVEL"], biome_config.constants["RIVER_SOURCE_MIN_ELEVATION"], biome_config.constants["NUMBER_OF_RIVERS"])
     logging.debug(f"River map generation took {time.time() - start_time:.2f} seconds")
     
     start_time = time.time()
@@ -60,7 +60,7 @@ def generate_data_maps(rows, cols, biome_config):
 
 
     start_time = time.time()
-    traversal_cost_map = calculate_traversal_cost(biome_map, steepness_map, biome_config)  
+    traversal_cost_map = calculate_traversal_cost(biome_map, steepness_map, biome_config.cost_lookup)  
     logging.debug(f"Traversal cost map generation took {time.time() - start_time:.2f} seconds")
 
 

@@ -3,8 +3,8 @@ from config import STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST
 from utils.map_utils import calculate_proximity_map
 
 
-def calculate_traversal_cost(biome_map, steepness_map, biome_config):
-    cost_lookup = biome_config.cost_lookup[biome_map]
+def calculate_traversal_cost(biome_map, steepness_map, biome_cost_lookup):
+    cost_lookup = biome_cost_lookup[biome_map]
 
     steepness_cost = steepness_map * STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST
     traversal_cost_map = cost_lookup + steepness_cost

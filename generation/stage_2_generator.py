@@ -3,9 +3,9 @@ import numpy as np
 import config as config
 from scipy.ndimage import binary_dilation
 
-def generate_sea_map(elevation_map):
+def generate_sea_map(elevation_map, sea_level):
     sea_map = np.zeros((elevation_map.shape), dtype=bool)
-    sea_map[elevation_map < config.SEA_LEVEL] = True
+    sea_map[elevation_map < sea_level] = True
     return sea_map
 
 def generate_rivers_map(elevation_map, sea_level, river_source_min_elevation, number_of_rivers):
