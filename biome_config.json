@@ -1,6 +1,8 @@
 {
   "constants": {
-    "SEA_LEVEL": 0.0
+    "SEA_LEVEL": -0.5,
+    "NUMBER_OF_RIVERS": 15,
+    "RIVER_SOURCE_MIN_ELEVATION":0.65
   },
   "biomes": [
     {
