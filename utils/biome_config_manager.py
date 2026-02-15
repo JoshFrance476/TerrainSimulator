@@ -9,6 +9,8 @@ class BiomeConfigManager:
         self.by_name = {}
         self.colour_lookup = {}
         self.cost_lookup = {}
+
+        self.constants = {}
     
     def load_biome_config_file(self, file_name):
         with open(file_name, "r") as f:
@@ -18,6 +20,8 @@ class BiomeConfigManager:
         BIOME_RULES = biome_config_file["biomes"]
 
         self.config = self.resolve_constants(BIOME_RULES, BIOME_CONSTANTS)
+
+        self.constants = BIOME_CONSTANTS
 
         self.update_lookups()
     
