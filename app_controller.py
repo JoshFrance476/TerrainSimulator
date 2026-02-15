@@ -52,10 +52,12 @@ class AppController:
             self.handle_event(event)
 
         self.map_renderer.render_view(self.screen)
-        self.ui_manager.render_ui(self.screen)
 
         self.fps_monitor.tick()
+        
         self.ui_manager.draw_fps_counter(self.screen, self.fps_monitor.get_fps())
+        self.ui_manager.render_ui(self.screen)
+
        
         
 
