@@ -9,7 +9,10 @@ class ComponentContainer:
     
     def add_component(self, component):
         self.components.append(component)
-        self.height += component.height
+        if isinstance(component, list):
+            self.height += component[0].height
+        else:
+            self.height += component.height
 
     def set_width(self, width):
         self.width = width
@@ -24,7 +27,13 @@ class ComponentContainer:
             pygame.draw.rect(screen, (220, 220, 220), (x+2, y+2, self.width-4, self.height-4))
         y_offset = 0
         for component in self.components:
-            component.draw(screen, x, y+y_offset)
-            y_offset += component.height
+            if isinstance(component, list):
+                x_offset = x
+                for subcomponent in component:
+                    subcomponent.draw(screen, subcomponent.left_padding+x_offset, y+y_offset)
+                    x_offset += subcomponent.width+subcomponent.left_padding
+            else:
+                component.draw(screen, x+component.left_padding, y+y_offset)
+                y_offset += component.height
         
         screen.set_clip(None)
