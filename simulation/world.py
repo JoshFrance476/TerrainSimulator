@@ -35,6 +35,9 @@ class World:
     def get_biome_data(self, x0, y0, x1, y1):
         return self.data.get_biome_data(x0, y0, x1, y1)
 
+    def get_biome_at(self, location):
+        return self.data.get_biome_at(location)
+
     def get_cell_data(self, selected_cell):
         if selected_cell:
             return self.data.get_cell_data(selected_cell)

@@ -33,6 +33,9 @@ class WorldData:
     def set_map_data_at(self, map_name, pos, data):
         self.world_data[map_name][pos] = data
     
+    def get_biome_at(self, location):
+        return self.world_data["biome"][location]
+    
 
     def update_stage_3(self):
         new_trav_map, new_colour_map = update_stage_3(self.world_data["elevation"],
