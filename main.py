@@ -40,7 +40,7 @@ while True:
     controller.tick(events)
 
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(config.TARGET_FPS)
 
     #print(tracemalloc.get_traced_memory())
     #tracemalloc.stop()
