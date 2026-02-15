@@ -301,6 +301,8 @@ class AppController:
         return self.hovered_cell == location
 
     def new_hovered_tile(self, location):
+        if self.tile_out_of_bounds(location):
+            return
         if self.active_region_paint:
             self.paint_region(location, self.active_region_paint)        
         
@@ -309,6 +311,8 @@ class AppController:
         
         self.hover_cell(location)
 
-        
         self.ui_manager.render_tooltip(location)
+    
+    def tile_out_of_bounds(self, location):
+        return location[0] >= config.WORLD_ROWS or location[1] >= config.WORLD_COLS
     
