@@ -80,6 +80,7 @@ class LeftSidebarController:
             biome_container.add_component(Label(biome["name"], self.fonts.large_font, 150))
             biome_container.add_component(ColourPreview(20, 20, biome["colour"]["h"], biome["colour"]["s"], biome["colour"]["v"]))
             biome_container.add_component(Button(50, 20, lambda b = biome, i = index: self.controller.show_tile_manager_page(b, i), "Edit", self.fonts.small_font))
+            biome_container.add_component(Button(50, 20, lambda i = index: self.controller.toggle_tile_paint(i), "Paint", self.fonts.small_font))
             biome_container_list.add_container(biome_container)
         
         self.component_list.append(biome_container_list)
