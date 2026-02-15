@@ -10,6 +10,7 @@ pygame.init()
 
 class FontManager:
     def __init__(self):
+        self.header = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE+3)
         self.large_font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
         self.small_font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE-3)
 
