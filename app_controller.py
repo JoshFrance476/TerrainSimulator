@@ -16,6 +16,9 @@ class AppController:
 
         self.fonts = fonts
 
+        self.selected_cell = None
+        self.hovered_cell = None
+
         self.map_renderer = MapRenderer(self)
         self.ui_manager = UIManager(self, fonts, self.world, self.biome_config)
 
@@ -27,8 +30,6 @@ class AppController:
 
         self.player = MapEntity((50,50))
 
-        self.selected_cell = None
-        self.hovered_cell = None
 
         self.selected_filter = "colour"
 
@@ -54,7 +55,7 @@ class AppController:
         self.map_renderer.render_view(self.screen)
 
         self.fps_monitor.tick()
-        
+
         self.ui_manager.draw_fps_counter(self.screen, self.fps_monitor.get_fps())
         self.ui_manager.render_ui(self.screen)
 
@@ -258,7 +259,7 @@ class AppController:
             region.visible_desc = visible_desc
             region.hidden_desc = hidden_desc
 
-            self.ui_manager.clear_left_page()
+            self.ui_manager.show_biome_manager_page()
 
     def next_turn(self):
         self.camera.set_location(self.player.get_location())
@@ -268,6 +269,7 @@ class AppController:
     
     def select_cell(self, location):
         self.selected_cell = location
+        self.ui_manager.show_location_info_page()
     
     def hover_cell(self, location):
         self.hovered_cell = location
@@ -282,6 +284,7 @@ class AppController:
 
     def get_selected_cell(self):
         return self.selected_cell
+
     
     def pan_camera(self, dx, dy):
         if self.interaction_type != "move_player":
@@ -298,6 +301,9 @@ class AppController:
     
     def get_world_data(self):
         return self.world.get_world_data()
+
+    def get_biome_at(self, location):
+        return self.world.get_biome_at(location)
     
     def matches_hovered_tile(self, location):
         return self.hovered_cell == location
