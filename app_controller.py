@@ -232,6 +232,7 @@ class AppController:
     def pan_camera(self, dx, dy):
         if self.interaction_type != "move_player":
             self.camera.pan(dx, dy)
+            self.camera.clamp_pan()
             self.refresh_map_render()
     
     def get_camera_position(self):
