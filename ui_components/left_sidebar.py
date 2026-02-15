@@ -5,6 +5,8 @@ from ui_components.widgets.label import Label
 from ui_components.widgets.button import Button
 from ui_components.widgets.slider import Slider
 from ui_components.widgets.colour_preview import ColourPreview
+from ui_components.widgets.component_container import ComponentContainer
+from ui_components.widgets.container_list import ContainerList
 
 class LeftSidebarController:
     def __init__(self, fonts, controller, biome_config):
@@ -26,6 +28,7 @@ class LeftSidebarController:
         self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text)))
     
     def show_tile_setup_page(self):
+        self.component_list = []
         self.component_list.append(
             Label("Tile Setup", self.fonts.large_font, config.SIDEBAR_WIDTH)
         )
@@ -53,11 +56,22 @@ class LeftSidebarController:
         self.component_list.append(Label("Value:", self.fonts.small_font, config.SIDEBAR_WIDTH))
         self.component_list.append(val_slider)
 
-        self.component_list.append(Button(50, 25, lambda: self.controller.add_biome(self.component_list[3].text, self.component_list[8].value, self.component_list[10].value/100, self.component_list[12].value/100, int(self.component_list[5].text))))
+        self.component_list.append(Button(50, 25, lambda: self.controller.add_biome(self.component_list[3].text, self.component_list[8].value, self.component_list[10].value, self.component_list[12].value, int(self.component_list[5].text))))
 
         
     def show_tile_manager_page(self):
+        self.component_list = []
         self.component_list.append(Label("Tile Manager", self.fonts.large_font, config.SIDEBAR_WIDTH))
+        biome_container_list = ContainerList(config.SIDEBAR_WIDTH-10, 500)
+        for biome in self.biome_config.config:
+            biome_container = ComponentContainer(True)
+            biome_container.add_component(Label(biome["name"], self.fonts.large_font, 150))
+            biome_container.add_component(ColourPreview(20, 20, biome["colour"]["h"], biome["colour"]["s"], biome["colour"]["v"], ))
+            biome_container.add_component(Button(50, 20, lambda: self.controller.show_tile_setup_page(), "Edit", self.fonts.small_font))
+            biome_container_list.add_container(biome_container)
+        
+        self.component_list.append(biome_container_list)
+
 
     def clear_page(self):
         self.component_list = []
