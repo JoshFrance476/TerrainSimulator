@@ -26,16 +26,14 @@ class UIManager:
             
             if hasattr(component, "collide_with"):
                 if component.collide_with(event_pos):
+                    if isinstance(component, ContainerList):
+                        container_list = component
+                        for component_container in container_list.containers:
+                            for container_component in component_container.components:
+                                if hasattr(container_component, "collide_with"):
+                                    if container_component.collide_with(event_pos):
+                                        return container_component
                     return component
-            
-            if isinstance(component, ContainerList):
-                container_list = component
-                for component_container in container_list.containers:
-                    for container_component in component_container.components:
-                        if hasattr(container_component, "collide_with"):
-                            if container_component.collide_with(event_pos):
-                                return container_component
-                return container_list
                     
         return None
 

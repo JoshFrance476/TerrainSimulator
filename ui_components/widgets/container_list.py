@@ -9,6 +9,8 @@ class ContainerList:
         self.left_padding = 5
         self.scroll_offset = 0
 
+        self.rect = None
+
         self.container_combined_height = 0
 
         self.scroll_speed = SCROLL_SPEED
@@ -22,13 +24,13 @@ class ContainerList:
     
     
     def draw(self, screen, x, y):
-        clip_rect = pygame.Rect(x, y, self.width, self.height)
+        self.rect = pygame.Rect(x, y, self.width, self.height)
 
         y += self.scroll_offset
 
         y_offset = 0
         for container in self.containers:
-            container.draw(screen, x, y+y_offset, clip_rect)
+            container.draw(screen, x, y+y_offset, self.rect)
             y_offset += container.height
     
     def scroll(self, scroll_y):
@@ -39,3 +41,6 @@ class ContainerList:
 
         if self.scroll_offset < -self.container_combined_height + self.height:
             self.scroll_offset = -self.container_combined_height + self.height
+    
+    def collide_with(self, mouse_pos):
+        return self.rect.collidepoint(mouse_pos)
