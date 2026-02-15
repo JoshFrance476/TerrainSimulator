@@ -12,7 +12,7 @@ def generate_color_map(world_data, biome_config, blend_toggle=False, variation_t
 
     rows, cols = elevation.shape
 
-    colour_map = biome_config.colour_lookup[biome]
+    colour_map = biome_config.colour_lookup[biome].copy()
 
     # -------------------------
     # 2. Masks
@@ -93,6 +93,10 @@ def generate_color_map(world_data, biome_config, blend_toggle=False, variation_t
             new[..., 1] = 0.0
             new[..., 2] = 0.8
             colour_map[non_mtn_land_mask] = out * (1 - f[non_mtn_land_mask, None]) + new * f[non_mtn_land_mask, None]
+
+    colour_map[..., 0] = np.mod(colour_map[..., 0], 360.0)          # wrap hue
+    colour_map[..., 1] = np.clip(colour_map[..., 1], 0.0, 1.0)      # clamp saturation
+    colour_map[..., 2] = np.clip(colour_map[..., 2], 0.0, 1.0)      # clamp value
 
     return colour_map
 
