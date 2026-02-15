@@ -7,7 +7,6 @@ class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
     def __init__(self, controller):
         self.controller = controller
-        self.colour_map = self.controller.get_world_data()['colour']
         self.region_map = self.controller.world.get_region_map()
 
         self.map_surface = None
@@ -16,7 +15,7 @@ class MapRenderer:
     
     def refresh_view(self):
         x0, y0, x1, y1 = self.controller.get_camera_boundaries()
-        colour_map = self.colour_map[y0:y1,x0:x1].copy()
+        colour_map = self.controller.get_world_data()['colour'][y0:y1,x0:x1].copy()
         region_map = [row[x0:x1] for row in self.controller.world.get_region_map().copy()[y0:y1]]
 
 
