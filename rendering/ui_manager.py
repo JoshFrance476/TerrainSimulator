@@ -59,17 +59,19 @@ class UIManager:
         
         self.right_sidebar.show_cell_info(cell_data)
 
-        self.left_sidebar.draw(screen)
-        self.right_sidebar.draw(screen, filter_name)
 
         if selected_cell:
                 self.draw_selected_cell_border(selected_cell, screen)
+        
+        self.left_sidebar.draw(screen)
+        self.right_sidebar.draw(screen, filter_name)
 
         if self.mouse_on_map():
             if hovered_cell:
                 self.draw_hover_highlight(hovered_cell, screen)
             
             self.draw_tooltip_list(screen)
+
 
 
     def render_tooltip(self, location):
