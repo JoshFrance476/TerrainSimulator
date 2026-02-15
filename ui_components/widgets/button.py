@@ -1,19 +1,20 @@
 import pygame
 
 class Button:
-    def __init__(self,width, height, action, label="", font=None):
+    def __init__(self,width, height, action, label="", font=None, left_padding = 5, top_padding = 0):
         self.rect = None
         self.action = action
         self.label = label
         self.font = font
         self.width = width
         self.height = height
-        self.left_padding = 10
+        self.left_padding = left_padding
+        self.top_padding = top_padding
         
         self.focused = False
 
     def draw(self, screen, x, y):
-        self.rect = pygame.Rect(x, y, self.width, self.height)
+        self.rect = pygame.Rect(x+self.left_padding, y+self.top_padding, self.width, self.height)
 
         if self.focused:
             base_color = (150, 150, 220)  # toggled on

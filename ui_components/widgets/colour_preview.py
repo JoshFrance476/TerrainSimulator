@@ -5,10 +5,11 @@ class ColourPreview:
     """
     Accepts HSV colours in the format h[0-360], s[0-1], v[0-1]
     """
-    def __init__(self, width, height, h, s, v):
+    def __init__(self, width, height, h, s, v, left_padding = 5, top_padding = 0):
         self.width = width
         self.height = height
-        self.left_padding = 5
+        self.left_padding = left_padding
+        self.top_padding = top_padding
 
         self.h_src = h
         self.s_src = s
@@ -38,5 +39,5 @@ class ColourPreview:
         
 
 
-        pygame.draw.rect(screen, (0, 0, 0), (x, y, self.width, self.height))
-        pygame.draw.rect(screen, (r, g ,b), (x + 2, y + 2, self.width - 4, self.height - 4))
+        pygame.draw.rect(screen, (0, 0, 0), (x+self.left_padding, y+self.top_padding, self.width, self.height))
+        pygame.draw.rect(screen, (r, g ,b), (x+self.left_padding + 2, y+self.top_padding + 2, self.width - 4, self.height - 4))
