@@ -33,7 +33,15 @@ class BiomeConfigManager:
         }
         self.config.append(new_biome)
         self.update_lookups()
-        print(self.by_name)
+    
+    def edit_biome(self, index, name, h, s, v, traversal_cost):
+        biome_to_edit = self.config[index]
+        biome_to_edit["name"] = name
+        biome_to_edit["colour"]["h"] = h
+        biome_to_edit["colour"]["s"] = s
+        biome_to_edit["colour"]["v"] = v
+        biome_to_edit["base_traversal_cost"] = traversal_cost
+        self.update_lookups()
     
     def update_lookups(self):
         self.name_to_id = {r["name"]: idx for idx, r in enumerate(self.config)}
