@@ -15,8 +15,8 @@ class RightSidebarController:
 
     def show_location_info_page(self):
         self.component_list = []
-        self.component_list.append(Label("Location", self.fonts.large_font, config.SIDEBAR_WIDTH))
-        self.component_list.append(Label(self.biome_config.config[self.controller.get_biome_at(self.controller.get_selected_cell())]["name"].title(), self.fonts.small_font, config.SIDEBAR_WIDTH))
+        self.component_list.append(Label("Location", self.fonts.header, config.SIDEBAR_WIDTH))
+        self.component_list.append(Label(self.controller.get_biome_at(self.controller.get_selected_cell()), self.fonts.large_font, top_padding=2))
         self.component_list.append(LineDivider(config.SIDEBAR_WIDTH-20, 2))
     
         
@@ -35,5 +35,7 @@ class RightSidebarController:
                     x_offset += subcomponent.width
                 y_offset += component[0].height
             else:
+                if hasattr(component, "top_padding"):
+                    y_offset += component.top_padding
                 component.draw(screen, config.SCREEN_WIDTH+component.left_padding, y_offset)
                 y_offset += component.height
