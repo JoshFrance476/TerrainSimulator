@@ -41,11 +41,11 @@ class UIManager:
     def show_region_setup_page(self):
         self.left_sidebar.show_region_setup_page()
     
-    def show_tile_setup_page(self):
-        self.left_sidebar.show_tile_setup_page()
+    def show_tile_manager_page(self, biome_info, index):
+        self.left_sidebar.show_tile_manager_page(biome_info, index)
     
-    def show_tile_manager_page(self):
-        self.left_sidebar.show_tile_manager_page()
+    def show_biome_manager_page(self):
+        self.left_sidebar.show_biome_manager_page()
     
     def clear_left_page(self):
         self.left_sidebar.clear_page()
