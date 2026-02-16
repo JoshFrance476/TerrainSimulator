@@ -2,7 +2,7 @@ import pygame
 
 class Tooltip:
     def __init__(self, controller, font):
-        self.component_list = []
+        self.components = []
         self.controller = controller
         self.font = font
         self.width = 0
@@ -10,13 +10,13 @@ class Tooltip:
         self.height = 0
     
     def add_components(self, component_list):
-        self.component_list.extend(component_list)
+        self.components.extend(component_list)
         self.update_size()
         
     def update_size(self):
         height = 0
         width = 0
-        for component in self.component_list:
+        for component in self.components:
             height += component.height
             if component.width > width:
                 width = component.width
@@ -30,6 +30,6 @@ class Tooltip:
                          (x, y, self.width+10, self.height+5), 3)
         
         y_offset = y
-        for component in self.component_list:
+        for component in self.components:
             component.draw(screen, x+5, y_offset+5)
             y_offset += component.height
