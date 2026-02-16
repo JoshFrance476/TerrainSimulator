@@ -112,8 +112,9 @@ class UIManager:
         mouse_pos = pygame.mouse.get_pos()
         y_offset = 5
         for tooltip in self.tooltip_list:
-            tooltip.draw(screen, mouse_pos[0], mouse_pos[1]-y_offset-tooltip.height)
-            y_offset += tooltip.height + 5
+            if tooltip.components:
+                tooltip.draw(screen, mouse_pos[0], mouse_pos[1]-y_offset-tooltip.height)
+                y_offset += tooltip.height + 5
     
     def draw_hover_highlight(self, hovered_cell, screen, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""
