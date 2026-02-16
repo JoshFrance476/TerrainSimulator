@@ -35,14 +35,14 @@ class LeftSidebarController:
             hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["h"], top_padding=2)
             sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["s"]*100, top_padding=2)
             val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["v"]*100, top_padding=2)
-            submit_button = Button(50, 25, lambda: self.controller.edit_biome(biome_index, tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, int(tile_trav_cost.text)))
+            submit_button = Button(50, 25, lambda: self.controller.edit_biome(biome_index, tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text)))
         else:
             tile_name = TextBox(self.controller, self.fonts.small_font, 150, 20)
             tile_trav_cost = TextBox(self.controller, self.fonts.small_font, 150, 20, "0")
             hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120, top_padding=2)
             sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100, top_padding=2)
             val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100, top_padding=2)
-            submit_button = Button(50, 25, lambda: self.controller.add_biome(tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, int(tile_trav_cost.text)))
+            submit_button = Button(50, 25, lambda: self.controller.add_biome(tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text)))
 
         self.component_list = []
         self.component_list.append(
