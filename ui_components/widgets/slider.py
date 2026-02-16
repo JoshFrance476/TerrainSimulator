@@ -15,6 +15,8 @@ class Slider:
             self.value = default_value
         else:
             self.value = min_val
+        
+        self.value = int(round(self.value,0))
 
         self.dragging = False
         self.focused = False
