@@ -17,7 +17,10 @@ class UIManager:
         self.fonts = fonts
         
     def get_clicked_component(self, event_pos):
-        for component in self.left_sidebar.component_list:
+        ui_component_list = []
+        ui_component_list.extend(self.left_sidebar.component_list)
+        ui_component_list.extend(self.right_sidebar.component_list)
+        for component in ui_component_list:
 
             if isinstance(component, list):
                 for subcomponent in component:
@@ -58,7 +61,7 @@ class UIManager:
         self.left_sidebar.show_biome_manager_page()
     
     def show_location_info_page(self):
-        self.right_sidebar.show_location_info_page()
+        self.left_sidebar.show_location_info_page()
     
     def clear_left_page(self):
         self.left_sidebar.clear_page()
