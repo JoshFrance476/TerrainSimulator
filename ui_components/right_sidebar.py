@@ -2,6 +2,7 @@ import pygame
 import config
 from ui_components.widgets.label import Label
 from ui_components.widgets.line_divider import LineDivider
+from ui_components.widgets.button import Button
 
 
 class RightSidebarController:
@@ -12,12 +13,6 @@ class RightSidebarController:
         self.biome_config = biome_config
 
     
-
-    def show_location_info_page(self):
-        self.component_list = []
-        self.component_list.append(Label("Location", self.fonts.header, config.SIDEBAR_WIDTH))
-        self.component_list.append(Label(self.controller.get_biome_at(self.controller.get_selected_cell()), self.fonts.large_font, top_padding=2))
-        self.component_list.append(LineDivider(config.SIDEBAR_WIDTH-20, 2))
     
         
     def draw(self, screen):
