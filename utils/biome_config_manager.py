@@ -10,6 +10,8 @@ class BiomeConfigManager:
         self.colour_lookup = {}
         self.cost_lookup = {}
 
+        self.starting_location = None
+
         self.constants = {}
     
     def load_biome_config_file(self, file_name):
@@ -22,6 +24,8 @@ class BiomeConfigManager:
         self.config = self.resolve_constants(BIOME_RULES, BIOME_CONSTANTS)
 
         self.constants = BIOME_CONSTANTS
+
+        self.starting_location = (self.constants['STARTING_LOCATION'][0], self.constants['STARTING_LOCATION'][0])
 
         self.update_lookups()
     
