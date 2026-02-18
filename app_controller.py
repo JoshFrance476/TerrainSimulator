@@ -6,6 +6,7 @@ from rendering.camera import Camera
 from simulation.world import World
 from simulation.map_entity import MapEntity
 from utils.fps_monitor import FPSMonitor
+from storyteller.storyteller_manager import StorytellerManager
 import sys
 
 class AppController:
@@ -24,7 +25,8 @@ class AppController:
 
         self.fps_monitor = FPSMonitor()
 
-        self.ui_manager.show_biome_manager_page()
+        self.storyteller = StorytellerManager(self)
+
 
         self.screen = screen
 
@@ -44,6 +46,9 @@ class AppController:
 
         self.focused_entity = None
         self.ui_locked = False
+
+        self.ui_manager.show_biome_manager_page()
+        self.ui_manager.show_current_scenario_screen()
 
     
     def tick(self, events):
@@ -179,6 +184,17 @@ class AppController:
     
     def toggle_pause(self):
         self.paused = not self.paused
+    
+    def prompt_scenario(self):
+        self.storyteller.prompt_new_interaction()
+        self.ui_manager.show_current_scenario_screen()
+    
+    def submit_pending_interaction_action(self, action_index):
+        self.storyteller.submit_action(action_index)
+        self.ui_manager.show_current_scenario_screen()
+    
+    def get_current_scenario(self):
+        return self.storyteller.current_scenario
     
     def toggle_move(self):
         self.interaction_type = "move_player"
