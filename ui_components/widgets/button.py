@@ -1,13 +1,15 @@
 import pygame
+from utils.ui_utils import wrap_text
 
 class Button:
-    def __init__(self,width, height, action, label="", font=None, left_padding = 5, top_padding = 0):
+    def __init__(self,width, height, action, label, font, left_padding = 5, top_padding = 0):
         self.rect = None
         self.action = action
         self.label = label
         self.font = font
         self.width = width
-        self.height = height
+        self.wrapped_text = wrap_text(self.label, font, self.width)
+        self.height = height + (15 * max(0,(len(self.wrapped_text)-1)))
         self.left_padding = left_padding
         self.top_padding = top_padding
         
@@ -28,9 +30,13 @@ class Button:
         pygame.draw.rect(screen, (80, 80, 80), self.rect, 2)
 
         if self.label and self.font:
-            text = self.font.render(self.label, True, (30, 30, 30))
-            text_rect = text.get_rect(center=self.rect.center)
-            screen.blit(text, text_rect)
+            y_offset = y
+
+            for line in self.wrapped_text:
+                text_surface = self.font.render(line, True, (30,30,30))
+                screen.blit(text_surface, (x+self.left_padding, y_offset+self.top_padding))
+                y_offset += 15
+
 
     def is_clicked(self, event):
         self.action()
