@@ -19,12 +19,20 @@ class World:
         
     def step(self):
         self.tick_count += 1
+    
+    def get_semantic_tile_information(self, location):
+        info = {
+            "tile_info": self.get_biome_at(location),
+            "region_info": self.region_manager.get_regions_at_location(location)
+        }
+        return info
 
     def get_world_data(self):
         return self.data.get_world_data()  
     
     def get_map_data(self, map_name):
         return self.data.get_world_data()[map_name]
+    
     
     def set_map_data(self, map_name, data):
         self.data.set_map_data(map_name, data)
