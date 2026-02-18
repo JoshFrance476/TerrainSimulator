@@ -14,16 +14,19 @@ class World:
 
         self.tick_count = 0
 
-    def get_region_map(self):
+    def get_region_map(self): 
         return self.region_manager.get_region_map()
         
     def step(self):
         self.tick_count += 1
     
-    def get_semantic_tile_information(self, location):
+    def get_semantic_tile_data(self, location):
+        region_list = []
+        for region in self.region_manager.get_regions_at_location(location):
+            region_list.append(region.title + ": "+region.visible_desc+", "+region.hidden_desc)
         info = {
-            "tile_info": self.get_biome_at(location),
-            "region_info": self.region_manager.get_regions_at_location(location)
+            "Biome": self.get_biome_at(location),
+            "Region": ". ".join(region_list)
         }
         return info
 
