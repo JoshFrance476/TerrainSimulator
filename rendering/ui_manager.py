@@ -63,6 +63,9 @@ class UIManager:
     def show_location_info_page(self):
         self.left_sidebar.show_location_info_page()
     
+    def show_current_scenario_screen(self):
+        self.right_sidebar.show_current_scenario_screen()
+    
     def clear_left_page(self):
         self.left_sidebar.clear_page()
 
