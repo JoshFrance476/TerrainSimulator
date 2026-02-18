@@ -28,3 +28,7 @@ SCROLL_SPEED = 15
  
 FONT_SIZE = 18
 
+WORLD_DESCRIPTION = "A lord of the rings inspired world"
+STORY_PROMPT = ""
+CHARACTER_DESCRIPTION = "A huge, brawly man with a giant club. He is very fond of shiny things."
+
