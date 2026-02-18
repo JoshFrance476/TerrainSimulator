@@ -30,7 +30,7 @@ class LeftSidebarController:
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
         self.component_list.append(Label("Hidden Description:", self.fonts.small_font))
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
-        self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text)))
+        self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text), "submit", self.fonts.small_font))
     
     def show_tile_manager_page(self, biome_info = None, biome_index = -1):
         self.clear_page()
