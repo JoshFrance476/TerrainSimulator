@@ -6,8 +6,8 @@ class StorytellerManager:
         self.controller = controller
 
         self.world_description = "A game of thrones inspired world"
-        self.character_description = "A young man"  #will just be used to generate an inital character notebook (and maybe history?)
-        self.story_focus_description = "The hardships of a young man getting by in the realm"
+        self.character_description = "A young man yet to make a name for himself"  #will just be used to generate an inital character notebook (and maybe history?)
+        self.story_focus_description = "The player will embark on an adventure across the realm, meeting interesting characters as they go. The player should not be given options to 'go along' with NPCs or work for them."
 
         self.character_notebook = []
         self.character_history  = []
@@ -25,7 +25,7 @@ class StorytellerManager:
         prompt += "World description: "+self.world_description
         prompt += "\nCharacter description: "+self.character_description
         prompt += "\nStory focus description: "+self.story_focus_description
-        prompt += "\n Location: "+ self.controller.get_biome_at(self.controller.selected_cell)
+        prompt += "\n Location: "+ str(self.controller.get_semantic_tile_data(self.controller.selected_cell))
         if scenario:
             prompt += "\nWhat has happened in this scenario: "+scenario.get_interactions_string()
         return prompt
