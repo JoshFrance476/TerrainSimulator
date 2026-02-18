@@ -320,6 +320,9 @@ class AppController:
 
     def get_biome_at(self, location):
         return self.world.get_biome_at(location)
+
+    def get_semantic_tile_data(self, location):
+        return self.world.get_semantic_tile_data(location)
     
     def matches_hovered_tile(self, location):
         return self.hovered_cell == location
