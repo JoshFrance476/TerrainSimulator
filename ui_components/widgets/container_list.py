@@ -2,12 +2,14 @@ import pygame
 from config import SCROLL_SPEED
 
 class ContainerList:
-    def __init__(self, width, height):
+    def __init__(self, width, height, reverse_scroll_default = False):
         self.width = width
         self.height = height
         self.containers = []
         self.left_padding = 5
         self.scroll_offset = 0
+
+        self.reverse_scroll_default = reverse_scroll_default
 
         self.rect = None
 
@@ -21,6 +23,8 @@ class ContainerList:
         self.containers.append(container)
         container.set_width(self.width)
         self.container_combined_height += container.height
+        if self.reverse_scroll_default:
+            self.scroll_offset = self.height - self.container_combined_height
     
     
     def draw(self, screen, x, y):
@@ -41,6 +45,7 @@ class ContainerList:
 
         if self.scroll_offset < -self.container_combined_height + self.height:
             self.scroll_offset = -self.container_combined_height + self.height
+
     
     def collide_with(self, mouse_pos):
         return self.rect.collidepoint(mouse_pos)
