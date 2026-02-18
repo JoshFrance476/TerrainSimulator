@@ -15,6 +15,9 @@ class AppController:
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS, self.biome_config)
         self.camera = Camera()
 
+        self.player = MapEntity((self.biome_config.starting_location))
+        self.camera.set_location(self.player.get_location())
+
         self.fonts = fonts
 
         self.selected_cell = None
@@ -30,7 +33,6 @@ class AppController:
 
         self.screen = screen
 
-        self.player = MapEntity((50,50))
 
 
         self.selected_filter = "colour"
