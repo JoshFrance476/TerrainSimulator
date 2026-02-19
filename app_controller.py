@@ -89,6 +89,7 @@ class AppController:
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
+            print(f"Total input tokens: {self.storyteller.input_token_count}\nTotal output tokens: {self.storyteller.output_token_count}")
             pygame.quit()
             sys.exit()
         
@@ -177,6 +178,9 @@ class AppController:
         cell_y = int(world_y // config.CELL_SIZE)
 
         return (cell_y, cell_x)
+    
+    def get_character_notebook(self):
+        return self.storyteller.get_notebook()
 
     def refresh_map_render(self):
         self.map_renderer.refresh_view()
