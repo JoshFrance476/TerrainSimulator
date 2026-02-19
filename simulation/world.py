@@ -2,6 +2,7 @@ from simulation.world_data import WorldData
 from simulation.region_manager import RegionManager
 import numpy as np
 import config as config
+import json
 
 class World:
     """Handles simulator and high level world logic."""
@@ -9,6 +10,8 @@ class World:
     def __init__(self, rows, cols, biome_config):
         self.rows, self.cols = rows, cols
         self.data = WorldData(rows, cols, biome_config)
+
+        self.biome_config = biome_config
 
         self.region_manager = RegionManager()
 
@@ -72,6 +75,39 @@ class World:
             biome_name = config.BIOME_RULES[id]["name"]
             result[biome_name] = int(count)
         return result
+
+    def save_map(self, file_name):
+        np.savez(
+            file_name,
+            # numeric maps
+            **self.data.world_data,
+
+            # region manager (python objects)
+            region_map=np.array(self.region_manager.region_map, dtype=object),
+            region_list=np.array(self.region_manager.region_list, dtype=object),
+
+            biome_config = json.dumps({
+                "constants": self.biome_config.constants,
+                "biomes": self.biome_config.biomes
+})
+        )
+
+    
+    def load_map(self, file_name):
+        loaded = np.load(file_name, allow_pickle=True)
+
+        # restore numeric maps only
+        self.data.world_data = {
+            k: loaded[k]
+            for k in loaded.files
+            if k not in ("region_map", "region_list", "biome_config")
+        }
+
+        # restore region manager
+        self.region_manager.region_map = loaded["region_map"].tolist()
+        self.region_manager.region_list = loaded["region_list"].tolist()
+        print(json.loads(str(loaded['biome_config'])))
+        self.biome_config.load_biome_config_file(json.loads(str(loaded['biome_config'])))
 
 
 
