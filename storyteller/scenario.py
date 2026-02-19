@@ -12,7 +12,7 @@ class Scenario:
     def get_interactions_string(self):
         interactions_string = ""
         for interaction in self.completed_interactions:
-            interactions_string += interaction.description+", "+interaction.decision + "\n"
+            interactions_string += "Situation: "+interaction.description+" The user chose to "+interaction.decision + "\n"
         return interactions_string
 
     def set_pending_interaction(self, description, actions):
