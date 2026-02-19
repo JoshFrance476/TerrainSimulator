@@ -16,8 +16,9 @@ class LeftSidebarController:
         self.component_list = []
         self.biome_config = biome_config
 
-        self.navigation_bar = [[Button(105,20, lambda: self.show_biome_manager_page(), "Biome Page", self.fonts.small_font),
-                                Button(125,20, lambda: self.show_location_info_page(), "Location Page", self.fonts.small_font)],
+        self.navigation_bar = [[Button(65,20, lambda: self.show_biome_manager_page(), "Biome", self.fonts.small_font),
+                                Button(85,20, lambda: self.show_location_info_page(), "Location", self.fonts.small_font),
+                                Button(85,20, lambda: self.show_settings_page(), "Settings", self.fonts.small_font)],
                                 LineDivider(config.SIDEBAR_WIDTH-20, 2, 5, 20)]
 
 
@@ -30,7 +31,7 @@ class LeftSidebarController:
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
         self.component_list.append(Label("Hidden Description:", self.fonts.small_font))
         self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
-        self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text), "submit", self.fonts.small_font))
+        self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text), "Submit", self.fonts.small_font))
     
     def show_tile_manager_page(self, biome_info = None, biome_index = -1):
         self.clear_page()
@@ -81,7 +82,7 @@ class LeftSidebarController:
         self.component_list.extend(self.navigation_bar)
         self.component_list.append(Label("Biome Manager", self.fonts.header))
         biome_container_list = ContainerList(config.SIDEBAR_WIDTH-10, 500)
-        for index, biome in enumerate(self.biome_config.config):
+        for index, biome in enumerate(self.biome_config.biomes):
             biome_container = ComponentContainer(True)
             biome_container.add_component(Label(biome["name"].capitalize(), self.fonts.large_font, left_padding=5, top_padding=5))
             biome_container.add_component([ColourPreview(20, 20, biome["colour"]["h"], biome["colour"]["s"], biome["colour"]["v"]),
@@ -106,6 +107,21 @@ class LeftSidebarController:
         self.component_list.append(title_label)
         self.component_list.append(biome_name_label)
         self.component_list.append(LineDivider(config.SIDEBAR_WIDTH-20, 2))
+    
+    def show_settings_page(self):
+        self.clear_page()
+
+        title_label = Label("Settings", self.fonts.header, config.SIDEBAR_WIDTH)
+        save_map_label = Label("Save map", self.fonts.large_font, config.SIDEBAR_WIDTH)
+
+        save_file_name = TextBox(self.controller, self.fonts.small_font, 150, 20)
+        save_button = Button(60, 20, lambda: self.controller.save_map(save_file_name.text), "Save", self.fonts.small_font)
+
+        self.component_list.extend(self.navigation_bar)
+        self.component_list.append(title_label)
+        self.component_list.append(save_map_label)
+        self.component_list.append(save_file_name)
+        self.component_list.append(save_button)
 
 
     def clear_page(self):
