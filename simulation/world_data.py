@@ -34,7 +34,7 @@ class WorldData:
         self.world_data[map_name][pos] = data
     
     def get_biome_at(self, location):
-        return self.biome_config.config[self.world_data["biome"][location]]["name"].title()
+        return self.biome_config.biomes[self.world_data["biome"][location]]["name"].title()
     
 
     def update_stage_3(self):
@@ -44,6 +44,3 @@ class WorldData:
                                                     self.biome_config)
         self.world_data["colour"] = new_colour_map
         self.world_data["traversal_cost"] = new_trav_map
-
-
-    

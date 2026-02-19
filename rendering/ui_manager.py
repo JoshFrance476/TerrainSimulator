@@ -92,7 +92,7 @@ class UIManager:
         self.tooltip_list = []
         regions = self.world.region_manager.get_regions_at_location(location)
 
-        biome = self.biome_config.config[self.world.get_cell_data(location)["biome"]]["name"].title()
+        biome = self.biome_config.biomes[self.world.get_cell_data(location)["biome"]]["name"].title()
         tooltip = Tooltip(self.controller, self.fonts.small_font)
         tooltip.add_components([Label(biome, self.fonts.large_font, tooltip.max_width, left_padding=0)])
         self.tooltip_list.append(tooltip)

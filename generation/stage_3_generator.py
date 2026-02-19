@@ -59,7 +59,7 @@ def determine_biome(elevation, temperature, rainfall, sea_proximity, river_proxi
     biome_map[river_mask] = biome_config.name_to_id['river']
 
 
-    for biome_data in biome_config.config:
+    for biome_data in biome_config.biomes:
         option_masks = []  # collect masks for each option in the list
         if "conditions" in biome_data:
             for option in biome_data["conditions"]:   # each option is a dict
