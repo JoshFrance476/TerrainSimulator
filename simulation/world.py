@@ -28,8 +28,8 @@ class World:
         for region in self.region_manager.get_regions_at_location(location):
             region_list.append(region.title + ": "+region.visible_desc+", "+region.hidden_desc)
         info = {
-            "Biome": self.get_biome_at(location),
-            "Region": ". ".join(region_list)
+            "Tile": self.get_biome_at(location),
+            "Details": ". ".join(region_list)
         }
         return info
 
