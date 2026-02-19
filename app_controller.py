@@ -15,7 +15,7 @@ class AppController:
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS, self.biome_config)
         self.camera = Camera()
 
-        self.player = MapEntity((self.biome_config.starting_location))
+        self.player = MapEntity((self.biome_config.get_starting_location()))
         self.camera.set_location(self.player.get_location())
 
         self.fonts = fonts
@@ -157,7 +157,7 @@ class AppController:
                 if event.key == pygame.K_b:
                     self.toggle_view_tile()
                 if event.key == pygame.K_z:
-                    print("Debug Trigger")
+                    self.load_map("demo")
 
     
     def clear_focus(self):
@@ -344,4 +344,11 @@ class AppController:
     
     def tile_out_of_bounds(self, location):
         return location[0] >= config.WORLD_ROWS or location[1] >= config.WORLD_COLS
+    
+    def save_map(self, file_name):
+        self.world.save_map("saved_maps/"+file_name)
+    
+    def load_map(self, file_name):
+        self.world.load_map("saved_maps/"+file_name+".npz")
+        self.refresh_map_render()
     
