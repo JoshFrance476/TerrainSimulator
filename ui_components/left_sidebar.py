@@ -112,16 +112,26 @@ class LeftSidebarController:
         self.clear_page()
 
         title_label = Label("Settings", self.fonts.header, config.SIDEBAR_WIDTH)
-        save_map_label = Label("Save map", self.fonts.large_font, config.SIDEBAR_WIDTH)
 
+        save_map_label = Label("Save map", self.fonts.large_font, config.SIDEBAR_WIDTH)
         save_file_name = TextBox(self.controller, self.fonts.small_font, 150, 20)
         save_button = Button(60, 20, lambda: self.controller.save_map(save_file_name.text), "Save", self.fonts.small_font)
+
+        load_map_label = Label("Load map", self.fonts.large_font, config.SIDEBAR_WIDTH)
+        load_file_name = TextBox(self.controller, self.fonts.small_font, 150, 20)
+        load_button = Button(60,20, lambda: self.controller.load_map(load_file_name.text), "Load", self.fonts.small_font)
 
         self.component_list.extend(self.navigation_bar)
         self.component_list.append(title_label)
         self.component_list.append(save_map_label)
         self.component_list.append(save_file_name)
         self.component_list.append(save_button)
+
+        self.component_list.append(LineDivider(config.SIDEBAR_WIDTH-20, top_padding=10, bottom_padding=10))
+
+        self.component_list.append(load_map_label)
+        self.component_list.append(load_file_name)
+        self.component_list.append(load_button)
 
 
     def clear_page(self):
