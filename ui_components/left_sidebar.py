@@ -17,10 +17,21 @@ class LeftSidebarController:
         self.biome_config = biome_config
 
         self.navigation_bar = [[Button(65,20, lambda: self.show_biome_manager_page(), "Biome", self.fonts.small_font),
-                                Button(85,20, lambda: self.show_location_info_page(), "Location", self.fonts.small_font),
+                                Button(85,20, lambda: self.show_character_page(), "Character", self.fonts.small_font),
                                 Button(85,20, lambda: self.show_settings_page(), "Settings", self.fonts.small_font)],
                                 LineDivider(config.SIDEBAR_WIDTH, thickness=0, top_padding=10, bottom_padding=5)]
 
+    def show_character_page(self):
+        self.clear_page()
+        self.component_list.extend(self.navigation_bar)
+
+        title_label = Label("Your Character", self.fonts.header)
+        self.component_list.append(title_label)
+
+        character_notebook = self.controller.get_character_notebook()
+
+        for bulletpoint in character_notebook:
+            self.component_list.append(Label(bulletpoint, self.fonts.small_font))
 
     def show_region_setup_page(self):
         self.clear_page()
