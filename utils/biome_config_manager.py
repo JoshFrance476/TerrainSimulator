@@ -4,30 +4,23 @@ import colorsys
 
 class BiomeConfigManager:
     def __init__(self):
-        self.config = {}
+
+        self.biomes = {}
+        self.constants = {}
+
         self.name_to_id = {}
         self.by_name = {}
         self.colour_lookup = {}
         self.cost_lookup = {}
 
-        self.starting_location = None
-
-        self.constants = {}
     
-    def load_biome_config_file(self, file_name):
-        with open(file_name, "r") as f:
-            biome_config_file = json.load(f)
-            
-        BIOME_CONSTANTS = biome_config_file.get("constants", {})
-        BIOME_RULES = biome_config_file["biomes"]
+    def load_biome_config_file(self, biome_config_file):         
+        self.constants = biome_config_file.get("constants", {})
+        biomes = biome_config_file["biomes"]
 
-        self.config = self.resolve_constants(BIOME_RULES, BIOME_CONSTANTS)
-
-        self.constants = BIOME_CONSTANTS
-
-        self.starting_location = (self.constants['STARTING_LOCATION'][0], self.constants['STARTING_LOCATION'][0])
-
+        self.biomes = self.resolve_constants(biomes, self.constants)
         self.update_lookups()
+    
     
     def add_biome(self, name, h, s, v, traversal_cost):
         new_biome = {
@@ -39,7 +32,7 @@ class BiomeConfigManager:
         self.update_lookups()
     
     def edit_biome(self, index, name, h, s, v, traversal_cost):
-        biome_to_edit = self.config[index]
+        biome_to_edit = self.biomes[index]
         biome_to_edit["name"] = name
         biome_to_edit["colour"]["h"] = h
         biome_to_edit["colour"]["s"] = s
@@ -48,20 +41,22 @@ class BiomeConfigManager:
         self.update_lookups()
     
     def update_lookups(self):
-        self.name_to_id = {r["name"]: idx for idx, r in enumerate(self.config)}
+        self.name_to_id = {r["name"]: idx for idx, r in enumerate(self.biomes)}
 
-        self.by_name = {r["name"]: r for r in self.config}
+        self.by_name = {r["name"]: r for r in self.biomes}
 
         self.colour_lookup = np.asarray(
-            [(r["colour"]["h"], r["colour"]["s"], r["colour"]["v"]) for r in self.config],
+            [(r["colour"]["h"], r["colour"]["s"], r["colour"]["v"]) for r in self.biomes],
             dtype=np.float32
         )  # shape (N, 3)
 
         self.cost_lookup = np.array(
-            [r["base_traversal_cost"] for r in self.config],
+            [r["base_traversal_cost"] for r in self.biomes],
             dtype=np.float32
         )
 
+    def get_starting_location(self):
+        return self.constants['STARTING_LOCATION'][0], self.constants['STARTING_LOCATION'][0]
     
     def resolve_constants(self, obj, constants):
         if isinstance(obj, dict):
