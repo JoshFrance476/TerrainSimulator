@@ -45,13 +45,10 @@ def prompt_scenario(prompt):
                 Do not assume information about the world, use only the given context to generate interactions.
                 Interaction descriptions should be no longer than 50 words, and each decision should be summarised in less than 15 words.
                 Keep the tone and content of interactions consistent with the context provided.
-                Interactions should not involve travelling, as they occur within a singular tile in the world.
-                Each interaction should be focused on a single event/detail and should progress the story.
+                Each interaction should be focused on a single event/detail.
                 If no previous interactions are given, assume the player has just entered the area.
-                If previous interactions are given, the next interaction should follow on from the most recent one.
-                Scenarios should highlight a certain situation or decision in the given location, and should end when the player leaves the area.
-                Unless the current situation is unavoidable, provide an option to leave the area.
-                To end scenarios, set 'exit_flag' to True and return options as an empty list.
+                Unless the current situation is unavoidable, provide an option to travel on.
+                Scenarios should take place within one area. If the player decides to travel on, rest or set up camp, you must set 'exit_flag' to true and and return options as an empty list.
                 Return ONLY valid JSON matching this schema: {scenario_schema}."""
             },
             {
