@@ -19,7 +19,7 @@ class LeftSidebarController:
         self.navigation_bar = [[Button(65,20, lambda: self.show_biome_manager_page(), "Biome", self.fonts.small_font),
                                 Button(85,20, lambda: self.show_location_info_page(), "Location", self.fonts.small_font),
                                 Button(85,20, lambda: self.show_settings_page(), "Settings", self.fonts.small_font)],
-                                LineDivider(config.SIDEBAR_WIDTH-20, 2, 5, 20)]
+                                LineDivider(config.SIDEBAR_WIDTH, thickness=0, top_padding=10, bottom_padding=5)]
 
 
     def show_region_setup_page(self):
@@ -106,7 +106,7 @@ class LeftSidebarController:
         self.component_list.extend(self.navigation_bar)
         self.component_list.append(title_label)
         self.component_list.append(biome_name_label)
-        self.component_list.append(LineDivider(config.SIDEBAR_WIDTH-20, 2))
+        self.component_list.append(LineDivider(config.SIDEBAR_WIDTH, 2))
     
     def show_settings_page(self):
         self.clear_page()
@@ -127,7 +127,7 @@ class LeftSidebarController:
         self.component_list.append(save_file_name)
         self.component_list.append(save_button)
 
-        self.component_list.append(LineDivider(config.SIDEBAR_WIDTH-20, top_padding=10, bottom_padding=10))
+        self.component_list.append(LineDivider(config.SIDEBAR_WIDTH, top_padding=10, bottom_padding=10))
 
         self.component_list.append(load_map_label)
         self.component_list.append(load_file_name)
