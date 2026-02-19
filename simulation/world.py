@@ -106,7 +106,7 @@ class World:
         # restore region manager
         self.region_manager.region_map = loaded["region_map"].tolist()
         self.region_manager.region_list = loaded["region_list"].tolist()
-        print(json.loads(str(loaded['biome_config'])))
+        
         self.biome_config.load_biome_config_file(json.loads(str(loaded['biome_config'])))
 
 
