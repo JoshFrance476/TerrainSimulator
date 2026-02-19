@@ -28,7 +28,7 @@ class BiomeConfigManager:
             "colour": {"h": h, "s": s, "v": v},
             "base_traversal_cost": traversal_cost
         }
-        self.config.append(new_biome)
+        self.biomes.append(new_biome)
         self.update_lookups()
     
     def edit_biome(self, index, name, h, s, v, traversal_cost):
