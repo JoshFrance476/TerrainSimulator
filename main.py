@@ -2,6 +2,7 @@ import pygame
 import config as config
 from app_controller import AppController
 from utils.biome_config_manager import BiomeConfigManager
+import json
 
 #import tracemalloc
 #tracemalloc.start()
@@ -22,11 +23,14 @@ pygame.display.set_caption("Terrain Generation")
 
 fonts = FontManager()
 
-biome_config = BiomeConfigManager()
+biome_config_manager = BiomeConfigManager()
 
-biome_config.load_biome_config_file("biome_config.json")
+with open("biome_config.json", "r", encoding="utf-8") as f:
+    biome_config = json.load(f)
 
-controller = AppController(screen, fonts, biome_config)
+biome_config_manager.load_biome_config_file(biome_config)
+
+controller = AppController(screen, fonts, biome_config_manager)
 
 clock = pygame.time.Clock()
 
