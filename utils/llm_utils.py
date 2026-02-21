@@ -9,41 +9,6 @@ model = "openai/gpt-oss-120b"
 A scenario with 7 interactions used 6000 input tokens and 1100 outputs tokens - about 0.2 of a cent. That is without history being inputted and outputted.  
 """
 
-scenario_schema = {
-    "type": "object",
-    "properties": {
-        "interaction_description": {"type": "string"},
-        "options": {
-            "type": "array",
-            "description": "a list of 2-4 options that the user can choose",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "action": {"type": "string"},
-                    "exit_flag": {"type": "boolean"}
-                },
-                "required": ["action", "exit_flag"],
-                "additionalProperties": False
-            }
-        }
-    },
-    "required": ["interaction_description", "options"],
-    "additionalProperties": False
-}
-
-notebook_schema = {
-    "type": "object",
-    "properties": {
-        "notebook_list": {
-            "type": "array",
-            "description": "list of key details about the user's character",
-            "items": {"type": "string"}
-        }
-    },
-    "required": ["notebook_list"],
-    "additionalProperties": False
-}
-
 character_setup_schema = {
     "type": "object",
     "properties": {
@@ -62,10 +27,18 @@ character_setup_schema = {
                     },
                     "attribute_type": {
                         "type": "string",
-                        "enum": ["open-ended", "rating"]
+                        "enum": ["open-ended", "rating","category"]
                     },
                     "attribute_value": {
-                        "type": "integer"
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "string",
+                                "enum": ["very low", "low", "medium", "high", "very high"]
+                            }
+                        ]
                     }
                 },
                 "required": ["attribute", "attribute_type", "attribute_value"],
@@ -89,7 +62,7 @@ def prompt_character_setup(character_desc, world_desc, story_focus_desc):
                 "content": f"""
                 Convert the user's character description in to a list of characteristics and a list of attributes. 
                 Attributes should be things that you expect to see in an RPG game and are relevant to the story focus and will change depending on the player's circumstances.
-                Attributes should be in the form of an open-ended value or a rating /10.
+                Attributes should be in the form of an open-ended value, a rating /10 or a category (very low, low, medium, high, very high).
                 Attributes should be specific and measurable, not abstract things.
                 The player should be given 4-8 attributes, and these will be used throughout the game to determine the player's progress.
                 The list of characteristics will be used to decide on the player's actions in the story.
@@ -115,6 +88,22 @@ def prompt_character_setup(character_desc, world_desc, story_focus_desc):
     data = json.loads(response.choices[0].message.content)
     return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"], data["attribute_list"]
 
+
+
+
+notebook_schema = {
+    "type": "object",
+    "properties": {
+        "notebook_list": {
+            "type": "array",
+            "description": "list of key details about the user's character",
+            "items": {"type": "string"}
+        }
+    },
+    "required": ["notebook_list"],
+    "additionalProperties": False
+}
+
 def prompt_scenario_summary(scenario, notebook):
     response = client.chat.completions.create(
         model=model,
@@ -128,8 +117,8 @@ def prompt_scenario_summary(scenario, notebook):
                 You summarise logs of events that the user's character experiences.
                 You will be given a short section of story which involves actions that the user's character has performed.
                 Update the character notebook if the given story changes any key details about the character.
-                Only update elements in the notebook if significant changes in the character have occurred (new knowledge, equipment, experience, reputation).
-                Return ONLY valid JSON matching this schema {notebook_schema}.
+                Only update elements in the notebook if significant changes in the character have occurred (equipment, experience, reputation).
+                Return ONLY valid JSON matching this schema {json.dumps(notebook_schema)}.
                 Provided is the current notebook: {notebook}.
                 """
             },
@@ -147,6 +136,30 @@ def prompt_scenario_summary(scenario, notebook):
     data = json.loads(response.choices[0].message.content)
     return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"]
 
+
+
+
+scenario_schema = {
+    "type": "object",
+    "properties": {
+        "interaction_description": {"type": "string"},
+        "options": {
+            "type": "array",
+            "description": "a list of 2-4 options that the user can choose",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "action": {"type": "string"},
+                    "exit_flag": {"type": "boolean"}
+                },
+                "required": ["action", "exit_flag"],
+                "additionalProperties": False
+            }
+        }
+    },
+    "required": ["interaction_description", "options"],
+    "additionalProperties": False
+}
 
 def prompt_scenario(prompt, character_notebook):
     response = client.chat.completions.create(
@@ -170,7 +183,7 @@ def prompt_scenario(prompt, character_notebook):
                 Interactions should follow on previous interactions if provided, but MUST end after a few interactions. 
                 If no previous interactions are given, assume the player has just entered the area.
                 Any option that results in the player leaving, travelling on, retreating, camping, sleeping or resting should end the interaction by setting the exit_flag to True.
-                Return ONLY valid JSON matching this schema: {scenario_schema}."""
+                Return ONLY valid JSON matching this schema: {json.dumps(scenario_schema)}."""
             },
             {
                 "role": "user",
