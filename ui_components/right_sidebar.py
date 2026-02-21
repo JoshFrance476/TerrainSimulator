@@ -28,12 +28,14 @@ class RightSidebarController:
                 interaction_list.add_container(interaction_container)
 
             pending_interaction = current_scenario.pending_interaction
+            interaction_container = ComponentContainer()
             if pending_interaction:
-                interaction_container = ComponentContainer()
                 interaction_container.add_component(Label(pending_interaction.description, self.fonts.small_font, config.SIDEBAR_WIDTH-20))
                 for index, action in enumerate(pending_interaction.actions):
                     interaction_container.add_component(Button(200, 50, lambda i = index: self.controller.submit_pending_interaction_action(i), action['action'], self.fonts.small_font))
-                interaction_list.add_container(interaction_container)
+            else:
+                interaction_container.add_component(Button(200, 30, lambda: self.controller.exit_scenario(), "Exit scenario", self.fonts.small_font))
+            interaction_list.add_container(interaction_container)
         else:
             scenario_prompt_button = Button(60,20, lambda: self.controller.prompt_scenario(), "Prompt", self.fonts.small_font)
             self.component_list.append(scenario_prompt_button)
