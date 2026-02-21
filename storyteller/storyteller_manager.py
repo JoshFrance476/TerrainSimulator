@@ -38,16 +38,17 @@ class StorytellerManager:
     def build_prompt(self, scenario = None):
         prompt = ""
         prompt += "World description: "+self.world_description
-        prompt += "\nCharacter notebook: "+", ".join(self.character_notebook)
-        prompt += "\nStory focus description: "+self.story_focus_description
-        prompt += "\n Location: "+ str(self.controller.get_semantic_tile_data(self.controller.selected_cell))
+        prompt += ". Character notebook: "+", ".join(self.character_notebook)
+        prompt += ". Character history: "+", ".join(self.character_history)
+        prompt += ". Story focus description: "+self.story_focus_description
+        prompt += ". Location: "+ str(self.controller.get_semantic_tile_data(self.controller.selected_cell))
         if scenario:
-            prompt += "\nWhat has happened in this scenario: "+scenario.get_interactions_string()
+            prompt += ". What has happened in this scenario: "+scenario.get_interactions_string()
         return prompt
 
     def prompt_new_interaction(self):
         prompt = self.build_prompt(self.current_scenario)
-        output_tokens, input_tokens, description, actions = prompt_scenario(prompt, self.character_notebook)
+        output_tokens, input_tokens, description, actions = prompt_scenario(prompt)
         self.update_token_counts(output_tokens, input_tokens)
         if self.current_scenario:
             self.current_scenario.set_pending_interaction(description, actions)
@@ -59,7 +60,8 @@ class StorytellerManager:
     def submit_action(self, action_index):
         self.current_scenario.submit_action(action_index)
         if self.current_scenario.ended:
-            output_tokens, input_tokens, self.character_notebook = prompt_scenario_summary(self.current_scenario.get_interactions_string(), self.character_notebook)
+            output_tokens, input_tokens, self.character_notebook, summary = prompt_scenario_summary(self.current_scenario.get_interactions_string(), self.character_notebook)
+            self.character_history.append(summary)
             self.update_token_counts(output_tokens, input_tokens)
         else:
             self.prompt_new_interaction()
@@ -67,4 +69,7 @@ class StorytellerManager:
     
     def get_notebook(self):
         return self.character_notebook
+
+    def get_character_history(self):
+        return self.character_history
         
