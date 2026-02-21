@@ -90,6 +90,7 @@ class AppController:
     def handle_event(self, event):
         if event.type == pygame.QUIT:
             print(f"Total input tokens: {self.storyteller.input_token_count}\nTotal output tokens: {self.storyteller.output_token_count}")
+            print(f"Total cost (gpt-oss-120b): {round(self.storyteller.input_token_count*0.000015+self.storyteller.output_token_count*0.00006, 5)} cents")
             pygame.quit()
             sys.exit()
         
@@ -201,6 +202,10 @@ class AppController:
     
     def get_current_scenario(self):
         return self.storyteller.current_scenario
+    
+    def exit_scenario(self):
+        self.storyteller.current_scenario = None
+        self.ui_manager.show_current_scenario_screen()
     
     def toggle_move(self):
         self.interaction_type = "move_player"
