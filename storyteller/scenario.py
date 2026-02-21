@@ -4,10 +4,15 @@ class Scenario:
     def __init__(self):
         self.completed_interactions = []
         self.pending_interaction = None
+        self.ended = False
     
     def add_interaction(self, description, decision):
         interaction = CompletedInteraction(description, decision)
         self.completed_interactions.append(interaction)
+        self.pending_interaction = None
+    
+    def end(self):
+        self.ended = True
     
     def get_interactions_string(self):
         interactions_string = ""
@@ -18,8 +23,9 @@ class Scenario:
     def set_pending_interaction(self, description, actions):
         self.pending_interaction = PendingInteraction(description, actions)
     
-    def sumbit_action(self, action_index):
+    def submit_action(self, action_index):
         description = self.pending_interaction.description
-        action = self.pending_interaction.actions[action_index]['action']
-        self.add_interaction(description, action)
-        self.pending_interaction = None
+        action = self.pending_interaction.actions[action_index]
+        self.add_interaction(description, action['action'])
+        if action['exit_flag']:
+            self.end()
