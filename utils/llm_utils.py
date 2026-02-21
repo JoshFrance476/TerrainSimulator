@@ -54,20 +54,46 @@ def prompt_character_setup(character_desc, world_desc, story_focus_desc):
     response = client.chat.completions.create(
         model=model,
         temperature=1,
-        max_tokens=500,
-        reasoning_effort="low",
+        max_tokens=800,
+        reasoning_effort="medium",
         messages=[
             {
                 "role": "system",
                 "content": f"""
-                Convert the user's character description in to a list of characteristics and a list of attributes. 
-                Attributes should be things that you expect to see in an RPG game and are relevant to the story focus and will change depending on the player's circumstances.
-                Attributes should be in the form of an open-ended value, a rating /10 or a category (very low, low, medium, high, very high).
-                Attributes should be specific and measurable, not abstract things.
-                The player should be given 4-8 attributes, and these will be used throughout the game to determine the player's progress.
-                The list of characteristics will be used to decide on the player's actions in the story.
-                Each characteristic is one short sentence fragment, and they should be concrete facts: role, personality traits, skills, equipment.
-                Return ONLY valid JSON matching this schema: {character_setup_schema}.
+                Convert the user's character description into:
+                - notebook_list: concrete character characteristics (facts)
+                - attribute_list: 4-8 RPG-style attributes that are measurable and can change during play
+
+                Definitions:
+                A) notebook_list (characteristics)
+                - Each entry is a short sentence fragment (3-12 words).
+                - Must be key points that describe the character.
+                - equipment/resources
+                - skill/training
+                - Injury/condition
+                - Personality/characteristics
+                - No numbers, no ratings, no vague abstractions.
+
+                B) attribute_list (attributes)
+                - 4-8 total.
+                - Must be relevant to the story focus and expected to change with circumstances.
+                - Must be specific and measurable (not abstract like “destiny”, “hope”, “goodness”).
+                - Avoid duplicates/overlap (e.g., don't include both “Strength” and “Power”).
+                - Use standard RPG-like stats + survival/story-relevant meters (e.g., Health, Stamina, Hunger, Thirst, Morale, Engineering, Combat, Navigation).
+
+                Attribute formats (MUST follow):
+                - If attribute_type == "rating": attribute_value is an integer 0-10.
+                - If attribute_type == "category": attribute_value is one of:
+                "very low", "low", "medium", "high", "very high"
+                - If attribute_type == "open-ended": attribute_value is any integer
+
+                Initial values:
+                - Ratings should be plausible and grounded in the description (avoid all 10s).
+                - Category values should be conservative if uncertain.
+
+                Output rules:
+                - Return ONLY valid JSON matching this schema: {json.dumps(character_setup_schema)}
+                - Do not include any extra keys (no summary, no explanations).
                 """
             },
             {
@@ -91,16 +117,20 @@ def prompt_character_setup(character_desc, world_desc, story_focus_desc):
 
 
 
-notebook_schema = {
+summary_schema = {
     "type": "object",
     "properties": {
         "notebook_list": {
             "type": "array",
             "description": "list of key details about the user's character",
             "items": {"type": "string"}
+        },
+        "summary": {
+            "type": "string",
+            "description": "Very short summary of the character's experience to add to character history"
         }
     },
-    "required": ["notebook_list"],
+    "required": ["notebook_list", "summary"],
     "additionalProperties": False
 }
 
@@ -116,9 +146,20 @@ def prompt_scenario_summary(scenario, notebook):
                 "content": f"""
                 You summarise logs of events that the user's character experiences.
                 You will be given a short section of story which involves actions that the user's character has performed.
-                Update the character notebook if the given story changes any key details about the character.
-                Only update elements in the notebook if significant changes in the character have occurred (equipment, experience, reputation).
-                Return ONLY valid JSON matching this schema {json.dumps(notebook_schema)}.
+                CRITICAL RULES (must follow):
+                1) Notebook updates are RARE. Do NOT add or modify notebook items unless the story causes a durable change in the character:
+                - New or lost equipment/resources that persist
+                - New learned skill/training gained
+                - Injury/condition that persists
+                - Major reputation/faction relationship change
+                - Major objective/role change
+                If none of the above occurred, return the notebook_list EXACTLY as provided, with no additions, removals, or edits.
+
+                2) Summary must be ultra-succinct:
+                - 4-12 words only
+                - Give an overview of what the character experienced (a past-tense verb phrase)
+                - Minimal setting details and context
+                Return ONLY valid JSON matching this schema {json.dumps(summary_schema)}.
                 Provided is the current notebook: {notebook}.
                 """
             },
@@ -129,12 +170,12 @@ def prompt_scenario_summary(scenario, notebook):
         ],
         response_format={
             "type": "json_schema",
-            "schema": notebook_schema
+            "schema": summary_schema
         }
     )
     print(response)
     data = json.loads(response.choices[0].message.content)
-    return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"]
+    return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"], data["summary"]
 
 
 
@@ -161,7 +202,7 @@ scenario_schema = {
     "additionalProperties": False
 }
 
-def prompt_scenario(prompt, character_notebook):
+def prompt_scenario(prompt):
     response = client.chat.completions.create(
         model=model,
         temperature=1,
@@ -173,7 +214,6 @@ def prompt_scenario(prompt, character_notebook):
                 "content": f"""You are the storyteller in a single-player game set on a procedurally-generated map.
                 The game is focused on realism and immersion in a given world. Situations should be natural and believable.
                 The user has defined the world context, their character and the type of stories they want to experience.
-                The player's skills and experiences are: {character_notebook}.
                 With the context you have been provided, write a short interaction with the environment or situation that the character finds themselves in.
                 Present the user with a variety of options on how to deal with the given interaction which represent different playstyles.
                 Do not assume information about the world, use only the given context to generate interactions.
