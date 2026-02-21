@@ -1,5 +1,5 @@
 from storyteller.scenario import Scenario
-from utils.llm_utils import prompt_scenario, prompt_character_setup, prompt_scenario_summary
+from utils.llm_utils import prompt_scenario, prompt_character_setup, prompt_scenario_summary, prompt_story_setup
 
 class StorytellerManager:
     def __init__(self, controller):
@@ -26,6 +26,8 @@ class StorytellerManager:
         self.input_token_count += input_tokens
 
     def setup_notebook_and_stats(self):
+        #output_tokens, input_tokens, story_list = prompt_story_setup(self.character_description, self.world_description, self.story_focus_description)
+        #self.update_token_counts(output_tokens, input_tokens)
         output_tokens, input_tokens, notebook, stat_list = prompt_character_setup(self.character_description, self.world_description, self.story_focus_description)
         self.update_token_counts(output_tokens, input_tokens)
 
