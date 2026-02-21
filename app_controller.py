@@ -182,6 +182,9 @@ class AppController:
     
     def get_character_notebook(self):
         return self.storyteller.get_notebook()
+    
+    def get_character_history(self):
+        return self.storyteller.get_character_history()
 
     def refresh_map_render(self):
         self.map_renderer.refresh_view()
