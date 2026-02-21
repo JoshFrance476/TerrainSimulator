@@ -32,6 +32,14 @@ class LeftSidebarController:
 
         for bulletpoint in character_notebook:
             self.component_list.append(Label(bulletpoint, self.fonts.small_font))
+        
+        history_label = Label("History", self.fonts.large_font)
+        self.component_list.append(history_label)
+
+        character_history = self.controller.get_character_history()
+
+        for bulletpoint in character_history:
+            self.component_list.append(Label(bulletpoint, self.fonts.small_font))
 
     def show_region_setup_page(self):
         self.clear_page()
