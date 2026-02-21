@@ -13,7 +13,6 @@ scenario_schema = {
     "type": "object",
     "properties": {
         "interaction_description": {"type": "string"},
-        "exit_flag": {"type": "boolean"},
         "options": {
             "type": "array",
             "description": "a list of 2-4 options that the user can choose",
@@ -21,13 +20,14 @@ scenario_schema = {
                 "type": "object",
                 "properties": {
                     "action": {"type": "string"},
+                    "exit_flag": {"type": "boolean"}
                 },
-                "required": ["action"],
+                "required": ["action", "exit_flag"],
                 "additionalProperties": False
             }
         }
     },
-    "required": ["interaction_description", "exit_flag", "options"],
+    "required": ["interaction_description", "options"],
     "additionalProperties": False
 }
 
@@ -44,36 +44,76 @@ notebook_schema = {
     "additionalProperties": False
 }
 
-def prompt_notebook_setup(character_desc):
+character_setup_schema = {
+    "type": "object",
+    "properties": {
+        "notebook_list": {
+            "type": "array",
+            "description": "list of key details about the user's character",
+            "items": {"type": "string"}
+        },
+        "attribute_list": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "attribute": {
+                        "type": "string"
+                    },
+                    "attribute_type": {
+                        "type": "string",
+                        "enum": ["open-ended", "rating"]
+                    },
+                    "attribute_value": {
+                        "type": "integer"
+                    }
+                },
+                "required": ["attribute", "attribute_type", "attribute_value"],
+                "additionalProperties": False
+            }
+        }
+    },
+    "required": ["notebook_list", "attribute_list"],
+    "additionalProperties": False
+}
+
+def prompt_character_setup(character_desc, world_desc, story_focus_desc):
     response = client.chat.completions.create(
         model=model,
         temperature=1,
-        max_tokens=400,
+        max_tokens=500,
         reasoning_effort="low",
         messages=[
             {
                 "role": "system",
                 "content": f"""
-                Convert the user's character description in to a a list of characteristics. 
-                These will be used to decide on the player's actions and experiences in the story.
-                Each item is one short sentence fragment.
-                Prefer concrete facts: role, personality traits, skills/experience, equipment.
-                Return ONLY valid JSON matching this schema: {notebook_schema}.
+                Convert the user's character description in to a list of characteristics and a list of attributes. 
+                Attributes should be things that you expect to see in an RPG game and are relevant to the story focus and will change depending on the player's circumstances.
+                Attributes should be in the form of an open-ended value or a rating /10.
+                Attributes should be specific and measurable, not abstract things.
+                The player should be given 4-8 attributes, and these will be used throughout the game to determine the player's progress.
+                The list of characteristics will be used to decide on the player's actions in the story.
+                Each characteristic is one short sentence fragment, and they should be concrete facts: role, personality traits, skills, equipment.
+                Return ONLY valid JSON matching this schema: {character_setup_schema}.
                 """
             },
             {
                 "role": "user",
-                "content": character_desc
+                "content": f"""
+                Character description: {character_desc},
+                World description: {world_desc},
+                "Story focus: {story_focus_desc}.
+                """
             }
         ],
         response_format={
             "type": "json_schema",
-            "schema": notebook_schema
+            "schema": character_setup_schema
         }
     )
     print(response)
     data = json.loads(response.choices[0].message.content)
-    return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"]
+    return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"], data["attribute_list"]
 
 def prompt_scenario_summary(scenario, notebook):
     response = client.chat.completions.create(
@@ -117,19 +157,19 @@ def prompt_scenario(prompt, character_notebook):
         messages=[
             {
                 "role": "system",
-                "content": f"""You are the storyteller in a single-player game set on a 2D map made up of tiles.
+                "content": f"""You are the storyteller in a single-player game set on a procedurally-generated map.
                 The game is focused on realism and immersion in a given world. Situations should be natural and believable.
-                The user moves their character around the map, and can trigger interactions to get a description of their surroundings and possible choices.
                 The user has defined the world context, their character and the type of stories they want to experience.
                 The player's skills and experiences are: {character_notebook}.
-                You will be prompted to generate interactions or end scenarios based on given context, which should reflect the environment the character finds themselves in.
+                With the context you have been provided, write a short interaction with the environment or situation that the character finds themselves in.
+                Present the user with a variety of options on how to deal with the given interaction which represent different playstyles.
                 Do not assume information about the world, use only the given context to generate interactions.
                 Interaction descriptions should be no longer than 50 words, and each decision should be summarised in less than 15 words.
                 Keep the tone and content of interactions consistent with the context provided.
                 Each interaction should be focused on a single event/detail.
+                Interactions should follow on previous interactions if provided, but MUST end after a few interactions. 
                 If no previous interactions are given, assume the player has just entered the area.
-                Any option that results in the player leaving, travelling on, retreating, camping, sleeping, resting counts as an exit option.
-                Exit options must not carry on the interaction, they end it.
+                Any option that results in the player leaving, travelling on, retreating, camping, sleeping or resting should end the interaction by setting the exit_flag to True.
                 Return ONLY valid JSON matching this schema: {scenario_schema}."""
             },
             {
@@ -148,6 +188,5 @@ def prompt_scenario(prompt, character_notebook):
         response.usage.completion_tokens,
         response.usage.prompt_tokens,
         data["interaction_description"],
-        data["exit_flag"],
         data["options"],
     )
