@@ -8,6 +8,50 @@ model = "openai/gpt-oss-120b"
 """
 A scenario with 7 interactions used 6000 input tokens and 1100 outputs tokens - about 0.2 of a cent. That is without history being inputted and outputted.  
 """
+story_setup_schema = {
+    "type": "object",
+    "properties": {
+        "scenario_list": {
+            "type": "array",
+            "items": {"type": "string"}
+        }
+    }
+}
+
+def prompt_story_setup(character_desc, world_desc, story_focus_desc):
+    response = client.chat.completions.create(
+        model=model,
+        temperature=1,
+        max_tokens=800,
+        reasoning_effort="medium",
+        messages=[
+            {
+                "role": "system",
+                "content": f"""
+                You are setting up a list of possible scenarios for a singleplayer story game.
+                Given the context that the user has provided, generate a list of 8-14 different scenario prompts that the user might experience in the world.
+                Scenarios should be short and ambiguous.
+                Return ONLY valid JSON matching this schema: {json.dumps(story_setup_schema)}
+                """
+            },
+            {
+                "role": "user",
+                "content": f"""
+                Character description: {character_desc},
+                World description: {world_desc},
+                "Story focus: {story_focus_desc}.
+                """
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "schema": story_setup_schema
+        }
+    )
+    print(response)
+    data = json.loads(response.choices[0].message.content)
+    return response.usage.completion_tokens, response.usage.prompt_tokens, data["scenario_list"]
+
 
 character_setup_schema = {
     "type": "object",
