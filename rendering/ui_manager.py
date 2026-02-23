@@ -2,6 +2,7 @@ import pygame
 import config
 from ui_components.left_sidebar import LeftSidebarController
 from ui_components.right_sidebar import RightSidebarController
+from ui_components.menu import Menu
 from ui_components.widgets.tooltip import Tooltip
 from ui_components.widgets.label import Label
 from ui_components.widgets.container_list import ContainerList
@@ -13,13 +14,39 @@ class UIManager:
         self.biome_config = biome_config
         self.left_sidebar = LeftSidebarController(fonts, controller, biome_config)
         self.right_sidebar = RightSidebarController(fonts, controller, biome_config)
+        self.menu = Menu(fonts, controller)
         self.world = world
         self.fonts = fonts
+
+        self.show_menu = False
+    
+    def render_ui(self, screen):
+        selected_cell = self.controller.selected_cell
+        hovered_cell = self.controller.hovered_cell
+
+
+        if selected_cell:
+                self.draw_selected_cell_border(selected_cell, screen)
+        
+        self.left_sidebar.draw(screen)
+        self.right_sidebar.draw(screen)
+
+        if self.mouse_on_map():
+            if hovered_cell:
+                self.draw_hover_highlight(hovered_cell, screen)
+            
+            self.draw_tooltip_list(screen)
+
+        if self.show_menu:
+            self.menu.draw(screen)
+
         
     def get_clicked_component(self, event_pos):
         ui_component_list = []
         ui_component_list.extend(self.left_sidebar.component_list)
         ui_component_list.extend(self.right_sidebar.component_list)
+        if self.show_menu:
+            ui_component_list.extend(self.menu.component_list)
         for component in ui_component_list:
 
             if isinstance(component, list):
@@ -68,24 +95,6 @@ class UIManager:
     
     def clear_left_page(self):
         self.left_sidebar.clear_page()
-
-
-    def render_ui(self, screen):
-        selected_cell = self.controller.selected_cell
-        hovered_cell = self.controller.hovered_cell
-
-        if selected_cell:
-                self.draw_selected_cell_border(selected_cell, screen)
-        
-        self.left_sidebar.draw(screen)
-        self.right_sidebar.draw(screen)
-
-        if self.mouse_on_map():
-            if hovered_cell:
-                self.draw_hover_highlight(hovered_cell, screen)
-            
-            self.draw_tooltip_list(screen)
-
 
 
     def render_tooltip(self, location):
@@ -163,4 +172,8 @@ class UIManager:
 
     def mouse_on_map(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT
+        collide_with_menu = False
+        if self.show_menu:
+            if self.menu.rect.collidepoint(mouse_x, mouse_y):
+                collide_with_menu = True
+        return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT and not collide_with_menu
