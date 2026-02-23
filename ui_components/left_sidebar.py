@@ -127,15 +127,6 @@ class LeftSidebarController:
         self.component_list.append(biome_name_label)
         self.component_list.append(LineDivider(config.SIDEBAR_WIDTH, 2))
     
-    def show_settings_page(self):
-        self.clear_page()
-
-        title_label = Label("Settings", self.fonts.header, config.SIDEBAR_WIDTH)
-
-        self.component_list.extend(self.navigation_bar)
-        self.component_list.append(title_label)
-
-
 
 
     def clear_page(self):
