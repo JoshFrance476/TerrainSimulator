@@ -166,6 +166,12 @@ class AppController:
         if self.focused_entity:
             self.focused_entity.focused = False
             self.focused_entity = None
+        
+    def show_menu(self):
+        self.ui_manager.show_menu = True
+    
+    def hide_menu(self):
+        self.ui_manager.show_menu = False
 
     def get_cell_at_mouse_position(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
