@@ -1,5 +1,6 @@
 import pygame
 import config
+import numpy as np
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
 from rendering.camera import Camera
@@ -33,7 +34,7 @@ class AppController:
 
         self.screen = screen
 
-
+        self.brush_size = 3
 
         self.selected_filter = "colour"
 
@@ -255,16 +256,27 @@ class AppController:
         self.refresh_map_render()
     
     def paint_tile(self, location, tid):
-        self.world.data.set_map_data_at("biome", location, tid)
+        for brush_location in self.get_brush(location):
+            self.world.data.set_map_data_at("biome", brush_location, tid)
         self.process_updated_map()
     
     def paint_region(self, location, rid):
-        self.world.region_manager.add_region_to_location(location, rid)
+        for brush_location in self.get_brush(location):
+            self.world.region_manager.add_region_to_location(brush_location, rid)
         self.refresh_map_render()
+    
+    def get_brush(self, location):
+        brush_locations = []
+        for x in range(self.brush_size):
+            for y in range(self.brush_size):
+                brush_locations.append((location[0] + (1 - x), location[1] + (1 - y)))
+        return brush_locations
+
     
     def mouse_down(self, location):
         if self.interaction_type == "paint_region":
-            self.create_new_region(location)
+            self.create_new_region()
+            self.paint_region(location, self.active_region_paint)
         elif self.interaction_type == "paint_tile":
             self.tile_paint_enabled = True
             self.paint_tile(location, self.tile_paint_id)
@@ -283,8 +295,8 @@ class AppController:
     def show_tile_manager_page(self, biome_info = {}, index = -1):
         self.ui_manager.show_tile_manager_page(biome_info, index)
     
-    def create_new_region(self, location):
-        region_id = self.world.region_manager.create_region(location)
+    def create_new_region(self):
+        region_id = self.world.region_manager.create_region()
         self.active_region_paint = region_id
         self.refresh_map_render()
     
