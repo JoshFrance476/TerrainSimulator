@@ -8,10 +8,9 @@ class RegionManager:
         self.rid_counter = 0
 
     
-    def create_region(self, location):
+    def create_region(self):
         new_region = Region(self.rid_counter)
         self.rid_counter += 1
-        self.add_region_to_location(location, new_region.rid)
         self.region_list.append(new_region)
         return new_region.rid
 
