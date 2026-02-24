@@ -19,7 +19,7 @@ class StorytellerManager:
         self.input_token_count = 0
         self.output_token_count = 0
 
-        self.setup_notebook_and_stats()
+        #self.setup_notebook_and_stats()
     
     def update_token_counts(self, output_tokens, input_tokens):
         self.output_token_count += output_tokens
