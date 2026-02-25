@@ -78,8 +78,8 @@ class UIManager:
         return None
 
 
-    def show_region_setup_page(self):
-        self.left_sidebar.show_region_setup_page()
+    def show_region_setup_page(self, region_id):
+        self.left_sidebar.show_region_setup_page(region_id)
     
     def show_tile_manager_page(self, biome_info, index):
         self.left_sidebar.show_tile_manager_page(biome_info, index)

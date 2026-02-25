@@ -33,6 +33,13 @@ class World:
         }
         return info
 
+    def get_regions_at_location(self, location):
+        return self.region_manager.get_regions_at_location(location)
+
+    def get_region(self, region_id):
+        return self.region_manager.get_region(region_id)
+
+
     def get_world_data(self):
         return self.data.get_world_data()  
     

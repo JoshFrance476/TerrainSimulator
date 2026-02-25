@@ -41,16 +41,18 @@ class LeftSidebarController:
         for bulletpoint in character_history:
             self.component_list.append(Label(bulletpoint, self.fonts.small_font))
 
-    def show_region_setup_page(self):
+    def show_region_setup_page(self, region_id):
         self.clear_page()
+
+        region = self.controller.get_region(region_id)
         self.component_list.append(Label("Add Region", self.fonts.header))
         self.component_list.append(Label("Title:", self.fonts.small_font))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
+        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25, default_text=region.title))
         self.component_list.append(Label("Visible Description:", self.fonts.small_font))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
+        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25, default_text=region.visible_desc))
         self.component_list.append(Label("Hidden Description:", self.fonts.small_font))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25))
-        self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text), "Submit", self.fonts.small_font))
+        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25, default_text=region.hidden_desc))
+        self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text, region_id=region_id), "Submit", self.fonts.small_font))
     
     def show_tile_manager_page(self, biome_info = None, biome_index = -1):
         self.clear_page()
@@ -126,6 +128,18 @@ class LeftSidebarController:
         self.component_list.append(title_label)
         self.component_list.append(biome_name_label)
         self.component_list.append(LineDivider(config.SIDEBAR_WIDTH, 2))
+        
+
+        for region in self.controller.get_regions_at_location(self.controller.get_selected_cell()):
+            if region.title:
+                self.component_list.append(Label(region.title, self.fonts.large_font))
+            if region.visible_desc:
+                self.component_list.append(Label(region.visible_desc, self.fonts.small_font))
+            if region.hidden_desc:
+                self.component_list.append(Label(region.hidden_desc, self.fonts.small_font))
+            self.component_list.append(Button(100,20, lambda r=region.rid: self.controller.show_region_edit_page(r), "Edit", self.fonts.small_font))
+            self.component_list.append(LineDivider(config.SIDEBAR_WIDTH,2, 20))
+
     
 
 

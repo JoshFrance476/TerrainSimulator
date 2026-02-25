@@ -167,6 +167,9 @@ class AppController:
         if self.focused_entity:
             self.focused_entity.focused = False
             self.focused_entity = None
+    
+    def get_regions_at_location(self, location):
+        return self.world.get_regions_at_location(location)
         
     def show_menu(self):
         self.ui_manager.show_menu = True
@@ -275,7 +278,11 @@ class AppController:
     
     def mouse_down(self, location):
         if self.interaction_type == "paint_region":
-            self.create_new_region()
+            if self.active_region_paint is None:
+                if self.most_recent_region_paint is not None:
+                    self.active_region_paint = self.most_recent_region_paint
+                else:
+                    self.active_region_paint = self.create_new_region()
             self.paint_region(location, self.active_region_paint)
         elif self.interaction_type == "paint_tile":
             self.tile_paint_enabled = True
@@ -285,29 +292,43 @@ class AppController:
 
     def mouse_up(self):
         if self.interaction_type == "paint_region":
-            self.interaction_type = "view_tile"
-            self.ui_manager.show_region_setup_page()
-            self.most_recent_region_paint = self.active_region_paint
+
+            if self.active_region_paint is not None:
+                self.ui_manager.show_region_setup_page(self.active_region_paint)
+                self.most_recent_region_paint = self.active_region_paint
+
             self.active_region_paint = None
         elif self.interaction_type == "paint_tile" and self.tile_paint_enabled:
             self.tile_paint_enabled = False
+    
+    def get_region(self, region_id):
+        return self.world.get_region(region_id)
     
     def show_tile_manager_page(self, biome_info = {}, index = -1):
         self.ui_manager.show_tile_manager_page(biome_info, index)
     
     def create_new_region(self):
         region_id = self.world.region_manager.create_region()
-        self.active_region_paint = region_id
-        self.refresh_map_render()
+        return region_id
     
-    def set_painted_region_info(self, title, visible_desc, hidden_desc):
-        if self.most_recent_region_paint != None:
+    def set_painted_region_info(self, title, visible_desc, hidden_desc, region_id = None):
+        if region_id is not None:
+            region = self.world.region_manager.region_list[region_id]
+        elif self.most_recent_region_paint != None:
             region = self.world.region_manager.region_list[self.most_recent_region_paint]
-            region.title = title
-            region.visible_desc = visible_desc
-            region.hidden_desc = hidden_desc
+        region.title = title
+        region.visible_desc = visible_desc
+        region.hidden_desc = hidden_desc
 
-            self.ui_manager.show_biome_manager_page()
+        self.most_recent_region_paint = None
+        self.interaction_type = "view_tile"
+
+        self.ui_manager.show_biome_manager_page()
+    
+    def show_region_edit_page(self, region_id):
+        self.ui_manager.show_region_setup_page(region_id)
+        self.interaction_type = "paint_region"
+        self.most_recent_region_paint = region_id
 
     def next_turn(self):
         self.camera.set_location(self.player.get_location())
@@ -362,7 +383,7 @@ class AppController:
     def new_hovered_tile(self, location):
         if self.tile_out_of_bounds(location):
             return
-        if self.active_region_paint != None:
+        if pygame.mouse.get_pressed()[0] and self.active_region_paint is not None:
             self.paint_region(location, self.active_region_paint)        
         
         if self.tile_paint_id is not None and self.tile_paint_enabled:

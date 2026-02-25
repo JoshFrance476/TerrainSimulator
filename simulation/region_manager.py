@@ -29,3 +29,8 @@ class RegionManager:
             region = self.region_list[rid]
             region_list.append(region)
         return region_list
+
+    def get_region(self, rid):
+        return self.region_list[rid]
+
+
