@@ -1,6 +1,6 @@
 import pygame
 import config
-import numpy as np
+from app_state import AppState
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
 from rendering.camera import Camera
@@ -8,6 +8,7 @@ from simulation.world import World
 from simulation.map_entity import MapEntity
 from utils.fps_monitor import FPSMonitor
 from storyteller.storyteller_manager import StorytellerManager
+from brush_manager import BrushManager
 import sys
 
 class AppController:
@@ -16,13 +17,12 @@ class AppController:
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS, self.biome_config)
         self.camera = Camera()
 
+        self.state = AppState()
+        
         self.player = MapEntity((self.biome_config.get_starting_location()))
         self.camera.set_location(self.player.get_location())
 
         self.fonts = fonts
-
-        self.selected_cell = None
-        self.hovered_cell = None
 
         self.map_renderer = MapRenderer(self)
         self.ui_manager = UIManager(self, fonts, self.world, self.biome_config)
@@ -31,24 +31,10 @@ class AppController:
 
         self.storyteller = StorytellerManager(self)
 
+        self.brush_manager = BrushManager()
 
         self.screen = screen
 
-        self.brush_size = 3
-
-        self.selected_filter = "colour"
-
-        self.paused = True
-        self.interaction_type = "view_tile"
-
-        self.tile_paint_id = None
-        self.tile_paint_enabled = False
-
-        self.active_region_paint = None
-        self.most_recent_region_paint = None
-
-        self.focused_entity = None
-        self.ui_locked = False
 
         self.ui_manager.show_biome_manager_page()
         self.ui_manager.show_current_scenario_screen()
@@ -71,7 +57,7 @@ class AppController:
         
 
     def handle_continuous_inputs(self):
-        if not self.focused_entity:
+        if not self.state.focused_entity:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 self.pan_camera(-config.PAN_STEP, 0)
@@ -102,10 +88,10 @@ class AppController:
             if event.button == 1:
                 clicked_component = self.ui_manager.get_clicked_component(event.pos)
 
-                if self.ui_locked:
-                    if clicked_component == self.focused_entity:
+                if self.state.ui_locked:
+                    if clicked_component == self.state.focused_entity:
                         clicked_component.is_clicked(event)
-                        self.ui_locked = False
+                        self.state.ui_locked = False
                         self.clear_focus()
                     else:
                         if self.ui_manager.mouse_on_map():
@@ -119,37 +105,37 @@ class AppController:
                         clicked_component.is_clicked(event)
                     if hasattr(clicked_component, "focused"):
                         clicked_component.focused = True
-                        self.focused_entity = clicked_component
+                        self.state.focused_entity = clicked_component
                 elif self.ui_manager.mouse_on_map():
                     self.mouse_down(location)
         
 
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:  # Left mouse button
-                if self.focused_entity and hasattr(self.focused_entity, "stop_drag"):
-                    self.focused_entity.stop_drag()
+                if self.state.focused_entity and hasattr(self.state.focused_entity, "stop_drag"):
+                    self.state.focused_entity.stop_drag()
                 self.mouse_up()
         
         
         if event.type == pygame.MOUSEMOTION:
             if pygame.mouse.get_pressed()[0]:
-                if self.focused_entity:
-                    if hasattr(self.focused_entity, "is_dragged"):
-                        self.focused_entity.is_dragged(event)
+                if self.state.focused_entity:
+                    if hasattr(self.state.focused_entity, "is_dragged"):
+                        self.state.focused_entity.is_dragged(event)
         
         if event.type == pygame.MOUSEWHEEL:
-            if self.focused_entity:
-                if hasattr(self.focused_entity, "scroll"):
-                    self.focused_entity.scroll(event.y)
+            if self.state.focused_entity:
+                if hasattr(self.state.focused_entity, "scroll"):
+                    self.state.focused_entity.scroll(event.y)
         
         if event.type == pygame.KEYDOWN:
-            if self.focused_entity:
-                if hasattr(self.focused_entity, "handle_event"):
-                    self.focused_entity.handle_event(event)
-                if (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and hasattr(self.focused_entity, "increment"):
-                    self.focused_entity.increment()
-                if (event.key == pygame.K_a or event.key == pygame.K_LEFT) and hasattr(self.focused_entity, "decrement"):
-                    self.focused_entity.decrement()
+            if self.state.focused_entity:
+                if hasattr(self.state.focused_entity, "handle_event"):
+                    self.state.focused_entity.handle_event(event)
+                if (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and hasattr(self.state.focused_entity, "increment"):
+                    self.state.focused_entity.increment()
+                if (event.key == pygame.K_a or event.key == pygame.K_LEFT) and hasattr(self.state.focused_entity, "decrement"):
+                    self.state.focused_entity.decrement()
             else:
                 if event.key == pygame.K_SPACE:
                     self.toggle_pause()
@@ -159,14 +145,16 @@ class AppController:
                     self.toggle_region_place()
                 if event.key == pygame.K_b:
                     self.toggle_view_tile()
+                if event.key == pygame.K_v:
+                    self.toggle_edit_elevation()
                 if event.key == pygame.K_z:
                     self.load_map("demo")
 
     
     def clear_focus(self):
-        if self.focused_entity:
-            self.focused_entity.focused = False
-            self.focused_entity = None
+        if self.state.focused_entity:
+            self.state.focused_entity.focused = False
+            self.state.focused_entity = None
     
     def get_regions_at_location(self, location):
         return self.world.get_regions_at_location(location)
@@ -198,12 +186,6 @@ class AppController:
 
     def refresh_map_render(self):
         self.map_renderer.refresh_view()
-
-    def select_textbox(self, textbox):
-        self.selected_textbox = textbox
-    
-    def toggle_pause(self):
-        self.paused = not self.paused
     
     def prompt_scenario(self):
         self.storyteller.prompt_new_interaction()
@@ -221,27 +203,27 @@ class AppController:
         self.ui_manager.show_current_scenario_screen()
     
     def toggle_move(self):
-        self.interaction_type = "move_player"
+        self.state.interaction_type = "move_player"
     
     def toggle_region_place(self):
-        self.interaction_type = "paint_region"
+        self.state.interaction_type = "paint_region"
     
     def toggle_tile_paint(self, tid):
-        if self.interaction_type == "paint_tile":
-            self.tile_paint_id = None
-            self.interaction_type = "view_tile"
+        if self.state.interaction_type == "paint_tile":
+            self.state.tile_paint_id = None
+            self.state.interaction_type = "view_tile"
         else:
-            self.ui_locked = True
-            self.interaction_type = "paint_tile"
-            self.tile_paint_id = tid
+            self.state.ui_locked = True
+            self.state.interaction_type = "paint_tile"
+            self.state.tile_paint_id = tid
     
     def toggle_view_tile(self):
-        self.interaction_type = "view_tile"
+        self.state.interaction_type = "view_tile"
     
     def interact_with_tile(self, location):
-        if self.interaction_type == "move_player":
+        if self.state.interaction_type == "move_player":
             self.move_player_to_cell(location)
-        elif self.interaction_type == "view_tile":
+        elif self.state.interaction_type == "view_tile":
             self.select_cell(location)
     
     def add_biome(self, name, h, s, v, traversal_cost):
@@ -259,47 +241,61 @@ class AppController:
         self.refresh_map_render()
     
     def paint_tile(self, location, tid):
-        for brush_location in self.get_brush(location):
+        for brush_location in self.brush_manager.get_brush(location):
             self.world.data.set_map_data_at("biome", brush_location, tid)
         self.process_updated_map()
     
+    def paint_edit_elevation(self, location, strength):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LCTRL]:
+            self.world.apply_smoothing_elevation_mask(self.brush_manager.get_brush_mask(location, strength, True))
+        else:
+            self.world.apply_edit_elevation_mask(self.brush_manager.get_brush_mask(location, strength))
+        self.world.update_steepness()
+        self.world.update_biome()
+        self.world.update_stage_3()
+        self.refresh_map_render()
+    
+    def toggle_edit_elevation(self):
+        self.state.interaction_type = "edit_elevation"
+
     def paint_region(self, location, rid):
-        for brush_location in self.get_brush(location):
+        for brush_location in self.brush_manager.get_brush(location):
             self.world.region_manager.add_region_to_location(brush_location, rid)
         self.refresh_map_render()
     
-    def get_brush(self, location):
-        brush_locations = []
-        for x in range(self.brush_size):
-            for y in range(self.brush_size):
-                brush_locations.append((location[0] + (1 - x), location[1] + (1 - y)))
-        return brush_locations
-
+    def remove_region(self, location, rid):
+        for brush_location in self.brush_manager.get_brush(location):
+            self.world.region_manager.remove_region_from_location(brush_location, rid)
+        self.refresh_map_render()
+    
     
     def mouse_down(self, location):
-        if self.interaction_type == "paint_region":
-            if self.active_region_paint is None:
-                if self.most_recent_region_paint is not None:
-                    self.active_region_paint = self.most_recent_region_paint
+        if self.state.interaction_type == "paint_region":
+            if self.state.active_region_paint is None:
+                if self.state.most_recent_region_paint is not None:
+                    self.state.active_region_paint = self.state.most_recent_region_paint
                 else:
-                    self.active_region_paint = self.create_new_region()
-            self.paint_region(location, self.active_region_paint)
-        elif self.interaction_type == "paint_tile":
-            self.tile_paint_enabled = True
-            self.paint_tile(location, self.tile_paint_id)
+                    self.state.active_region_paint = self.create_new_region()
+            self.paint_region(location, self.state.active_region_paint)
+        elif self.state.interaction_type == "paint_tile":
+            self.state.tile_paint_enabled = True
+            self.paint_tile(location, self.state.tile_paint_id)
+        elif self.state.interaction_type == "edit_elevation":
+            self.paint_edit_elevation(location, self.brush_manager.brush_strength)
         else:
             self.interact_with_tile(location)
 
     def mouse_up(self):
-        if self.interaction_type == "paint_region":
+        if self.state.interaction_type == "paint_region":
 
-            if self.active_region_paint is not None:
-                self.ui_manager.show_region_setup_page(self.active_region_paint)
-                self.most_recent_region_paint = self.active_region_paint
+            if self.state.active_region_paint is not None:
+                self.ui_manager.show_region_setup_page(self.state.active_region_paint)
+                self.state.most_recent_region_paint = self.state.active_region_paint
 
-            self.active_region_paint = None
-        elif self.interaction_type == "paint_tile" and self.tile_paint_enabled:
-            self.tile_paint_enabled = False
+            self.state.active_region_paint = None
+        elif self.state.interaction_type == "paint_tile" and self.state.tile_paint_enabled:
+            self.state.tile_paint_enabled = False
     
     def get_region(self, region_id):
         return self.world.get_region(region_id)
@@ -314,21 +310,21 @@ class AppController:
     def set_painted_region_info(self, title, visible_desc, hidden_desc, region_id = None):
         if region_id is not None:
             region = self.world.region_manager.region_list[region_id]
-        elif self.most_recent_region_paint != None:
-            region = self.world.region_manager.region_list[self.most_recent_region_paint]
+        elif self.state.most_recent_region_paint != None:
+            region = self.world.region_manager.region_list[self.state.most_recent_region_paint]
         region.title = title
         region.visible_desc = visible_desc
         region.hidden_desc = hidden_desc
 
-        self.most_recent_region_paint = None
-        self.interaction_type = "view_tile"
+        self.state.most_recent_region_paint = None
+        self.state.interaction_type = "view_tile"
 
         self.ui_manager.show_biome_manager_page()
     
     def show_region_edit_page(self, region_id):
         self.ui_manager.show_region_setup_page(region_id)
-        self.interaction_type = "paint_region"
-        self.most_recent_region_paint = region_id
+        self.state.interaction_type = "paint_region"
+        self.state.most_recent_region_paint = region_id
 
     def next_turn(self):
         self.camera.set_location(self.player.get_location())
@@ -337,11 +333,11 @@ class AppController:
 
     
     def select_cell(self, location):
-        self.selected_cell = location
+        self.state.selected_cell = location
         self.ui_manager.show_location_info_page()
     
     def hover_cell(self, location):
-        self.hovered_cell = location
+        self.state.hovered_cell = location
     
     def move_player_to_cell(self, location):
         self.player.set_location(location)
@@ -349,14 +345,17 @@ class AppController:
         self.next_turn()
     
     def set_selected_filter(self, filter_name):
-        self.selected_filter = filter_name
+        self.state.selected_filter = filter_name
 
     def get_selected_cell(self):
-        return self.selected_cell
+        return self.state.selected_cell
+
+    def get_hovered_cell(self):
+        return self.state.hovered_cell
 
     
     def pan_camera(self, dx, dy):
-        if self.interaction_type != "move_player":
+        if self.state.interaction_type != "move_player":
             self.camera.pan(dx, dy)
             self.camera.clamp_pan()
             self.refresh_map_render()
@@ -378,16 +377,22 @@ class AppController:
         return self.world.get_semantic_tile_data(location)
     
     def matches_hovered_tile(self, location):
-        return self.hovered_cell == location
+        return self.state.hovered_cell == location
 
     def new_hovered_tile(self, location):
         if self.tile_out_of_bounds(location):
             return
-        if pygame.mouse.get_pressed()[0] and self.active_region_paint is not None:
-            self.paint_region(location, self.active_region_paint)        
+        if pygame.mouse.get_pressed()[0] and self.state.active_region_paint is not None:
+            self.paint_region(location, self.state.active_region_paint)        
+        elif pygame.mouse.get_pressed()[2] and self.state.most_recent_region_paint is not None:
+            self.remove_region(location, self.state.most_recent_region_paint)
+        elif pygame.mouse.get_pressed()[0] and self.state.interaction_type == "edit_elevation":
+            self.paint_edit_elevation(location, self.brush_manager.brush_strength)
+        elif pygame.mouse.get_pressed()[2] and self.state.interaction_type == "edit_elevation":
+            self.paint_edit_elevation(location, -self.brush_manager.brush_strength)
         
-        if self.tile_paint_id is not None and self.tile_paint_enabled:
-            self.paint_tile(location, self.tile_paint_id)
+        if self.state.tile_paint_id is not None and self.state.tile_paint_enabled:
+            self.paint_tile(location, self.state.tile_paint_id)
         
         self.hover_cell(location)
 
@@ -402,4 +407,5 @@ class AppController:
     def load_map(self, file_name):
         self.world.load_map("saved_maps/"+file_name+".npz")
         self.refresh_map_render()
+    
     
