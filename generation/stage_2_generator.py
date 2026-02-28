@@ -91,12 +91,7 @@ def calculate_steepness(elevation_map):
     # Magnitude of slope vector (Euclidean norm)
     steepness = np.sqrt(grad_x**2 + grad_y**2)
 
-    # Normalize to [0, 1]
-    min_val, max_val = steepness.min(), steepness.max()
-    if max_val > min_val:
-        steepness = (steepness - min_val) / (max_val - min_val)
-    else:
-        steepness = np.zeros_like(steepness)
+    steepness = steepness * 8
 
     return steepness.astype(np.float32)
 
