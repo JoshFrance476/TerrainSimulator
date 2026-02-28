@@ -1,4 +1,4 @@
-from generation.generator_main import generate_data_maps, update_stage_3
+from generation.generator_main import generate_data_maps, update_stage_3, update_steepness, update_biome
 
 class WorldData:
     def __init__(self, rows, cols, biome_config):
@@ -36,6 +36,13 @@ class WorldData:
     def get_biome_at(self, location):
         return self.biome_config.biomes[self.world_data["biome"][location]]["name"].title()
     
+    def update_biome(self):
+        self.world_data["biome"] = update_biome(self.world_data["elevation"],
+                                                    self.world_data["temperature"],
+                                                    self.world_data["rainfall"],
+                                                    self.world_data["sea_proximity"],
+                                                    self.world_data["river_proximity"],
+                                                    self.biome_config)
 
     def update_stage_3(self):
         new_trav_map, new_colour_map = update_stage_3(self.world_data["elevation"],
@@ -44,3 +51,7 @@ class WorldData:
                                                     self.biome_config)
         self.world_data["colour"] = new_colour_map
         self.world_data["traversal_cost"] = new_trav_map
+    
+    def update_steepness(self):
+        self.world_data['steepness'] = update_steepness(self.world_data['elevation'])
+        
