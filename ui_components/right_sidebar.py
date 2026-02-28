@@ -8,18 +8,20 @@ from ui_components.widgets.component_container import ComponentContainer
 
 
 class RightSidebarController:
-    def __init__(self, fonts, controller, biome_config):
+    def __init__(self, fonts, storyteller, interaction_system, biome_config):
         self.fonts = fonts
-        self.controller = controller
         self.component_list = []
         self.biome_config = biome_config
+
+        self.interaction_system = interaction_system
+        self.storyteller = storyteller
 
     def show_current_scenario_screen(self):
         self.clear_page()
         self.component_list.append(Label("Current Scenario", self.fonts.header, config.SIDEBAR_WIDTH))
 
         interaction_list = ContainerList(config.SIDEBAR_WIDTH-10, 500, True)
-        current_scenario = self.controller.get_current_scenario()
+        current_scenario = self.storyteller.get_current_scenario()
         if current_scenario:
             for completed_interactions in current_scenario.completed_interactions:
                 interaction_container = ComponentContainer()
@@ -32,12 +34,12 @@ class RightSidebarController:
             if pending_interaction:
                 interaction_container.add_component(Label(pending_interaction.description, self.fonts.small_font, config.SIDEBAR_WIDTH-20))
                 for index, action in enumerate(pending_interaction.actions):
-                    interaction_container.add_component(Button(200, 50, lambda i = index: self.controller.submit_pending_interaction_action(i), action['action'], self.fonts.small_font))
+                    interaction_container.add_component(Button(200, 50, lambda i = index: self.interaction_system.submit_pending_interaction_action(i), action['action'], self.fonts.small_font))
             else:
-                interaction_container.add_component(Button(200, 30, lambda: self.controller.exit_scenario(), "Exit scenario", self.fonts.small_font))
+                interaction_container.add_component(Button(200, 30, lambda: self.interaction_system.exit_scenario(), "Exit scenario", self.fonts.small_font))
             interaction_list.add_container(interaction_container)
         else:
-            scenario_prompt_button = Button(60,20, lambda: self.controller.prompt_scenario(), "Prompt", self.fonts.small_font)
+            scenario_prompt_button = Button(60,20, lambda: self.interaction_system.prompt_scenario(), "Prompt", self.fonts.small_font)
             self.component_list.append(scenario_prompt_button)
         self.component_list.append(interaction_list) 
 

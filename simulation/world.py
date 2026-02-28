@@ -5,8 +5,6 @@ import config as config
 import json
 
 class World:
-    """Handles simulator and high level world logic."""
-
     def __init__(self, rows, cols, biome_config):
         self.rows, self.cols = rows, cols
         self.data = WorldData(rows, cols, biome_config)
@@ -35,6 +33,9 @@ class World:
 
     def get_regions_at_location(self, location):
         return self.region_manager.get_regions_at_location(location)
+    
+    def add_region_to_location(self, location, rid):
+        self.region_manager.add_region_to_location(location, rid)
 
     def get_region(self, region_id):
         return self.region_manager.get_region(region_id)
@@ -67,6 +68,9 @@ class World:
 
     def remove_region_at(self, location, region_id):
         self.region_manager.remove_region_from_location(location, region_id)
+    
+    def create_region(self):
+        return self.region_manager.create_region()
 
     def get_world_data(self):
         return self.data.get_world_data()  

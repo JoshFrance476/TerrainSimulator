@@ -2,13 +2,13 @@ from utils.ui_utils import wrap_text
 import pygame
 
 class TextBox:
-    def __init__(self, controller, small_font, width, height, default_text=""):
+    def __init__(self, interaction_system, small_font, width, height, default_text=""):
         self.text = default_text
         self.wrapped_text = []
         self.small_font = small_font
         self.width = width
         self.height = height
-        self.controller = controller
+        self.interaction_system = interaction_system
         self.focused = False
         self.rect = None
         self.left_padding = 10
@@ -21,7 +21,7 @@ class TextBox:
             self.text = self.text[:-1]
 
         elif event.key == pygame.K_RETURN:
-            self.controller.clear_focus()
+            self.interaction_system.clear_focus()
 
         elif event.unicode:
             self.text += event.unicode

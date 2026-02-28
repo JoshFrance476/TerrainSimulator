@@ -9,25 +9,46 @@ from ui_components.widgets.container_list import ContainerList
 
 
 class UIManager:
-    def __init__(self, controller, fonts, world, biome_config):
-        self.controller = controller
+    def __init__(self, state, camera, storyteller, fonts, world, biome_config):
+        self.state = state
+        self.camera = camera
+        self.interaction_system = None
+        self.storyteller = storyteller
         self.biome_config = biome_config
-        self.left_sidebar = LeftSidebarController(fonts, controller, biome_config)
-        self.right_sidebar = RightSidebarController(fonts, controller, biome_config)
-        self.menu = Menu(fonts, controller)
         self.world = world
         self.fonts = fonts
+        self.tooltip_list = []
+
+        self._last_left_page = None
+        self._last_right_page = None
+
+        self._last_selected_cell = None
+        self._last_hovered_cell = None
 
         self.show_menu = False
     
+    def set_interaction_system(self, interaction_system):
+        self.interaction_system = interaction_system
+        self.left_sidebar = LeftSidebarController(self.fonts, self.state, self.world, self.interaction_system, self.storyteller, self.biome_config)
+        self.right_sidebar = RightSidebarController(self.fonts, self.storyteller, self.interaction_system, self.biome_config)
+        self.menu = Menu(self.fonts, self.interaction_system, self.state)
+       
     def render_ui(self, screen):
-        selected_cell = self.controller.get_selected_cell()
-        hovered_cell = self.controller.get_hovered_cell()
+        selected_cell = self.state.selected_cell
+        hovered_cell = self.state.hovered_cell
 
+        if self._last_left_page != self.state.left_page:
+            self.left_sidebar.show_page(self.state.left_page)
+            self._last_left_page = self.state.left_page
+        
+        if self._last_selected_cell != selected_cell and self.state.left_page == "location":
+            self.left_sidebar.show_page(self.state.left_page)
+            self._last_selected_cell = selected_cell
+        
 
         if selected_cell:
                 self.draw_selected_cell_border(selected_cell, screen)
-        
+
         self.left_sidebar.draw(screen)
         self.right_sidebar.draw(screen)
 
@@ -35,9 +56,12 @@ class UIManager:
             if hovered_cell:
                 self.draw_hover_highlight(hovered_cell, screen)
             
+            if self._last_hovered_cell != hovered_cell:
+                self.render_tooltip(hovered_cell)
+                self._last_hovered_cell = hovered_cell
             self.draw_tooltip_list(screen)
 
-        if self.show_menu:
+        if self.state.show_menu:
             self.menu.draw(screen)
 
         
@@ -45,7 +69,7 @@ class UIManager:
         ui_component_list = []
         ui_component_list.extend(self.left_sidebar.component_list)
         ui_component_list.extend(self.right_sidebar.component_list)
-        if self.show_menu:
+        if self.state.show_menu:
             ui_component_list.extend(self.menu.component_list)
         for component in ui_component_list:
 
@@ -76,6 +100,14 @@ class UIManager:
                     return component
                     
         return None
+    
+    def mouse_on_map(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        collide_with_menu = False
+        if self.show_menu:
+            if self.menu.rect.collidepoint(mouse_x, mouse_y):
+                collide_with_menu = True
+        return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT and not collide_with_menu
 
 
     def show_region_setup_page(self, region_id):
@@ -99,15 +131,15 @@ class UIManager:
 
     def render_tooltip(self, location):
         self.tooltip_list = []
-        regions = self.world.region_manager.get_regions_at_location(location)
+        regions = self.world.get_regions_at_location(location)
 
         biome = self.biome_config.biomes[self.world.get_cell_data(location)["biome"]]["name"].title()
-        tooltip = Tooltip(self.controller, self.fonts.small_font)
+        tooltip = Tooltip(self.interaction_system, self.fonts.small_font)
         tooltip.add_components([Label(biome, self.fonts.large_font, tooltip.max_width, left_padding=0)])
         self.tooltip_list.append(tooltip)
 
         for region in regions:
-            tooltip = Tooltip(self.controller, self.fonts.small_font)
+            tooltip = Tooltip(self.interaction_system, self.fonts.small_font)
             if region.title != "":
                 tooltip.add_components([Label(region.title, self.fonts.large_font, tooltip.max_width, left_padding=0)])
             if region.visible_desc != "":
@@ -136,8 +168,8 @@ class UIManager:
         cell_y, cell_x = hovered_cell
 
         # Convert grid cell to screen coordinates
-        screen_x = (cell_x - self.controller.get_camera_position()[0]) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
-        screen_y = (cell_y - self.controller.get_camera_position()[1]) * config.CELL_SIZE
+        screen_x = (cell_x - self.camera.x_pos) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
+        screen_y = (cell_y - self.camera.y_pos) * config.CELL_SIZE
 
         # Create transparent surface for the highlight
         highlight_surface = pygame.Surface((config.CELL_SIZE, config.CELL_SIZE), pygame.SRCALPHA)
@@ -152,8 +184,8 @@ class UIManager:
         cell_y, cell_x = selected_cell
 
         # Convert grid cell to screen coordinates
-        screen_x = (cell_x - self.controller.get_camera_position()[0]) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
-        screen_y = (cell_y - self.controller.get_camera_position()[1]) * config.CELL_SIZE
+        screen_x = (cell_x - self.camera.x_pos) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
+        screen_y = (cell_y - self.camera.y_pos) * config.CELL_SIZE
 
         # Create transparent surface for the border
         highlight_surface = pygame.Surface((config.CELL_SIZE, config.CELL_SIZE), pygame.SRCALPHA)
@@ -169,11 +201,3 @@ class UIManager:
 
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
-
-    def mouse_on_map(self):
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        collide_with_menu = False
-        if self.show_menu:
-            if self.menu.rect.collidepoint(mouse_x, mouse_y):
-                collide_with_menu = True
-        return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT and not collide_with_menu

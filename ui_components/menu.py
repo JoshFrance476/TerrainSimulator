@@ -3,16 +3,14 @@ import config
 from ui_components.widgets.textbox import TextBox
 from ui_components.widgets.label import Label
 from ui_components.widgets.button import Button
-from ui_components.widgets.slider import Slider
-from ui_components.widgets.component_container import ComponentContainer
-from ui_components.widgets.container_list import ContainerList
-from ui_components.widgets.line_divider import LineDivider
+
 
 class Menu:
-    def __init__(self, fonts, controller):
+    def __init__(self, fonts, interaction_system, state):
         self.component_list = []
         self.fonts = fonts
-        self.controller = controller
+        self.interaction_system = interaction_system
+        self.state = state
 
         self.width = 300
         self.height = 400
@@ -25,15 +23,15 @@ class Menu:
         self.component_list = []
         self.component_list.append(Label("Menu", self.fonts.header, self.width))
 
-        hide_menu_button = Button(120, 20, lambda: self.controller.hide_menu(), "Hide Menu", self.fonts.small_font)
+        hide_menu_button = Button(120, 20, lambda: setattr(self.state, "show_menu", False), "Hide Menu", self.fonts.small_font)
 
         save_map_label = Label("Save map", self.fonts.large_font, config.SIDEBAR_WIDTH)
-        save_file_name = TextBox(self.controller, self.fonts.small_font, 150, 20)
-        save_button = Button(60, 20, lambda: self.controller.save_map(save_file_name.text), "Save", self.fonts.small_font)
+        save_file_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
+        save_button = Button(60, 20, lambda: self.interaction_system.save_map(save_file_name.text), "Save", self.fonts.small_font)
 
         load_map_label = Label("Load map", self.fonts.large_font, config.SIDEBAR_WIDTH)
-        load_file_name = TextBox(self.controller, self.fonts.small_font, 150, 20)
-        load_button = Button(60,20, lambda: self.controller.load_map(load_file_name.text), "Load", self.fonts.small_font)
+        load_file_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
+        load_button = Button(60,20, lambda: self.interaction_system.load_map(load_file_name.text), "Load", self.fonts.small_font)
 
         self.component_list.append(hide_menu_button)
 

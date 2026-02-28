@@ -10,17 +10,34 @@ from ui_components.widgets.container_list import ContainerList
 from ui_components.widgets.line_divider import LineDivider
 
 class LeftSidebarController:
-    def __init__(self, fonts, controller, biome_config):
+    def __init__(self, fonts, state, world, interaction_system, storyteller, biome_config):
+        self.state = state
+        self.world = world
         self.fonts = fonts
-        self.controller = controller
         self.component_list = []
         self.biome_config = biome_config
 
-        self.navigation_bar = [[Button(65,20, lambda: self.show_biome_manager_page(), "Biome", self.fonts.small_font),
-                                Button(85,20, lambda: self.show_character_page(), "Character", self.fonts.small_font),
-                                Button(85,20, lambda: self.controller.show_menu(), "Menu", self.fonts.small_font)],
+        #Read-only
+        self.interaction_system = interaction_system
+        self.storyteller = storyteller
+
+        self.navigation_bar = [[Button(65,20, lambda: setattr(self.state, "left_page", "biome_editor"), "Biome", self.fonts.small_font),
+                                Button(85,20, lambda: setattr(self.state, "left_page", "character"), "Character", self.fonts.small_font),
+                                Button(85,20, lambda: setattr(self.state, "show_menu", True), "Menu", self.fonts.small_font)],
                                 LineDivider(config.SIDEBAR_WIDTH, thickness=0, top_padding=10, bottom_padding=5)]
 
+    def show_page(self, page_name):
+        if page_name == "character":
+            self.show_character_page()
+        elif page_name == "biome_editor":
+            self.show_biome_manager_page()
+        elif page_name == "region_editor":
+            self.show_region_setup_page(self.state.active_region_edit_id)
+        elif page_name == "location":
+            self.show_location_info_page()
+        elif page_name == "tile_editor":
+            self.show_tile_manager_page(self.state.active_biome_edit_id)
+        
     def show_character_page(self):
         self.clear_page()
         self.component_list.extend(self.navigation_bar)
@@ -28,7 +45,7 @@ class LeftSidebarController:
         title_label = Label("Your Character", self.fonts.header)
         self.component_list.append(title_label)
 
-        character_notebook = self.controller.get_character_notebook()
+        character_notebook = self.storyteller.get_notebook()
 
         for bulletpoint in character_notebook:
             self.component_list.append(Label(bulletpoint, self.fonts.small_font))
@@ -36,7 +53,7 @@ class LeftSidebarController:
         history_label = Label("History", self.fonts.large_font)
         self.component_list.append(history_label)
 
-        character_history = self.controller.get_character_history()
+        character_history = self.storyteller.get_character_history()
 
         for bulletpoint in character_history:
             self.component_list.append(Label(bulletpoint, self.fonts.small_font))
@@ -44,33 +61,34 @@ class LeftSidebarController:
     def show_region_setup_page(self, region_id):
         self.clear_page()
 
-        region = self.controller.get_region(region_id)
+        region = self.world.get_region(region_id)
         self.component_list.append(Label("Add Region", self.fonts.header))
         self.component_list.append(Label("Title:", self.fonts.small_font))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25, default_text=region.title))
+        self.component_list.append(TextBox(self.interaction_system, self.fonts.small_font, 220, 25, default_text=region.title))
         self.component_list.append(Label("Visible Description:", self.fonts.small_font))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25, default_text=region.visible_desc))
+        self.component_list.append(TextBox(self.interaction_system, self.fonts.small_font, 220, 25, default_text=region.visible_desc))
         self.component_list.append(Label("Hidden Description:", self.fonts.small_font))
-        self.component_list.append(TextBox(self.controller, self.fonts.small_font, 220, 25, default_text=region.hidden_desc))
-        self.component_list.append(Button(50, 25, lambda: self.controller.set_painted_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text, region_id=region_id), "Submit", self.fonts.small_font))
+        self.component_list.append(TextBox(self.interaction_system, self.fonts.small_font, 220, 25, default_text=region.hidden_desc))
+        self.component_list.append(Button(50, 25, lambda: self.interaction_system.set_region_info(self.component_list[2].text, self.component_list[4].text, self.component_list[6].text, region_id=region_id), "Submit", self.fonts.small_font))
     
-    def show_tile_manager_page(self, biome_info = None, biome_index = -1):
+    def show_tile_manager_page(self, biome_index = -1):
         self.clear_page()
 
-        if biome_info and biome_index != -1:
-            tile_name = TextBox(self.controller, self.fonts.small_font, 150, 20, biome_info["name"])
-            tile_trav_cost = TextBox(self.controller, self.fonts.small_font, 150, 20, str(biome_info["base_traversal_cost"]))
+        if biome_index != -1:
+            biome_info = self.biome_config.biomes[biome_index]
+            tile_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, biome_info["name"])
+            tile_trav_cost = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, str(biome_info["base_traversal_cost"]))
             hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["h"], top_padding=2)
             sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["s"]*100, top_padding=2)
             val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["v"]*100, top_padding=2)
-            submit_button = Button(50, 25, lambda: self.controller.edit_biome(biome_index, tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text)), "Submit", self.fonts.small_font)
+            submit_button = Button(50, 25, lambda: self.interaction_system.edit_biome(biome_index, tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text)), "Submit", self.fonts.small_font)
         else:
-            tile_name = TextBox(self.controller, self.fonts.small_font, 150, 20)
-            tile_trav_cost = TextBox(self.controller, self.fonts.small_font, 150, 20, "0") 
+            tile_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
+            tile_trav_cost = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, "0") 
             hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120, top_padding=2)
             sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100, top_padding=2)
             val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100, top_padding=2)
-            submit_button = Button(50, 25, lambda: self.controller.add_biome(tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text)),"Submit", self.fonts.small_font)
+            submit_button = Button(50, 25, lambda: self.interaction_system.add_biome(tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text)),"Submit", self.fonts.small_font)
 
         self.component_list.append(
             Label("Tile Manager", self.fonts.header)
@@ -107,20 +125,22 @@ class LeftSidebarController:
             biome_container = ComponentContainer(True)
             biome_container.add_component(Label(biome["name"].capitalize(), self.fonts.large_font, left_padding=5, top_padding=5))
             biome_container.add_component([ColourPreview(20, 20, biome["colour"]["h"], biome["colour"]["s"], biome["colour"]["v"]),
-                                        Button(50, 20, lambda b = biome, i = index: self.controller.show_tile_manager_page(b, i), "Edit", self.fonts.small_font, left_padding=5),
-                                        Button(50, 20, lambda i = index: self.controller.toggle_tile_paint(i), "Paint", self.fonts.small_font, left_padding=5)])
+                                        Button(50, 20, lambda i = index: (setattr(self.state, "active_biome_edit_id", i),
+                                                                          setattr(self.state, "left_page", "tile_editor")), "Edit", self.fonts.small_font, left_padding=5),
+                                        Button(50, 20, lambda i = index: self.interaction_system.toggle_tile_paint(i), "Paint", self.fonts.small_font, left_padding=5)])
             biome_container_list.add_container(biome_container)
         
         self.component_list.append(biome_container_list)
-        self.component_list.append(Button(100, 20, lambda: self.controller.show_tile_manager_page(), "Add Region", self.fonts.small_font))
+        self.component_list.append(Button(100, 20, lambda: (setattr(self.state, "active_biome_edit_id", -1),
+                                                            setattr(self.state, "left_page", "tile_editor")), "Add Region", self.fonts.small_font))
     
     def show_location_info_page(self):
         self.clear_page()
 
         title_label = Label("Location", self.fonts.header, config.SIDEBAR_WIDTH)
         
-        if self.controller.get_selected_cell():
-            biome_name_label = Label(self.controller.get_biome_at(self.controller.get_selected_cell()), self.fonts.large_font, top_padding=2)
+        if self.state.selected_cell:
+            biome_name_label = Label(self.world.get_biome_at(self.state.selected_cell), self.fonts.large_font, top_padding=2)
         else:
             biome_name_label = Label("No tile selected", self.fonts.large_font, top_padding=2)
         
@@ -130,14 +150,14 @@ class LeftSidebarController:
         self.component_list.append(LineDivider(config.SIDEBAR_WIDTH, 2))
         
 
-        for region in self.controller.get_regions_at_location(self.controller.get_selected_cell()):
+        for region in self.world.get_regions_at_location(self.state.selected_cell):
             if region.title:
                 self.component_list.append(Label(region.title, self.fonts.large_font))
             if region.visible_desc:
                 self.component_list.append(Label(region.visible_desc, self.fonts.small_font))
             if region.hidden_desc:
                 self.component_list.append(Label(region.hidden_desc, self.fonts.small_font))
-            self.component_list.append(Button(100,20, lambda r=region.rid: self.controller.show_region_edit_page(r), "Edit", self.fonts.small_font))
+            self.component_list.append(Button(100,20, lambda r=region.rid: self.interaction_system.show_region_edit_page(r), "Edit", self.fonts.small_font))
             self.component_list.append(LineDivider(config.SIDEBAR_WIDTH,2, 20))
 
     
