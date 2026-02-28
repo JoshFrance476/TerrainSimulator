@@ -119,7 +119,7 @@ class LeftSidebarController:
 
         title_label = Label("Location", self.fonts.header, config.SIDEBAR_WIDTH)
         
-        if self.controller.selected_cell:
+        if self.controller.get_selected_cell():
             biome_name_label = Label(self.controller.get_biome_at(self.controller.get_selected_cell()), self.fonts.large_font, top_padding=2)
         else:
             biome_name_label = Label("No tile selected", self.fonts.large_font, top_padding=2)
