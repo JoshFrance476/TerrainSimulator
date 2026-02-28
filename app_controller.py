@@ -1,6 +1,7 @@
 import pygame
 import config
 from app_state import AppState
+from world_editor import WorldEditor
 from rendering.map_renderer import MapRenderer
 from rendering.ui_manager import UIManager
 from rendering.camera import Camera
@@ -18,6 +19,7 @@ class AppController:
         self.camera = Camera()
 
         self.state = AppState()
+        self.world_editor = WorldEditor(self.world, BrushManager(), self.refresh_map_render)
         
         self.player = MapEntity((self.biome_config.get_starting_location()))
         self.camera.set_location(self.player.get_location())
@@ -30,8 +32,6 @@ class AppController:
         self.fps_monitor = FPSMonitor()
 
         self.storyteller = StorytellerManager(self)
-
-        self.brush_manager = BrushManager()
 
         self.screen = screen
 
@@ -137,8 +137,6 @@ class AppController:
                 if (event.key == pygame.K_a or event.key == pygame.K_LEFT) and hasattr(self.state.focused_entity, "decrement"):
                     self.state.focused_entity.decrement()
             else:
-                if event.key == pygame.K_SPACE:
-                    self.toggle_pause()
                 if event.key == pygame.K_m:
                     self.toggle_move()
                 if event.key == pygame.K_n:
@@ -240,35 +238,8 @@ class AppController:
         self.world.data.update_stage_3()
         self.refresh_map_render()
     
-    def paint_tile(self, location, tid):
-        for brush_location in self.brush_manager.get_brush(location):
-            self.world.data.set_map_data_at("biome", brush_location, tid)
-        self.process_updated_map()
-    
-    def paint_edit_elevation(self, location, strength):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LCTRL]:
-            self.world.apply_smoothing_elevation_mask(self.brush_manager.get_brush_mask(location, strength, True))
-        else:
-            self.world.apply_edit_elevation_mask(self.brush_manager.get_brush_mask(location, strength))
-        self.world.update_steepness()
-        self.world.update_biome()
-        self.world.update_stage_3()
-        self.refresh_map_render()
-    
     def toggle_edit_elevation(self):
         self.state.interaction_type = "edit_elevation"
-
-    def paint_region(self, location, rid):
-        for brush_location in self.brush_manager.get_brush(location):
-            self.world.region_manager.add_region_to_location(brush_location, rid)
-        self.refresh_map_render()
-    
-    def remove_region(self, location, rid):
-        for brush_location in self.brush_manager.get_brush(location):
-            self.world.region_manager.remove_region_from_location(brush_location, rid)
-        self.refresh_map_render()
-    
     
     def mouse_down(self, location):
         if self.state.interaction_type == "paint_region":
@@ -277,12 +248,12 @@ class AppController:
                     self.state.active_region_paint = self.state.most_recent_region_paint
                 else:
                     self.state.active_region_paint = self.create_new_region()
-            self.paint_region(location, self.state.active_region_paint)
+            self.world_editor.paint_region(location, self.state.active_region_paint)
         elif self.state.interaction_type == "paint_tile":
             self.state.tile_paint_enabled = True
-            self.paint_tile(location, self.state.tile_paint_id)
+            self.world_editor.paint_tile(location, self.state.tile_paint_id)
         elif self.state.interaction_type == "edit_elevation":
-            self.paint_edit_elevation(location, self.brush_manager.brush_strength)
+            self.world_editor.edit_elevation(location)
         else:
             self.interact_with_tile(location)
 
@@ -383,16 +354,16 @@ class AppController:
         if self.tile_out_of_bounds(location):
             return
         if pygame.mouse.get_pressed()[0] and self.state.active_region_paint is not None:
-            self.paint_region(location, self.state.active_region_paint)        
+            self.world_editor.paint_region(location, self.state.active_region_paint)        
         elif pygame.mouse.get_pressed()[2] and self.state.most_recent_region_paint is not None:
-            self.remove_region(location, self.state.most_recent_region_paint)
+            self.world_editor.remove_region(location, self.state.most_recent_region_paint)
         elif pygame.mouse.get_pressed()[0] and self.state.interaction_type == "edit_elevation":
-            self.paint_edit_elevation(location, self.brush_manager.brush_strength)
+            self.world_editor.edit_elevation(location)
         elif pygame.mouse.get_pressed()[2] and self.state.interaction_type == "edit_elevation":
-            self.paint_edit_elevation(location, -self.brush_manager.brush_strength)
+            self.world_editor.edit_elevation(location, negative=True)
         
         if self.state.tile_paint_id is not None and self.state.tile_paint_enabled:
-            self.paint_tile(location, self.state.tile_paint_id)
+            self.world_editor.paint_tile(location, self.state.tile_paint_id)
         
         self.hover_cell(location)
 
