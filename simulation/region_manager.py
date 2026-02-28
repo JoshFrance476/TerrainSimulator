@@ -19,6 +19,12 @@ class RegionManager:
         if rid not in grid_address:
             grid_address.append(rid)
     
+    def remove_region_from_location(self, location, rid):
+        grid_address = self.region_map[location[0]][location[1]]
+        if rid in grid_address:
+            grid_address.remove(rid)
+        
+    
     def get_region_map(self):
         return self.region_map
     
