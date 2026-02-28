@@ -116,4 +116,15 @@ def update_stage_3(elevation_map, biome_map, steepness_map, biome_config):
 
     return traversal_cost_map, colour_map
 
+def update_steepness(elevation_map):
+    start_time = time.time()
+    steepness_map = calculate_steepness(elevation_map)
+    logging.debug(f"Steepness map generation took {time.time() - start_time:.2f} seconds")
+    return steepness_map
+
+def update_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, biome_config):
+    start_time = time.time()
+    biome_map = determine_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, biome_config)
+    logging.debug(f"biome map generation took {time.time() - start_time:.2f} seconds")
+    return biome_map
 
