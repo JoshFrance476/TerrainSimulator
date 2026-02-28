@@ -38,7 +38,26 @@ class World:
 
     def get_region(self, region_id):
         return self.region_manager.get_region(region_id)
+    
+    def apply_edit_elevation_mask(self, mask):
+        self.data.world_data['elevation'] += mask
+    
+    def apply_smoothing_elevation_mask(self, mask):
+        elevation = self.data.world_data['elevation']
+        selected = elevation[mask]
 
+        average = selected.mean()
+
+        elevation[mask] = elevation[mask] + 0.1 * (average - elevation[mask])
+
+    def update_steepness(self):
+        self.data.update_steepness()
+    
+    def update_biome(self):
+        self.data.update_biome()
+    
+    def update_stage_3(self):
+        self.data.update_stage_3()
 
     def get_world_data(self):
         return self.data.get_world_data()  
