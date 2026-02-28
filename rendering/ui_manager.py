@@ -21,8 +21,8 @@ class UIManager:
         self.show_menu = False
     
     def render_ui(self, screen):
-        selected_cell = self.controller.selected_cell
-        hovered_cell = self.controller.hovered_cell
+        selected_cell = self.controller.get_selected_cell()
+        hovered_cell = self.controller.get_hovered_cell()
 
 
         if selected_cell:
