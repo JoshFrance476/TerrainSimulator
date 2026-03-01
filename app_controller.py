@@ -35,7 +35,7 @@ class AppController:
         self.ui_manager = UIManager(self.state, self.camera, self.storyteller, fonts, self.world, self.biome_config, self.brush.get_attributes)
         self.input_system = InputSystem(self.ui_manager, self.get_cell_at_mouse_position)
 
-        self.interaction_system = InteractionSystem(self.state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.refresh_map_render, self.get_cell_at_mouse_position, self.ui_manager.mouse_on_map)
+        self.interaction_system = InteractionSystem(self.state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.get_cell_at_mouse_position, self.ui_manager.mouse_on_map)
 
         self.ui_manager.set_interaction_system(self.interaction_system)
         
