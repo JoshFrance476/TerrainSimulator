@@ -44,10 +44,6 @@ class AppController:
         self.render_system = RenderSystem(self.ui_manager, self.map_renderer, self.fps_monitor)
 
         self.screen = screen
-
-        self.state.left_page = "biome_editor"
-        self.state.right_page = "scenario"
-
     
     def tick(self, events):
         keys = self.input_system.continuous()
