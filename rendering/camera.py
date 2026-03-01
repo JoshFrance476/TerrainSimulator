@@ -17,3 +17,10 @@ class Camera:
 
     def set_location(self, location):
         self.x_pos, self.y_pos = int(location[1]-config.CAMERA_COLS/2)+1, int(location[0]-config.CAMERA_ROWS/2)+1   #The extra '+1' are to compensate for rounding down in odd division
+    
+    def get_position(self):
+        return self.x_pos, self.y_pos
+
+    def get_boundaries(self):
+        return self.x_pos, self.y_pos, config.CAMERA_COLS+self.x_pos, config.CAMERA_ROWS+self.y_pos
+    
