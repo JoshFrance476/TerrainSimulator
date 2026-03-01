@@ -4,12 +4,13 @@ from utils.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown
 from app_state import InteractionType, LeftPage, RightPage
 
 class InteractionSystem:
-    def __init__(self, state, camera, player, world_editor, storyteller, world, refresh_render_function, get_cell_at_mouse_position_function, mouse_on_map_function):
+    def __init__(self, state, camera, player, world_editor, storyteller, world, brush, refresh_render_function, get_cell_at_mouse_position_function, mouse_on_map_function):
         self.state = state
         self.camera = camera
         self.player = player
         self.world_editor = world_editor
         self.world = world
+        self.brush = brush
         self.storyteller = storyteller
         self.refresh_render = refresh_render_function
         self.get_cell = get_cell_at_mouse_position_function
@@ -128,6 +129,12 @@ class InteractionSystem:
             self.move_player_to_cell(location)
         elif self.state.interaction_type == InteractionType.VIEW_TILE:
             self.select_cell(location)
+    
+    def set_brush_attributes(self, size = None, strength = None):
+        if size:
+            self.brush.size = size
+        if strength:
+            self.brush.strength = strength
 
     def tile_interaction(self, location):
         if not self.mouse_on_map():
@@ -193,7 +200,7 @@ class InteractionSystem:
             self.refresh_render()
 
         elif mode == InteractionType.EDIT_ELEVATION:
-            self.world_editor.edit_elevation(location, self.world_editor.brush.brush_strength)
+            self.world_editor.edit_elevation(location)
             self.refresh_render()
 
         else:
