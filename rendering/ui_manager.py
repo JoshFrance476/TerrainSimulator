@@ -6,6 +6,7 @@ from ui_components.menu import Menu
 from ui_components.widgets.tooltip import Tooltip
 from ui_components.widgets.label import Label
 from ui_components.widgets.container_list import ContainerList
+from app_state import InteractionType, LeftPage, RightPage
 
 
 class UIManager:
@@ -20,18 +21,20 @@ class UIManager:
         self.tooltip_list = []
 
         self._last_left_page = None
-        self._last_right_page = None
 
         self._last_selected_cell = None
         self._last_hovered_cell = None
 
         self.show_menu = False
+
     
     def set_interaction_system(self, interaction_system):
         self.interaction_system = interaction_system
         self.left_sidebar = LeftSidebarController(self.fonts, self.state, self.world, self.interaction_system, self.storyteller, self.biome_config)
         self.right_sidebar = RightSidebarController(self.fonts, self.storyteller, self.interaction_system, self.biome_config)
         self.menu = Menu(self.fonts, self.interaction_system, self.state)
+
+        self.right_sidebar.show_current_scenario_screen()
        
     def render_ui(self, screen):
         selected_cell = self.state.selected_cell
@@ -41,9 +44,14 @@ class UIManager:
             self.left_sidebar.show_page(self.state.left_page)
             self._last_left_page = self.state.left_page
         
-        if self._last_selected_cell != selected_cell and self.state.left_page == "location":
+        if self._last_selected_cell != selected_cell and self.state.left_page == LeftPage.VIEW_LOCATION:
             self.left_sidebar.show_page(self.state.left_page)
             self._last_selected_cell = selected_cell
+        
+
+        if self.state.update_right_page:
+            self.right_sidebar.show_current_scenario_screen()
+            self.state.update_right_page = False
         
 
         if selected_cell:
@@ -109,26 +117,6 @@ class UIManager:
                 collide_with_menu = True
         return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT and not collide_with_menu
 
-
-    def show_region_setup_page(self, region_id):
-        self.left_sidebar.show_region_setup_page(region_id)
-    
-    def show_tile_manager_page(self, biome_info, index):
-        self.left_sidebar.show_tile_manager_page(biome_info, index)
-    
-    def show_biome_manager_page(self):
-        self.left_sidebar.show_biome_manager_page()
-    
-    def show_location_info_page(self):
-        self.left_sidebar.show_location_info_page()
-    
-    def show_current_scenario_screen(self):
-        self.right_sidebar.show_current_scenario_screen()
-    
-    def clear_left_page(self):
-        self.left_sidebar.clear_page()
-
-
     def render_tooltip(self, location):
         self.tooltip_list = []
         regions = self.world.get_regions_at_location(location)
@@ -154,7 +142,6 @@ class UIManager:
         fps_text = self.fonts.small_font.render(str(fps), True, (30,30,30))
         screen.blit(fps_text, (config.SCREEN_WIDTH-38, config.SCREEN_HEIGHT-23))
 
-    
     def draw_tooltip_list(self, screen):
         mouse_pos = pygame.mouse.get_pos()
         y_offset = 5
