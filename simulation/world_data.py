@@ -33,6 +33,9 @@ class WorldData:
     def set_map_data_at(self, map_name, pos, data):
         self.world_data[map_name][pos] = data
     
+    def set_map_data_with_mask(self, map_name, mask, data):
+        self.world_data[map_name][mask] = data
+    
     def get_biome_at(self, location):
         return self.biome_config.biomes[self.world_data["biome"][location]]["name"].title()
     
