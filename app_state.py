@@ -3,9 +3,6 @@ class AppState:
         self.selected_cell = None
         self.hovered_cell = None
 
-        self.selected_filter = "colour"
-
-        self.paused = True
         self.interaction_type = "view_tile"
 
         self.tile_paint_id = None
@@ -24,3 +21,6 @@ class AppState:
 
         self.active_region_edit_id = None
         self.active_biome_edit_id = None
+
+        self.left_mouse_down = False
+        self.right_mouse_down = False

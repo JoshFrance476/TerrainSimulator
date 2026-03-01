@@ -48,16 +48,16 @@ class InteractionSystem:
     def new_hovered_tile(self, location):
         if self.tile_out_of_bounds(location):
             return
-        if pygame.mouse.get_pressed()[0] and self.state.active_region_paint is not None:
+        if self.state.left_mouse_down and self.state.active_region_paint is not None:
             self.world_editor.paint_region(location, self.state.active_region_paint)
             self.refresh_render()      
-        elif pygame.mouse.get_pressed()[2] and self.state.most_recent_region_paint is not None:
+        elif self.state.right_mouse_down and self.state.most_recent_region_paint is not None:
             self.world_editor.remove_region(location, self.state.most_recent_region_paint)
             self.refresh_render()
-        elif pygame.mouse.get_pressed()[0] and self.state.interaction_type == "edit_elevation":
+        elif self.state.left_mouse_down and self.state.interaction_type == "edit_elevation":
             self.world_editor.edit_elevation(location)
             self.refresh_render()
-        elif pygame.mouse.get_pressed()[2] and self.state.interaction_type == "edit_elevation":
+        elif self.state.right_mouse_down and self.state.interaction_type == "edit_elevation":
             self.world_editor.edit_elevation(location, negative=True)
             self.refresh_render()
         
@@ -158,8 +158,13 @@ class InteractionSystem:
         return location[0] >= config.WORLD_ROWS or location[1] >= config.WORLD_COLS
 
     def _mouse_down(self, cmd: MouseDown):
-        if cmd.button != 1:
+        if cmd.button == 3:
+            self.state.right_mouse_down = True
             return
+        elif cmd.button != 1:
+            return
+    
+        self.state.left_mouse_down = True
 
         if self.state.ui_locked:
             if cmd.clicked_ui == self.state.focused_entity:
@@ -206,8 +211,13 @@ class InteractionSystem:
             self._interact_with_tile(location)
 
     def _mouse_up(self, cmd: MouseUp):
-        if cmd.button != 1:
+        if cmd.button == 3:
+            self.state.right_mouse_down = False
             return
+        elif cmd.button != 1:
+            return
+
+        self.state.left_mouse_down = False
 
         if self.state.focused_entity and hasattr(self.state.focused_entity, "stop_drag"):
             self.state.focused_entity.stop_drag()
