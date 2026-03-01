@@ -6,11 +6,12 @@ from ui_components.menu import Menu
 from ui_components.tooltip_manager import TooltipManager
 from ui_components.widgets.label import Label
 from ui_components.widgets.container_list import ContainerList
+from ui_components.brush_window import BrushWindow
 from app_state import InteractionType, LeftPage, RightPage
 
 
 class UIManager:
-    def __init__(self, state, camera, storyteller, fonts, world, biome_config):
+    def __init__(self, state, camera, storyteller, fonts, world, biome_config, get_brush_attributes):
         self.state = state
         self.camera = camera
         self.interaction_system = None
@@ -24,15 +25,15 @@ class UIManager:
         self._last_selected_cell = None
         self._last_hovered_cell = None
 
-        self.show_menu = False
+        self.get_brush_attributes = get_brush_attributes
 
-    
     def set_interaction_system(self, interaction_system):
         self.interaction_system = interaction_system
         self.left_sidebar = LeftSidebarController(self.fonts, self.state, self.world, self.interaction_system, self.storyteller, self.biome_config)
         self.right_sidebar = RightSidebarController(self.fonts, self.storyteller, self.interaction_system, self.biome_config)
         self.menu = Menu(self.fonts, self.interaction_system, self.state)
         self.tooltips = TooltipManager(self.fonts, self.world, self.biome_config)
+        self.brush_window = BrushWindow(self.fonts, self.interaction_system)
 
         self.right_sidebar.show_current_scenario_screen()
        
@@ -68,18 +69,27 @@ class UIManager:
                 self.tooltips.generate_tooltip_list(hovered_cell)
                 self._last_hovered_cell = hovered_cell
             self.tooltips.draw(screen)
+        
         if self.state.show_menu:
             self.menu.draw(screen)
+        
+        if self.state.interaction_type in {InteractionType.PAINT_REGION, InteractionType.PAINT_TILE, InteractionType.EDIT_ELEVATION}:
+            self.brush_window.set_attributes(self.get_brush_attributes())
+            self.brush_window.draw(screen)
 
         
     def get_clicked_component(self, event_pos):
         ui_component_list = []
         ui_component_list.extend(self.left_sidebar.component_list)
         ui_component_list.extend(self.right_sidebar.component_list)
+
         if self.state.show_menu:
             ui_component_list.extend(self.menu.component_list)
+        
+        if self.state.interaction_type in {InteractionType.PAINT_REGION, InteractionType.PAINT_TILE, InteractionType.EDIT_ELEVATION}:
+            ui_component_list.extend(self.brush_window.component_list)
+        
         for component in ui_component_list:
-
             if isinstance(component, list):
                 for subcomponent in component:
                     if hasattr(subcomponent, "collide_with"):
@@ -110,14 +120,14 @@ class UIManager:
     
     def mouse_on_map(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        collide_with_menu = False
-        if self.show_menu:
+        if self.state.show_menu:
             if self.menu.rect.collidepoint(mouse_x, mouse_y):
-                collide_with_menu = True
-        return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT and not collide_with_menu
+                return False
+        if self.state.interaction_type in {InteractionType.PAINT_REGION, InteractionType.PAINT_TILE, InteractionType.EDIT_ELEVATION}:
+            if self.brush_window.rect.collidepoint(mouse_x, mouse_y):
+                return False
+        return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT
 
-    
-    
     def draw_fps_counter(self, screen, fps):
         pygame.draw.rect(screen, (220,220,220),
                          (config.SCREEN_WIDTH-58, config.SCREEN_HEIGHT-30, 60, 30))
@@ -126,7 +136,6 @@ class UIManager:
         fps_text = self.fonts.small_font.render(str(fps), True, (30,30,30))
         screen.blit(fps_text, (config.SCREEN_WIDTH-38, config.SCREEN_HEIGHT-23))
 
-    
     def draw_hover_highlight(self, hovered_cell, screen, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""
         cell_y, cell_x = hovered_cell
@@ -141,7 +150,6 @@ class UIManager:
 
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
-
 
     def draw_selected_cell_border(self, selected_cell, screen, color=(255, 255, 0)):
         """Draws a border around the selected cell."""
