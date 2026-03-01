@@ -27,12 +27,12 @@ class AppController:
 
         self.map_renderer = MapRenderer(self.world, self.camera)
         
-
+        self.brush = BrushManager()
         self.state = AppState()
         self.storyteller = StorytellerManager(self.world, self.state)
-        self.world_editor = WorldEditor(self.world, BrushManager(), self.biome_config)
+        self.world_editor = WorldEditor(self.world, self.brush, self.biome_config)
 
-        self.ui_manager = UIManager(self.state, self.camera, self.storyteller, fonts, self.world, self.biome_config)
+        self.ui_manager = UIManager(self.state, self.camera, self.storyteller, fonts, self.world, self.biome_config, self.brush.get_attributes)
         self.input_system = InputSystem(self.ui_manager, self.get_cell_at_mouse_position)
 
         self.interaction_system = InteractionSystem(self.state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.refresh_map_render, self.get_cell_at_mouse_position, self.ui_manager.mouse_on_map)
