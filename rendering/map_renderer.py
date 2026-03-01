@@ -5,18 +5,19 @@ from utils.region_border_map import produce_region_border_surface
 
 class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
-    def __init__(self, controller):
-        self.controller = controller
-        self.region_map = self.controller.world.get_region_map()
+    def __init__(self, world, camera):
+        self.world = world
+        self.camera = camera
+        self.region_map = self.world.get_region_map()
 
         self.map_surface = None
         self.region_border_surface = None
         self.refresh_view()
     
     def refresh_view(self):
-        x0, y0, x1, y1 = self.controller.get_camera_boundaries()
-        colour_map = self.controller.get_world_data()['colour'][y0:y1,x0:x1].copy()
-        region_map = [row[x0:x1] for row in self.controller.world.get_region_map().copy()[y0:y1]]
+        x0, y0, x1, y1 = self.camera.get_boundaries()
+        colour_map = self.world.get_world_data()['colour'][y0:y1,x0:x1].copy()
+        region_map = [row[x0:x1] for row in self.world.get_region_map().copy()[y0:y1]]
 
 
         self.map_surface = self.produce_map_surface(colour_map)
