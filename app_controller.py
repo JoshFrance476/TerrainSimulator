@@ -25,13 +25,11 @@ class AppController:
 
         self.fonts = fonts
 
-        self.map_renderer = MapRenderer(self)
-
-        self.storyteller = StorytellerManager(self)
-
+        self.map_renderer = MapRenderer(self.world, self.camera)
         
 
         self.state = AppState()
+        self.storyteller = StorytellerManager(self.world, self.state)
         self.world_editor = WorldEditor(self.world, BrushManager(), self.biome_config)
 
         self.ui_manager = UIManager(self.state, self.camera, self.storyteller, fonts, self.world, self.biome_config)
@@ -78,35 +76,3 @@ class AppController:
 
     def refresh_map_render(self):
         self.map_renderer.refresh_view()
-    
-    def process_updated_map(self):
-        self.world.data.update_stage_3()
-        self.refresh_map_render()
-    
-    def toggle_edit_elevation(self):
-        self.state.interaction_type = "edit_elevation"
-
-    def set_selected_filter(self, filter_name):
-        self.state.selected_filter = filter_name
-
-    def get_selected_cell(self):
-        return self.state.selected_cell
-
-    def get_hovered_cell(self):
-        return self.state.hovered_cell
-    
-    def get_camera_position(self):
-        return self.camera.x_pos, self.camera.y_pos
-
-    def get_camera_boundaries(self):
-        return self.camera.x_pos, self.camera.y_pos, config.CAMERA_COLS+self.camera.x_pos, config.CAMERA_ROWS+self.camera.y_pos
-    
-    def get_world_data(self):
-        return self.world.get_world_data()
-
-
-    def get_semantic_tile_data(self, location):
-        return self.world.get_semantic_tile_data(location)
-
-    
-    
