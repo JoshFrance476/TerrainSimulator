@@ -33,9 +33,6 @@ class World:
 
     def get_regions_at_location(self, location):
         return self.region_manager.get_regions_at_location(location)
-    
-    def add_region_to_location(self, location, rid):
-        self.region_manager.add_region_to_location(location, rid)
 
     def get_region(self, region_id):
         return self.region_manager.get_region(region_id)
