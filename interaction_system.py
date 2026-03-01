@@ -1,6 +1,7 @@
 import pygame
 import config
 from utils.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown
+from app_state import InteractionType, LeftPage, RightPage
 
 class InteractionSystem:
     def __init__(self, state, camera, player, world_editor, storyteller, world, refresh_render_function, get_cell_at_mouse_position_function, mouse_on_map_function):
@@ -54,10 +55,10 @@ class InteractionSystem:
         elif self.state.right_mouse_down and self.state.most_recent_region_paint is not None:
             self.world_editor.remove_region(location, self.state.most_recent_region_paint)
             self.refresh_render()
-        elif self.state.left_mouse_down and self.state.interaction_type == "edit_elevation":
+        elif self.state.left_mouse_down and self.state.interaction_type is InteractionType.EDIT_ELEVATION:
             self.world_editor.edit_elevation(location)
             self.refresh_render()
-        elif self.state.right_mouse_down and self.state.interaction_type == "edit_elevation":
+        elif self.state.right_mouse_down and self.state.interaction_type is InteractionType.EDIT_ELEVATION:
             self.world_editor.edit_elevation(location, negative=True)
             self.refresh_render()
         
@@ -70,9 +71,9 @@ class InteractionSystem:
     def set_region_info(self, title, visible_desc, hidden_desc, region_id):
         self.world_editor.set_painted_region_info(title, visible_desc, hidden_desc, region_id)
         self.state.most_recent_region_paint = None
-        self.state.interaction_type = "view_tile"
+        self.state.interaction_type = InteractionType.VIEW_TILE
 
-        self.state.left_page = "biome_editor"
+        self.state.left_page = LeftPage.BIOME_EDITOR
     
     def move_player_to_cell(self, location):
         self.player.set_location(location)
@@ -83,15 +84,15 @@ class InteractionSystem:
     
     def submit_pending_interaction_action(self, action_index):
         self.storyteller.submit_action(action_index)
-        self.state.right_page = "scenario"
+        self.state.update_right_page = True
     
     def exit_scenario(self):
         self.storyteller.current_scenario = None
-        self.state.right_page = "scenario"
+        self.state.update_right_page = True
     
     def prompt_scenario(self):
         self.storyteller.prompt_new_interaction()
-        self.state.right_page = "scenario"
+        self.state.update_right_page = True
     
     def save_map(self, file_name):
         self.world.save_map("saved_maps/"+file_name)
@@ -105,23 +106,22 @@ class InteractionSystem:
     
     def select_cell(self, location):
         self.state.selected_cell = location
-        self.state.left_page = "location"
-
+        self.state.left_page = LeftPage.VIEW_LOCATION
 
     def show_region_edit_page(self, region_id):
-        self.state.interaction_type = "paint_region"
-        self.state.most_recent_region_paint = region_id
+        self.state.interaction_type = InteractionType.PAINT_REGION
+        self.state.active_region_edit_id = region_id
 
-        self.state.left_page = "region_editor"
+        self.state.left_page = LeftPage.REGION_EDITOR
     
     def add_biome(self, name, h, s, v, traversal_cost):
         self.world_editor.add_biome(name, h, s, v, traversal_cost)
-        self.state.left_page = "biome_editor"
+        self.state.left_page = LeftPage.BIOME_EDITOR
         self.refresh_render()
     
     def edit_biome(self, index, name, h, s, v, traversal_cost):
         self.world_editor.edit_biome(index, name, h, s, v, traversal_cost)
-        self.state.left_page = "biome_editor"
+        self.state.left_page = LeftPage.BIOME_EDITOR
         self.refresh_render()
     
     
@@ -131,27 +131,27 @@ class InteractionSystem:
             self.state.focused_entity = None
     
     def toggle_move(self):
-        self.state.interaction_type = "move_player"
+        self.state.interaction_type = InteractionType.MOVE_PLAYER
     
     def toggle_region_place(self):
-        self.state.interaction_type = "paint_region"
+        self.state.interaction_type = InteractionType.PAINT_REGION
     
     def toggle_tile_paint(self, tid):
-        if self.state.interaction_type == "paint_tile":
+        if self.state.interaction_type == InteractionType.PAINT_TILE:
             self.state.tile_paint_id = None
-            self.state.interaction_type = "view_tile"
+            self.state.interaction_type = InteractionType.VIEW_TILE
         else:
             self.state.ui_locked = True
-            self.state.interaction_type = "paint_tile"
+            self.state.interaction_type = InteractionType.PAINT_TILE
             self.state.tile_paint_id = tid
     
     def toggle_view_tile(self):
-        self.state.interaction_type = "view_tile"
+        self.state.interaction_type = InteractionType.VIEW_TILE
     
     def interact_with_tile(self, location):
-        if self.state.interaction_type == "move_player":
+        if self.state.interaction_type == InteractionType.MOVE_PLAYER:
             self.move_player_to_cell(location)
-        elif self.state.interaction_type == "view_tile":
+        elif self.state.interaction_type == InteractionType.VIEW_TILE:
             self.select_cell(location)
     
     def tile_out_of_bounds(self, location):
@@ -189,7 +189,7 @@ class InteractionSystem:
 
     def _map_mouse_down(self, location):
         mode = self.state.interaction_type
-        if mode == "paint_region":
+        if mode == InteractionType.PAINT_REGION:
             if self.state.active_region_paint is None:
                 if self.state.most_recent_region_paint is not None:
                     self.state.active_region_paint = self.state.most_recent_region_paint
@@ -198,17 +198,17 @@ class InteractionSystem:
             self.world_editor.paint_region(location, self.state.active_region_paint)
             self.refresh_render()
 
-        elif mode == "paint_tile":
+        elif mode == InteractionType.PAINT_TILE:
             self.state.tile_paint_enabled = True
             self.world_editor.paint_tile(location, self.state.tile_paint_id)
             self.refresh_render()
 
-        elif mode == "edit_elevation":
+        elif mode == InteractionType.EDIT_ELEVATION:
             self.world_editor.edit_elevation(location, self.world_editor.brush.brush_strength)
             self.refresh_render()
 
         else:
-            self._interact_with_tile(location)
+            self.interact_with_tile(location)
 
     def _mouse_up(self, cmd: MouseUp):
         if cmd.button == 3:
@@ -222,14 +222,14 @@ class InteractionSystem:
         if self.state.focused_entity and hasattr(self.state.focused_entity, "stop_drag"):
             self.state.focused_entity.stop_drag()
 
-        if self.state.interaction_type == "paint_region":
+        if self.state.interaction_type is InteractionType.PAINT_REGION:
             if self.state.active_region_paint is not None:
                 self.state.active_region_edit_id = self.state.active_region_paint
-                self.state.left_page = "region_editor"
+                self.state.left_page = LeftPage.REGION_EDITOR
                 self.state.most_recent_region_paint = self.state.active_region_paint
             self.state.active_region_paint = None
 
-        elif self.state.interaction_type == "paint_tile" and self.state.tile_paint_enabled:
+        elif self.state.interaction_type is InteractionType.PAINT_TILE and self.state.tile_paint_enabled:
             self.state.tile_paint_enabled = False
 
     def _mouse_move(self, cmd: MouseMove):
@@ -255,25 +255,18 @@ class InteractionSystem:
         if cmd.key == pygame.K_SPACE:
             self.state.paused = not self.state.paused
         elif cmd.key == pygame.K_m:
-            self.state.interaction_type = "move_player"
+            self.state.interaction_type = InteractionType.MOVE_PLAYER
         elif cmd.key == pygame.K_n:
-            self.state.interaction_type = "paint_region"
+            self.state.interaction_type = InteractionType.PAINT_REGION
         elif cmd.key == pygame.K_b:
-            self.state.interaction_type = "view_tile"
+            self.state.interaction_type = InteractionType.VIEW_TILE
         elif cmd.key == pygame.K_v:
-            self.state.interaction_type = "edit_elevation"
+            self.state.interaction_type = InteractionType.EDIT_ELEVATION
         # etc
 
-    def _interact_with_tile(self, location):
-        if self.state.interaction_type == "move_player":
-            self.move_player(location)
-        elif self.state.interaction_type == "view_tile":
-            self.select_cell(location)
-
     def _pan(self, dx, dy):
-        if self.state.interaction_type != "move_player":
+        if self.state.interaction_type is not InteractionType.MOVE_PLAYER:
             self.camera.pan(dx, dy)
-            self.camera.clamp_pan()
             self.refresh_render()
 
     def _create_new_region(self):
