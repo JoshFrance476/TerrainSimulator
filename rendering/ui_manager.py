@@ -3,7 +3,7 @@ import config
 from ui_components.left_sidebar import LeftSidebarController
 from ui_components.right_sidebar import RightSidebarController
 from ui_components.menu import Menu
-from ui_components.widgets.tooltip import Tooltip
+from ui_components.tooltip_manager import TooltipManager
 from ui_components.widgets.label import Label
 from ui_components.widgets.container_list import ContainerList
 from app_state import InteractionType, LeftPage, RightPage
@@ -18,7 +18,6 @@ class UIManager:
         self.biome_config = biome_config
         self.world = world
         self.fonts = fonts
-        self.tooltip_list = []
 
         self._last_left_page = None
 
@@ -33,6 +32,7 @@ class UIManager:
         self.left_sidebar = LeftSidebarController(self.fonts, self.state, self.world, self.interaction_system, self.storyteller, self.biome_config)
         self.right_sidebar = RightSidebarController(self.fonts, self.storyteller, self.interaction_system, self.biome_config)
         self.menu = Menu(self.fonts, self.interaction_system, self.state)
+        self.tooltips = TooltipManager(self.fonts, self.world, self.biome_config)
 
         self.right_sidebar.show_current_scenario_screen()
        
@@ -65,10 +65,9 @@ class UIManager:
                 self.draw_hover_highlight(hovered_cell, screen)
             
             if self._last_hovered_cell != hovered_cell:
-                self.render_tooltip(hovered_cell)
+                self.tooltips.generate_tooltip_list(hovered_cell)
                 self._last_hovered_cell = hovered_cell
-            self.draw_tooltip_list(screen)
-
+            self.tooltips.draw(screen)
         if self.state.show_menu:
             self.menu.draw(screen)
 
@@ -117,22 +116,7 @@ class UIManager:
                 collide_with_menu = True
         return mouse_x > config.SIDEBAR_WIDTH and mouse_x < config.SCREEN_WIDTH and mouse_y > 0 and mouse_y < config.SCREEN_HEIGHT and not collide_with_menu
 
-    def render_tooltip(self, location):
-        self.tooltip_list = []
-        regions = self.world.get_regions_at_location(location)
-
-        biome = self.biome_config.biomes[self.world.get_cell_data(location)["biome"]]["name"].title()
-        tooltip = Tooltip(self.interaction_system, self.fonts.small_font)
-        tooltip.add_components([Label(biome, self.fonts.large_font, tooltip.max_width, left_padding=0)])
-        self.tooltip_list.append(tooltip)
-
-        for region in regions:
-            tooltip = Tooltip(self.interaction_system, self.fonts.small_font)
-            if region.title != "":
-                tooltip.add_components([Label(region.title, self.fonts.large_font, tooltip.max_width, left_padding=0)])
-            if region.visible_desc != "":
-                tooltip.add_components([Label(region.visible_desc, self.fonts.small_font, tooltip.max_width, left_padding=0)])
-            self.tooltip_list.append(tooltip)
+    
     
     def draw_fps_counter(self, screen, fps):
         pygame.draw.rect(screen, (220,220,220),
@@ -142,13 +126,6 @@ class UIManager:
         fps_text = self.fonts.small_font.render(str(fps), True, (30,30,30))
         screen.blit(fps_text, (config.SCREEN_WIDTH-38, config.SCREEN_HEIGHT-23))
 
-    def draw_tooltip_list(self, screen):
-        mouse_pos = pygame.mouse.get_pos()
-        y_offset = 5
-        for tooltip in self.tooltip_list:
-            if tooltip.components:
-                tooltip.draw(screen, mouse_pos[0], mouse_pos[1]-y_offset-tooltip.height)
-                y_offset += tooltip.height + 5
     
     def draw_hover_highlight(self, hovered_cell, screen, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""

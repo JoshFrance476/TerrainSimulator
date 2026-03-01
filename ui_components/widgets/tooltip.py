@@ -1,9 +1,8 @@
 import pygame
 
 class Tooltip:
-    def __init__(self, controller, font):
+    def __init__(self, font):
         self.components = []
-        self.controller = controller
         self.font = font
         self.width = 0
         self.max_width = 200
