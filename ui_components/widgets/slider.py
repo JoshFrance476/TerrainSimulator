@@ -5,7 +5,8 @@ class Slider:
         self.min = min_val
         self.max = max_val
         self.bar_width = bar_width
-        self.height = 15 + top_padding
+        self.bar_height = 15
+        self.height = self.bar_height + top_padding
         self.left_padding = left_padding
         self.top_padding = top_padding
         self.font = font
@@ -25,7 +26,7 @@ class Slider:
         self.pin_rect = None
 
     def draw(self, screen, x, y):
-        self.bar_rect = pygame.Rect(x+self.bar_x_offset+self.left_padding, y+self.top_padding, self.bar_width, self.height)
+        self.bar_rect = pygame.Rect(x+self.bar_x_offset+self.left_padding, y+self.top_padding, self.bar_width, self.bar_height)
 
         # value → pixel
         t = (self.value - self.min) / (self.max - self.min)
