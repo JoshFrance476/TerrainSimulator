@@ -8,6 +8,7 @@ from ui_components.widgets.colour_preview import ColourPreview
 from ui_components.widgets.component_container import ComponentContainer
 from ui_components.widgets.container_list import ContainerList
 from ui_components.widgets.line_divider import LineDivider
+from app_state import LeftPage
 
 class LeftSidebarController:
     def __init__(self, fonts, state, world, interaction_system, storyteller, biome_config):
@@ -17,26 +18,26 @@ class LeftSidebarController:
         self.component_list = []
         self.biome_config = biome_config
 
-        #Read-only
         self.interaction_system = interaction_system
         self.storyteller = storyteller
 
-        self.navigation_bar = [[Button(65,20, lambda: setattr(self.state, "left_page", "biome_editor"), "Biome", self.fonts.small_font),
-                                Button(85,20, lambda: setattr(self.state, "left_page", "character"), "Character", self.fonts.small_font),
+        self.navigation_bar = [[Button(65,20, lambda: setattr(self.state, "left_page", LeftPage.BIOME_EDITOR), "Biome", self.fonts.small_font),
+                                Button(85,20, lambda: setattr(self.state, "left_page", LeftPage.VIEW_CHARACTER), "Character", self.fonts.small_font),
                                 Button(85,20, lambda: setattr(self.state, "show_menu", True), "Menu", self.fonts.small_font)],
                                 LineDivider(config.SIDEBAR_WIDTH, thickness=0, top_padding=10, bottom_padding=5)]
 
     def show_page(self, page_name):
-        if page_name == "character":
-            self.show_character_page()
-        elif page_name == "biome_editor":
-            self.show_biome_manager_page()
-        elif page_name == "region_editor":
-            self.show_region_setup_page(self.state.active_region_edit_id)
-        elif page_name == "location":
-            self.show_location_info_page()
-        elif page_name == "tile_editor":
-            self.show_tile_manager_page(self.state.active_biome_edit_id)
+        match page_name:
+            case LeftPage.VIEW_CHARACTER:
+                self.show_character_page()
+            case LeftPage.BIOME_EDITOR:
+                self.show_biome_manager_page()
+            case LeftPage.REGION_EDITOR:
+                self.show_region_setup_page(self.state.active_region_edit_id)
+            case LeftPage.VIEW_LOCATION:
+                self.show_location_info_page()
+            case LeftPage.TILE_EDITOR:
+                self.show_tile_manager_page(self.state.active_biome_edit_id)
         
     def show_character_page(self):
         self.clear_page()
@@ -126,13 +127,13 @@ class LeftSidebarController:
             biome_container.add_component(Label(biome["name"].capitalize(), self.fonts.large_font, left_padding=5, top_padding=5))
             biome_container.add_component([ColourPreview(20, 20, biome["colour"]["h"], biome["colour"]["s"], biome["colour"]["v"]),
                                         Button(50, 20, lambda i = index: (setattr(self.state, "active_biome_edit_id", i),
-                                                                          setattr(self.state, "left_page", "tile_editor")), "Edit", self.fonts.small_font, left_padding=5),
+                                                                          setattr(self.state, "left_page", LeftPage.TILE_EDITOR)), "Edit", self.fonts.small_font, left_padding=5),
                                         Button(50, 20, lambda i = index: self.interaction_system.toggle_tile_paint(i), "Paint", self.fonts.small_font, left_padding=5)])
             biome_container_list.add_container(biome_container)
         
         self.component_list.append(biome_container_list)
         self.component_list.append(Button(100, 20, lambda: (setattr(self.state, "active_biome_edit_id", -1),
-                                                            setattr(self.state, "left_page", "tile_editor")), "Add Region", self.fonts.small_font))
+                                                            setattr(self.state, "left_page", LeftPage.TILE_EDITOR)), "Add Region", self.fonts.small_font))
     
     def show_location_info_page(self):
         self.clear_page()
