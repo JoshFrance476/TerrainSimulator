@@ -28,12 +28,10 @@ class InteractionSystem:
         
         location = self.get_cell()
 
-        if not self._matches_hovered_tile(location):
-            self.new_hovered_tile(location)
+        self.tile_interaction(location)
 
 
     def handle(self, cmd):
-        # Implement: quit, mousedown, mouseup, motion drag, wheel scroll, keydown mapping
         if isinstance(cmd, MouseDown):
             self._mouse_down(cmd)
         elif isinstance(cmd, MouseUp):
@@ -45,32 +43,10 @@ class InteractionSystem:
         elif isinstance(cmd, KeyDown):
             self._key_down(cmd)
 
-
-    def new_hovered_tile(self, location):
-        if self.tile_out_of_bounds(location):
-            return
-        if self.state.left_mouse_down and self.state.active_region_paint is not None:
-            self.world_editor.paint_region(location, self.state.active_region_paint)
-            self.refresh_render()      
-        elif self.state.right_mouse_down and self.state.most_recent_region_paint is not None:
-            self.world_editor.remove_region(location, self.state.most_recent_region_paint)
-            self.refresh_render()
-        elif self.state.left_mouse_down and self.state.interaction_type is InteractionType.EDIT_ELEVATION:
-            self.world_editor.edit_elevation(location)
-            self.refresh_render()
-        elif self.state.right_mouse_down and self.state.interaction_type is InteractionType.EDIT_ELEVATION:
-            self.world_editor.edit_elevation(location, negative=True)
-            self.refresh_render()
-        
-        if self.state.tile_paint_id is not None and self.state.tile_paint_enabled:
-            self.world_editor.paint_tile(location, self.state.tile_paint_id)
-            self.refresh_render()
-        
-        self.hover_cell(location)
     
     def set_region_info(self, title, visible_desc, hidden_desc, region_id):
         self.world_editor.set_painted_region_info(title, visible_desc, hidden_desc, region_id)
-        self.state.most_recent_region_paint = None
+        self.state.active_region_edit_id = None
         self.state.interaction_type = InteractionType.VIEW_TILE
 
         self.state.left_page = LeftPage.BIOME_EDITOR
@@ -101,7 +77,7 @@ class InteractionSystem:
         self.world.load_map("saved_maps/"+file_name+".npz")
         self.refresh_render()
     
-    def hover_cell(self, location):
+    def set_hovered_cell(self, location):
         self.state.hovered_cell = location
     
     def select_cell(self, location):
@@ -138,12 +114,12 @@ class InteractionSystem:
     
     def toggle_tile_paint(self, tid):
         if self.state.interaction_type == InteractionType.PAINT_TILE:
-            self.state.tile_paint_id = None
+            self.state.active_biome_edit_id = None
             self.state.interaction_type = InteractionType.VIEW_TILE
         else:
             self.state.ui_locked = True
             self.state.interaction_type = InteractionType.PAINT_TILE
-            self.state.tile_paint_id = tid
+            self.state.active_biome_edit_id = tid
     
     def toggle_view_tile(self):
         self.state.interaction_type = InteractionType.VIEW_TILE
@@ -157,6 +133,36 @@ class InteractionSystem:
     def tile_out_of_bounds(self, location):
         return location[0] >= config.WORLD_ROWS or location[1] >= config.WORLD_COLS
 
+    def tile_interaction(self, location):
+        if self.tile_out_of_bounds(location):
+            return
+        
+        #Interactions to perform continuously on the same tile
+        if self.state.interaction_type is InteractionType.EDIT_ELEVATION:
+            if self.state.left_mouse_down:
+                self.world_editor.edit_elevation(location)
+                self.refresh_render()
+            elif self.state.right_mouse_down:
+                self.world_editor.edit_elevation(location, negative=True)
+                self.refresh_render()
+        
+        #Interactions to only perform once on each tile
+        if not self._matches_hovered_tile(location):
+            if self.state.left_mouse_down and self.state.active_region_edit_id is not None:
+                self.world_editor.paint_region(location, self.state.active_region_edit_id)
+                self.refresh_render()      
+            elif self.state.right_mouse_down and self.state.active_region_edit_id is not None:
+                self.world_editor.remove_region(location, self.state.active_region_edit_id)
+                self.refresh_render()
+            
+            if self.state.left_mouse_down and self.state.active_biome_edit_id is not None:
+                self.world_editor.paint_tile(location, self.state.active_biome_edit_id)
+                self.refresh_render()
+        
+        self.set_hovered_cell(location)
+    
+        
+
     def _mouse_down(self, cmd: MouseDown):
         if cmd.button == 3:
             self.state.right_mouse_down = True
@@ -168,7 +174,7 @@ class InteractionSystem:
 
         if self.state.ui_locked:
             if cmd.clicked_ui == self.state.focused_entity:
-                cmd.clicked_ui.is_clicked(cmd)  # careful: you may keep event instead
+                cmd.clicked_ui.is_clicked(cmd) 
                 self.state.ui_locked = False
                 self.clear_focus()
             else:
@@ -180,7 +186,7 @@ class InteractionSystem:
 
         if cmd.clicked_ui:
             if hasattr(cmd.clicked_ui, "is_clicked"):
-                cmd.clicked_ui.is_clicked(cmd)  # or store pygame event in command
+                cmd.clicked_ui.is_clicked(cmd)
             if hasattr(cmd.clicked_ui, "focused"):
                 cmd.clicked_ui.focused = True
                 self.state.focused_entity = cmd.clicked_ui
@@ -190,17 +196,13 @@ class InteractionSystem:
     def _map_mouse_down(self, location):
         mode = self.state.interaction_type
         if mode == InteractionType.PAINT_REGION:
-            if self.state.active_region_paint is None:
-                if self.state.most_recent_region_paint is not None:
-                    self.state.active_region_paint = self.state.most_recent_region_paint
-                else:
-                    self.state.active_region_paint = self._create_new_region()
-            self.world_editor.paint_region(location, self.state.active_region_paint)
+            if self.state.active_region_edit_id is None:
+                self.state.active_region_edit_id = self._create_new_region()
+            self.world_editor.paint_region(location, self.state.active_region_edit_id)
             self.refresh_render()
 
         elif mode == InteractionType.PAINT_TILE:
-            self.state.tile_paint_enabled = True
-            self.world_editor.paint_tile(location, self.state.tile_paint_id)
+            self.world_editor.paint_tile(location, self.state.active_biome_edit_id)
             self.refresh_render()
 
         elif mode == InteractionType.EDIT_ELEVATION:
@@ -223,14 +225,11 @@ class InteractionSystem:
             self.state.focused_entity.stop_drag()
 
         if self.state.interaction_type is InteractionType.PAINT_REGION:
-            if self.state.active_region_paint is not None:
-                self.state.active_region_edit_id = self.state.active_region_paint
-                self.state.left_page = LeftPage.REGION_EDITOR
-                self.state.most_recent_region_paint = self.state.active_region_paint
-            self.state.active_region_paint = None
+            self.state.left_page = LeftPage.REGION_EDITOR
+            self.state.interaction_type is InteractionType.VIEW_TILE
 
-        elif self.state.interaction_type is InteractionType.PAINT_TILE and self.state.tile_paint_enabled:
-            self.state.tile_paint_enabled = False
+        elif self.state.interaction_type is InteractionType.PAINT_TILE:
+            self.state.interaction_type is InteractionType.VIEW_TILE
 
     def _mouse_move(self, cmd: MouseMove):
         if cmd.left_down and self.state.focused_entity and hasattr(self.state.focused_entity, "is_dragged"):
