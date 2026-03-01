@@ -15,32 +15,25 @@ class WorldEditor:
         self.world.update_stage_3()
    
     def paint_tile(self, location, tid):
-        for brush_location in self.brush.get_brush(location):
-            self.world.set_map_data_at("biome", brush_location, tid)
+        self.world.set_biome_with_mask(self.brush.get_brush_mask(location), tid)
         self.recompute_after_biome_change()
     
     def edit_elevation(self, location, negative=False):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LCTRL]:
-            self.world.apply_smoothing_elevation_mask(self.brush.get_brush_mask(location, True))
+            self.world.apply_smoothing_elevation_mask(self.brush.get_brush_mask(location))
         else:
-            if negative:
-                self.brush.brush_strength = -0.02
-            else:
-                self.brush.brush_strength = 0.02
-            self.world.apply_edit_elevation_mask(self.brush.get_brush_mask(location))
+            self.world.apply_edit_elevation_mask(self.brush.get_brush_mask(location, boolean = False, negative=negative))
         self.recompute_after_elevation_change()
     
     def create_region(self):
         return self.world.create_region()
     
     def paint_region(self, location, rid):
-        for brush_location in self.brush.get_brush(location):
-            self.world.add_region_at(brush_location, rid)
+        self.world.add_region_with_mask(self.brush.get_brush_mask(location), rid)
     
     def remove_region(self, location, rid):
-        for brush_location in self.brush.get_brush(location):
-            self.world.remove_region_at(brush_location, rid)
+        self.world.remove_region_with_mask(self.brush.get_brush_mask(location), rid)
     
     def set_painted_region_info(self, title, visible_desc, hidden_desc, region_id = None):
         if region_id is not None:

@@ -57,14 +57,14 @@ class World:
     def update_stage_3(self):
         self.data.update_stage_3()
     
-    def set_biome_at(self, location, biome_id):
-        self.data.set_map_data_at("biome", location, biome_id)
+    def set_biome_with_mask(self, mask, biome_id):
+        self.data.set_map_data_with_mask("biome", mask, biome_id)
 
-    def add_region_at(self, location, region_id):
-        self.region_manager.add_region_to_location(location, region_id)
+    def add_region_with_mask(self, mask, region_id):
+        self.region_manager.add_region_with_mask(mask, region_id)
 
-    def remove_region_at(self, location, region_id):
-        self.region_manager.remove_region_from_location(location, region_id)
+    def remove_region_with_mask(self, mask, region_id):
+        self.region_manager.remove_region_with_mask(mask, region_id)
     
     def create_region(self):
         return self.region_manager.create_region()
