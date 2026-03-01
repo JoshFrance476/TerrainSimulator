@@ -17,7 +17,7 @@ class MapRenderer:
     def refresh_view(self):
         x0, y0, x1, y1 = self.camera.get_boundaries()
         colour_map = self.world.get_world_data()['colour'][y0:y1,x0:x1].copy()
-        region_map = [row[x0:x1] for row in self.world.get_region_map().copy()[y0:y1]]
+        region_map = self.world.get_region_map()[y0:y1, x0:x1].copy()
 
 
         self.map_surface = self.produce_map_surface(colour_map)
