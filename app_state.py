@@ -7,12 +7,6 @@ class AppState:
 
         self.interaction_type = InteractionType.VIEW_TILE
 
-        self.tile_paint_id = None
-        self.tile_paint_enabled = False
-
-        self.active_region_paint = None
-        self.most_recent_region_paint = None
-
         self.focused_entity = None
         self.ui_locked = False
 
