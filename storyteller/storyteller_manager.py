@@ -63,6 +63,7 @@ Encounters should feel realistic within the world's internal logic. Progress is 
             },
             "tile": tile,
             "recent_events": scenario.get_interactions_string() if scenario else None,
+            "most_recent_action": scenario.get_most_recent_action() if scenario else None
         }
 
         # IMPORTANT: keep this compact; avoid indent in production to save tokens.
@@ -81,6 +82,15 @@ Encounters should feel realistic within the world's internal logic. Progress is 
     
     def submit_action(self, action_index):
         self.current_scenario.submit_action(action_index)
+        if self.current_scenario.ended:
+            output_tokens, input_tokens, self.character_notebook, summary = prompt_scenario_summary(self.current_scenario.get_interactions_string(), self.character_notebook)
+            self.character_history.append(summary)
+            self.update_token_counts(output_tokens, input_tokens)
+        else:
+            self.prompt_new_interaction()
+        
+    def submit_custom_action(self, action_desc):
+        self.current_scenario.submit_custom_action(action_desc)
         if self.current_scenario.ended:
             output_tokens, input_tokens, self.character_notebook, summary = prompt_scenario_summary(self.current_scenario.get_interactions_string(), self.character_notebook)
             self.character_history.append(summary)

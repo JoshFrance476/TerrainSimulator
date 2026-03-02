@@ -63,6 +63,10 @@ class InteractionSystem:
         self.storyteller.submit_action(action_index)
         self.state.update_right_page = True
     
+    def submit_custom_pending_interaction_action(self, action_desc):
+        self.storyteller.submit_custom_action(action_desc)
+        self.state.update_right_page = True
+    
     def exit_scenario(self):
         self.storyteller.current_scenario = None
         self.state.update_right_page = True
