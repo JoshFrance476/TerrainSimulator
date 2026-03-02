@@ -5,6 +5,7 @@ from ui_components.widgets.line_divider import LineDivider
 from ui_components.widgets.button import Button
 from ui_components.widgets.container_list import ContainerList
 from ui_components.widgets.component_container import ComponentContainer
+from ui_components.widgets.textbox import TextBox
 
 
 class RightSidebarController:
@@ -34,7 +35,10 @@ class RightSidebarController:
             if pending_interaction:
                 interaction_container.add_component(Label(pending_interaction.description, self.fonts.small_font, config.SIDEBAR_WIDTH-20))
                 for index, action in enumerate(pending_interaction.actions):
-                    interaction_container.add_component(Button(200, 50, lambda i = index: self.interaction_system.submit_pending_interaction_action(i), action['action'], self.fonts.small_font))
+                    interaction_container.add_component(Button(200, 50, lambda i = index: self.interaction_system.submit_pending_interaction_action(i), (action['action'] + str(action["probability"])), self.fonts.small_font))
+                custom_action_textbox = TextBox(self.interaction_system, self.fonts.small_font, 200, 20)
+                interaction_container.add_component(custom_action_textbox)
+                interaction_container.add_component(Button(50,20, lambda: self.interaction_system.submit_custom_pending_interaction_action(custom_action_textbox.text), "Submit", self.fonts.small_font))
             else:
                 interaction_container.add_component(Button(200, 30, lambda: self.interaction_system.exit_scenario(), "Exit scenario", self.fonts.small_font))
             interaction_list.add_container(interaction_container)
