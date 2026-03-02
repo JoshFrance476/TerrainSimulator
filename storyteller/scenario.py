@@ -29,3 +29,13 @@ class Scenario:
         self.add_interaction(description, action['action'])
         if action['exit_flag']:
             self.end()
+    
+    def submit_custom_action(self, action_desc):
+        description = self.pending_interaction.description
+        self.add_interaction(description, action_desc)
+    
+    def get_most_recent_action(self):
+        if len(self.completed_interactions) > 0:
+            return self.completed_interactions[len(self.completed_interactions)-1].decision
+        else:
+            return None
