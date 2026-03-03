@@ -214,7 +214,8 @@ class InteractionSystem:
             self.state.focused_entity.stop_drag()
 
         if self.state.interaction_type is InteractionType.PAINT_REGION:
-            self.state.left_page = LeftPage.REGION_EDITOR
+            if self.state.active_region_edit_id is not None:
+                self.state.left_page = LeftPage.REGION_EDITOR
 
 
     def _mouse_move(self, cmd: MouseMove):
