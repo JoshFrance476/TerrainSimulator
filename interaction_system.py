@@ -17,7 +17,7 @@ class InteractionSystem:
         self.mouse_on_map = mouse_on_map_function
 
     def handle_continuous(self, keys):
-        if not self.state.focused_entity:
+        if not self.state.focused_entity and self.state.interaction_type is not InteractionType.MOVE_PLAYER:
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 self._pan(-config.PAN_STEP, 0)
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
@@ -51,13 +51,6 @@ class InteractionSystem:
         self.state.interaction_type = InteractionType.VIEW_TILE
 
         self.state.left_page = LeftPage.BIOME_EDITOR
-    
-    def move_player_to_cell(self, location):
-        self.player.set_location(location)
-        self.select_cell(location)
-        self.camera.set_location(self.player.get_location())
-        self.camera.clamp_pan()
-        self.refresh_render()
     
     def submit_pending_interaction_action(self, action_index):
         self.storyteller.submit_action(action_index)
@@ -129,9 +122,7 @@ class InteractionSystem:
         self.state.interaction_type = InteractionType.VIEW_TILE
     
     def interact_with_tile(self, location):
-        if self.state.interaction_type == InteractionType.MOVE_PLAYER:
-            self.move_player_to_cell(location)
-        elif self.state.interaction_type == InteractionType.VIEW_TILE:
+        if self.state.interaction_type == InteractionType.VIEW_TILE:
             self.select_cell(location)
     
     def set_brush_attributes(self, size = None, strength = None):
@@ -224,10 +215,10 @@ class InteractionSystem:
 
         if self.state.interaction_type is InteractionType.PAINT_REGION:
             self.state.left_page = LeftPage.REGION_EDITOR
-            self.state.interaction_type is InteractionType.VIEW_TILE
+            self.state.interaction_type = InteractionType.VIEW_TILE
 
         elif self.state.interaction_type is InteractionType.PAINT_TILE:
-            self.state.interaction_type is InteractionType.VIEW_TILE
+            self.state.interaction_type = InteractionType.VIEW_TILE
 
     def _mouse_move(self, cmd: MouseMove):
         if cmd.left_down and self.state.focused_entity and hasattr(self.state.focused_entity, "is_dragged"):
@@ -259,7 +250,30 @@ class InteractionSystem:
             self.state.interaction_type = InteractionType.VIEW_TILE
         elif cmd.key == pygame.K_v:
             self.state.interaction_type = InteractionType.EDIT_ELEVATION
-        # etc
+        
+        if self.state.interaction_type == InteractionType.MOVE_PLAYER:
+            if cmd.key in (pygame.K_w, pygame.K_UP):
+                self.player.move_north()
+                direction = "north"
+            elif cmd.key in (pygame.K_d, pygame.K_RIGHT):
+                self.player.move_east()
+                direction = "east"
+            elif cmd.key in (pygame.K_s, pygame.K_DOWN):
+                self.player.move_south()
+                direction = "south"
+            elif cmd.key in (pygame.K_a, pygame.K_LEFT):
+                self.player.move_west()
+                direction = "west"
+            else:
+                return
+            
+            self.select_cell(self.player.location)
+            self.camera.set_location(self.player.get_location())
+            self.camera.clamp_pan()
+            self.storyteller.movement_history.append({"direction": direction, "biome": self.world.get_biome_at(self.player.location)})
+            print(self.storyteller.movement_history)
+            self.refresh_render()
+            
 
     def _pan(self, dx, dy):
         if self.state.interaction_type is not InteractionType.MOVE_PLAYER:
