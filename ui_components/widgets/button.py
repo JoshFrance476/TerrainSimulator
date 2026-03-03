@@ -2,14 +2,17 @@ import pygame
 from utils.ui_utils import wrap_text
 
 class Button:
-    def __init__(self,width, height, action, label, font, left_padding = 5, top_padding = 0):
+    def __init__(self,width, height, action, label="", font=None, left_padding = 5, top_padding = 0):
         self.rect = None
         self.action = action
         self.label = label
         self.font = font
         self.width = width
-        self.wrapped_text = wrap_text(self.label, font, self.width)
-        self.height = height + (2 * max(0,(len(self.wrapped_text)-2)))
+        if font:
+            self.wrapped_text = wrap_text(self.label, font, self.width)
+            self.height = height + (2 * max(0,(len(self.wrapped_text)-2)))
+        else:
+            self.height = height
         self.left_padding = left_padding
         self.top_padding = top_padding
         
