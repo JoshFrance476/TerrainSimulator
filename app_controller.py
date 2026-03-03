@@ -20,7 +20,9 @@ class AppController:
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS, self.biome_config)
         self.camera = Camera()
         
-        self.player = MapEntity((self.biome_config.get_starting_location()))
+        self.player = MapEntity(location = (self.biome_config.get_starting_location()), 
+                                boundary = (config.WORLD_ROWS, config.WORLD_COLS))
+        
         self.camera.set_location(self.player.get_location())
 
         self.fonts = fonts
