@@ -22,6 +22,8 @@ class UIManager:
 
         self._last_left_page = None
 
+        self._current_brush_type = None
+
         self._last_selected_cell = None
         self._last_hovered_cell = None
 
@@ -74,8 +76,12 @@ class UIManager:
             self.menu.draw(screen)
         
         if self.state.interaction_type in {InteractionType.PAINT_REGION, InteractionType.PAINT_TILE, InteractionType.EDIT_ELEVATION}:
+            if self.state.interaction_type is not self._current_brush_type:
+                self.brush_window.show_page(self.state.interaction_type)
+                self._current_brush_type = self.state.interaction_type
             self.brush_window.set_attributes(self.get_brush_attributes())
             self.brush_window.draw(screen)
+
 
         
     def get_clicked_component(self, event_pos):
