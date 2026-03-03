@@ -215,10 +215,7 @@ class InteractionSystem:
 
         if self.state.interaction_type is InteractionType.PAINT_REGION:
             self.state.left_page = LeftPage.REGION_EDITOR
-            self.state.interaction_type = InteractionType.VIEW_TILE
 
-        elif self.state.interaction_type is InteractionType.PAINT_TILE:
-            self.state.interaction_type = InteractionType.VIEW_TILE
 
     def _mouse_move(self, cmd: MouseMove):
         if cmd.left_down and self.state.focused_entity and hasattr(self.state.focused_entity, "is_dragged"):
