@@ -1,22 +1,31 @@
 import pygame
 from skimage.segmentation import flood_fill
+from app_state import PaintMode
 
 class WorldEditor:
     def __init__(self, world, brush_manager, biome_config):
         self.world = world
         self.brush = brush_manager
         self.biome_config = biome_config
+
+        self.paint_mode = PaintMode.BRUSH
+
+        self.elevation_updates_biome = True
     
     def recompute_after_biome_change(self):
         self.world.update_stage_3()
     
     def recompute_after_elevation_change(self):
         self.world.update_steepness()
-        self.world.update_biome()
+        if self.elevation_updates_biome:
+            self.world.update_biome()
         self.world.update_stage_3()
    
-    def paint_tile(self, location, tid):
-        self.world.set_biome_with_mask(self.brush.get_brush_mask(location), tid)
+    def paint_biome(self, location, biome_id):
+        if self.paint_mode is PaintMode.BRUSH:
+            self.world.set_biome_with_mask(self.brush.get_brush_mask(location), biome_id)
+        elif self.paint_mode is PaintMode.FILL:
+            self.world.data.world_data["biome"] = flood_fill(self.world.data.world_data["biome"], location, new_value=biome_id)
         self.recompute_after_biome_change()
     
     def edit_elevation(self, location, negative=False):
@@ -53,6 +62,3 @@ class WorldEditor:
         self.biome_config.edit_biome(index, name, h, s, v, traversal_cost)
         self.recompute_after_biome_change()
     
-    def flood_fill_biome(self, location, biome_id):
-        self.world.data.world_data["biome"] = flood_fill(self.world.data.world_data["biome"], location, new_value=biome_id)
-        self.recompute_after_biome_change()
