@@ -1,7 +1,7 @@
 import pygame
 import config
 from utils.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown
-from app_state import InteractionType, LeftPage, RightPage
+from app_state import InteractionType, LeftPage, RightPage, PaintMode
 
 class InteractionSystem:
     def __init__(self, state, camera, player, world_editor, storyteller, world, brush, refresh_render_function, get_cell_at_mouse_position_function, mouse_on_map_function):
@@ -130,6 +130,15 @@ class InteractionSystem:
             self.brush.size = size
         if strength:
             self.brush.strength = strength
+    
+    def toggle_brush_mode(self):
+        self.world_editor.paint_mode = PaintMode.BRUSH
+    
+    def toggle_fill_mode(self):
+        self.world_editor.paint_mode = PaintMode.FILL
+    
+    def toggle_elevation_updates_biome(self, checkbox_value):
+        self.world_editor.elevation_updates_biome = checkbox_value
 
     def tile_interaction(self, location):
         if not self.mouse_on_map():
@@ -154,7 +163,7 @@ class InteractionSystem:
                 self.refresh_render()
             
             if self.state.left_mouse_down and self.state.interaction_type is InteractionType.PAINT_TILE:
-                self.world_editor.paint_tile(location, self.state.active_biome_edit_id)
+                self.world_editor.paint_biome(location, self.state.active_biome_edit_id)
                 self.refresh_render()
         
         self.set_hovered_cell(location)
@@ -191,7 +200,7 @@ class InteractionSystem:
             self.refresh_render()
 
         elif mode == InteractionType.PAINT_TILE:
-            self.world_editor.paint_tile(location, self.state.active_biome_edit_id)
+            self.world_editor.paint_biome(location, self.state.active_biome_edit_id)
             self.refresh_render()
 
         elif mode == InteractionType.EDIT_ELEVATION:
