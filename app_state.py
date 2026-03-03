@@ -38,3 +38,7 @@ class LeftPage(Enum):
 
 class RightPage(Enum):
     VIEW_SCENARIO = auto()
+
+class PaintMode(Enum):
+    BRUSH = auto()
+    FILL = auto()  
