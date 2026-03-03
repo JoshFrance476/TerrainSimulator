@@ -247,7 +247,7 @@ scenario_schema = {
     "additionalProperties": False
 }
 
-def prompt_scenario(prompt):
+def prompt_scenario(prompt, world_desc, story_focus_desc):
     response = client.chat.completions.create(
         model=model,
         temperature=0.7,
@@ -259,27 +259,28 @@ def prompt_scenario(prompt):
                 "content": f"""You are the storyteller in a single-player game set on a procedurally-generated map.
                 The game is focused on realism and immersion in a given world. Situations should be natural and believable.
                 The user has defined the world context, their character and the type of stories they want to experience.
-                With the context you have been provided and the previous actions the player has taken, write a short description of the environment or situation that the character finds themselves in,  following on from the story history.
-                The description should be in the second-person, telling the player what their character is experiencing.
-                Provide the player with several actions that they can perform based on the character's traits, with a probability of success (as a percentage) based on the character and the situation.
-                Actions should be directly related to the description you provide.
+                Based on the previous actions the player has taken, write a short description of what the player observes whilst travelling through the environment.
+                Focus on the immediate surroundings of the player, do not mention things in the distance.
+                The description should be in the second-person.
+                Provide the player with several actions that they can perform, with a probability of success (as a percentage) based on the character and the situation.
+                Actions should be directly related to the description you provide and the character's abilities.
                 Most actions should have a probability of 100, only give 'challenging' actions a non-certain probability.
                 You will receive a single JSON object in the user message under CONTEXT_JSON.
                 Treat fields as follows:
                 - world.description, story.focus, character.notebook, character.history, tile, recent_events are authoritative.
                 - Never contradict character.notebook facts.
                 - Use character.history/recent_events only for continuity; do not invent new named world facts.
-                - You may infer mundane, non-contradictory sensory details from tile (biome/weather/time), but must not invent named factions/landmarks/history unless present in the JSON.
+                - You may infer mundane, non-contradictory sensory details from tile (weather/time), but must not invent named factions/landmarks/history unless present in the JSON.
 
-                Interaction descriptions should be no longer than 50 words, and each decision should be summarised in less than 15 words.
+                Interaction descriptions should be no longer than 50 words, and each action should be summarised in less than 15 words.
                 Keep the tone and content of interactions consistent with the context provided.
                 Interactions should follow on previous interactions if provided, but MUST end after a few interactions. 
-                If no previous interactions are given, assume the player has just entered the area.
                 If the most recent player action is provided, the description should focus on the consequences of that action.
-                Don't repeat what has already been described to the player.
                 You should assume that the context describes a small area around the character, and actions must not move the player from that area.
                 Any option that results in the player leaving, travelling on, sleeping or resting should end the interaction by setting the exit_flag to True.
-                Return ONLY valid JSON matching this schema: {json.dumps(scenario_schema)}."""
+                Unless the current situation is unavoidable, the player should be provided an option to continue travelling with exit_flag.
+                Return ONLY valid JSON matching this schema: {json.dumps(scenario_schema)}.
+                Description of the world: {world_desc}. Description of the story focus: {story_focus_desc}."""
             },
             {
                 "role": "user",
