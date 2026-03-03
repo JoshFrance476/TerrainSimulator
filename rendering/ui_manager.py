@@ -79,7 +79,7 @@ class UIManager:
             if self.state.interaction_type is not self._current_brush_type:
                 self.brush_window.show_page(self.state.interaction_type)
                 self._current_brush_type = self.state.interaction_type
-            self.brush_window.set_attributes(self.get_brush_attributes())
+                self.brush_window.set_attributes(self.get_brush_attributes())
             self.brush_window.draw(screen)
 
 
