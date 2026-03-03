@@ -1,4 +1,5 @@
 import pygame
+from skimage.segmentation import flood_fill
 
 class WorldEditor:
     def __init__(self, world, brush_manager, biome_config):
@@ -50,4 +51,8 @@ class WorldEditor:
     
     def edit_biome(self, index, name, h, s, v, traversal_cost):
         self.biome_config.edit_biome(index, name, h, s, v, traversal_cost)
+        self.recompute_after_biome_change()
+    
+    def flood_fill_biome(self, location, biome_id):
+        self.world.data.world_data["biome"] = flood_fill(self.world.data.world_data["biome"], location, new_value=biome_id)
         self.recompute_after_biome_change()
