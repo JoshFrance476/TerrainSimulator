@@ -43,40 +43,58 @@ def calculate_soil_fertility(biome, rainfall, elevation, temperature, biome_conf
     return fertility
 
 
+def determine_biome(elevation, temperature, rainfall, sea_proximity, river_proximity, biome_config, mask=None, biome_map=None):
+    # Thanks ChatGPT. Uses the old function but with an optional mask and biome_map. 
+    # If provided, only determines biome within the mask and keeps the rest of biome_map the same
+    
+    if mask is None:
+        mask = np.ones_like(elevation, dtype=bool)
+    else:
+        mask = (np.asarray(mask) != 0)
+        if mask.shape != elevation.shape:
+            raise ValueError(f"mask.shape {mask.shape} must match elevation.shape {elevation.shape}")
 
+    if biome_map is None:
+        biome_map = np.full(elevation.shape, -1, dtype=np.int16)
+    else:
+        if biome_map.shape != elevation.shape:
+            raise ValueError("biome_map must match elevation shape")
 
-def determine_biome(elevation, temperature, rainfall, sea_proximity, river_proximity, biome_config):
-    biome_map = np.full(elevation.shape, -1, dtype=np.int8)
     factors = {
         "elevation": elevation,
         "temperature": temperature,
         "rainfall": rainfall,
         "river_proximity": river_proximity,
-        "sea_proximity": sea_proximity
+        "sea_proximity": sea_proximity,
     }
 
-    river_mask = (river_proximity == 0)
-    biome_map[river_mask] = biome_config.name_to_id['river']
+    writable = mask
+    written = np.zeros_like(mask, dtype=bool)  # track what we set this call (within mask)
 
+    # River override (highest priority)
+    river_mask = writable & (river_proximity == 0)
+    biome_map[river_mask] = biome_config.name_to_id["river"]
+    written |= river_mask
 
     for biome_data in biome_config.biomes:
-        option_masks = []  # collect masks for each option in the list
-        if "conditions" in biome_data:
-            for option in biome_data["conditions"]:   # each option is a dict
-                m = np.ones_like(elevation, dtype=bool)
-                for factor, limits in option.items():
-                    arr = factors[factor]
-                    if "min" in limits:
-                        m &= arr >= limits["min"]
-                    if "max" in limits:
-                        m &= arr <= limits["max"]
-                option_masks.append(m)
+        option_masks = []
+        for option in biome_data.get("conditions", []):
+            m = np.ones_like(elevation, dtype=bool)
+            for factor, limits in option.items():
+                arr = factors[factor]
+                if "min" in limits:
+                    m &= arr >= limits["min"]
+                if "max" in limits:
+                    m &= arr <= limits["max"]
+            option_masks.append(m)
 
         if option_masks:
-            # OR together the option masks (any of the dicts can match)
             combined_mask = np.logical_or.reduce(option_masks)
-            # Only fill unassigned cells
-            biome_map[(biome_map == -1) & combined_mask] = biome_config.name_to_id[biome_data["name"]]
+
+            # assign within mask, but don't overwrite something we've already written this call
+            assign_mask = writable & ~written & combined_mask
+            biome_map[assign_mask] = biome_config.name_to_id[biome_data["name"]]
+            written |= assign_mask
 
     return biome_map
 
