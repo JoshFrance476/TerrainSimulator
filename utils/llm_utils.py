@@ -200,9 +200,9 @@ def prompt_scenario_summary(scenario, notebook):
                 If none of the above occurred, return the notebook_list EXACTLY as provided, with no additions, removals, or edits.
 
                 2) Summary must be succinct:
-                - 4-12 words only
-                - Give an overview of what the character experienced (a past-tense verb phrase)
-                - Minimal setting details and context
+                - 5-15 words only
+                - Describe specifically what the character gained from the interaction
+                - Should describe where the action took place
                 Return ONLY valid JSON matching this schema {json.dumps(summary_schema)}.
                 Provided is the current notebook: {notebook}.
                 """
