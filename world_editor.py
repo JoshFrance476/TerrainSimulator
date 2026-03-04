@@ -10,15 +10,15 @@ class WorldEditor:
 
         self.paint_mode = PaintMode.BRUSH
 
-        self.elevation_updates_biome = True
+        self.elevation_updates_biome = False
     
     def recompute_after_biome_change(self):
         self.world.update_stage_3()
     
-    def recompute_after_elevation_change(self):
+    def recompute_after_elevation_change(self, mask):
         self.world.update_steepness()
         if self.elevation_updates_biome:
-            self.world.update_biome()
+            self.world.update_biome(mask)
         self.world.update_stage_3()
    
     def paint_biome(self, location, biome_id):
@@ -31,10 +31,12 @@ class WorldEditor:
     def edit_elevation(self, location, negative=False):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LCTRL]:
-            self.world.apply_smoothing_elevation_mask(self.brush.get_brush_mask(location))
+            brush_mask = self.brush.get_brush_mask(location)
+            self.world.apply_smoothing_elevation_mask(brush_mask)
         else:
-            self.world.apply_edit_elevation_mask(self.brush.get_brush_mask(location, boolean = False, negative=negative))
-        self.recompute_after_elevation_change()
+            brush_mask = self.brush.get_brush_mask(location, boolean = False, negative=negative)
+            self.world.apply_edit_elevation_mask(brush_mask)
+        self.recompute_after_elevation_change(brush_mask)
     
     def create_region(self):
         return self.world.create_region()
