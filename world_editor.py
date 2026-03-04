@@ -13,6 +13,7 @@ class WorldEditor:
         self.elevation_updates_biome = False
     
     def recompute_after_biome_change(self):
+        self.world.update_steepness()
         self.world.update_stage_3()
     
     def recompute_after_elevation_change(self, mask):
