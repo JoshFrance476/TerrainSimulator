@@ -122,9 +122,9 @@ def update_steepness(elevation_map):
     logging.debug(f"Steepness map generation took {time.time() - start_time:.2f} seconds")
     return steepness_map
 
-def update_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, biome_config):
+def update_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, biome_config, mask, old_biome_map):
     start_time = time.time()
-    biome_map = determine_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, biome_config)
+    biome_map = determine_biome(elevation_map, temperature_map, rainfall_map, sea_proximity_map, river_proximity_map, biome_config, mask, old_biome_map)
     logging.debug(f"biome map generation took {time.time() - start_time:.2f} seconds")
     return biome_map
 

@@ -51,8 +51,8 @@ class World:
     def update_steepness(self):
         self.data.update_steepness()
     
-    def update_biome(self):
-        self.data.update_biome()
+    def update_biome(self, mask=None):
+        self.data.update_biome(mask)
     
     def update_stage_3(self):
         self.data.update_stage_3()

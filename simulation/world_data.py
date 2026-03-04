@@ -39,13 +39,23 @@ class WorldData:
     def get_biome_at(self, location):
         return self.biome_config.biomes[self.world_data["biome"][location]]["name"].title()
     
-    def update_biome(self):
-        self.world_data["biome"] = update_biome(self.world_data["elevation"],
-                                                    self.world_data["temperature"],
-                                                    self.world_data["rainfall"],
-                                                    self.world_data["sea_proximity"],
-                                                    self.world_data["river_proximity"],
-                                                    self.biome_config)
+    def update_biome(self, mask):
+        if mask is not None:
+            self.world_data["biome"] = update_biome(self.world_data["elevation"],
+                                                        self.world_data["temperature"],
+                                                        self.world_data["rainfall"],
+                                                        self.world_data["sea_proximity"],
+                                                        self.world_data["river_proximity"],
+                                                        self.biome_config,
+                                                        mask,
+                                                        self.world_data["biome"])
+        else:
+            self.world_data["biome"] = update_biome(self.world_data["elevation"],
+                                                        self.world_data["temperature"],
+                                                        self.world_data["rainfall"],
+                                                        self.world_data["sea_proximity"],
+                                                        self.world_data["river_proximity"],
+                                                        self.biome_config)
 
     def update_stage_3(self):
         new_trav_map, new_colour_map = update_stage_3(self.world_data["elevation"],
