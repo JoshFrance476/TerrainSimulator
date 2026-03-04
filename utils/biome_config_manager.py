@@ -70,3 +70,6 @@ class BiomeConfigManager:
         if isinstance(obj, list):
             return [self.resolve_constants(v, constants) for v in obj]
         return obj
+
+    def get_sea_level(self):
+        return self.constants["SEA_LEVEL"]
