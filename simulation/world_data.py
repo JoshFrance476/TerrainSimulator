@@ -33,8 +33,15 @@ class WorldData:
     def set_map_data_at(self, map_name, pos, data):
         self.world_data[map_name][pos] = data
     
-    def set_map_data_with_mask(self, map_name, mask, data):
-        self.world_data[map_name][mask] = data
+    def set_biome_with_mask(self, mask, data):
+        self.world_data["biome"][mask] = data
+        elevation = self.world_data["elevation"]
+        if data == 0:
+            elevation[mask & (elevation > self.biome_config.get_sea_level())] = 0
+        else:
+            elevation[mask & (elevation < self.biome_config.get_sea_level())] = 0.001
+    
+
     
     def get_biome_at(self, location):
         return self.biome_config.biomes[self.world_data["biome"][location]]["name"].title()
