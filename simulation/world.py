@@ -22,13 +22,15 @@ class World:
         self.tick_count += 1
     
     def get_semantic_tile_data(self, location):
-        region_list = []
-        for region in self.region_manager.get_regions_at_location(location):
-            region_list.append(region.title + ": "+region.visible_desc+", "+region.hidden_desc)
         info = {
-            "Tile": self.get_biome_at(location),
-            "Details": ". ".join(region_list)
+            "Biome": self.get_biome_at(location),
+            "Details": {}
         }
+        for region in self.region_manager.get_regions_at_location(location):
+            info["Details"][region.title] = {
+                "Visible Description": region.visible_desc,
+                "Hidden Description": region.hidden_desc
+            }
         return info
 
     def get_regions_at_location(self, location):
@@ -112,7 +114,8 @@ class World:
             result[biome_name] = int(count)
         return result
 
-    def save_map(self, file_name):
+    def save_map(self, file_name, starting_location):
+        self.biome_config.set_starting_location(starting_location)
         np.savez(
             file_name,
             # numeric maps

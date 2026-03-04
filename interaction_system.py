@@ -69,10 +69,15 @@ class InteractionSystem:
         self.state.update_right_page = True
     
     def save_map(self, file_name):
-        self.world.save_map("saved_maps/"+file_name)
+        player_location = self.player.get_location()
+        self.world.save_map("saved_maps/"+file_name, player_location)
     
     def load_map(self, file_name):
         self.world.load_map("saved_maps/"+file_name+".npz")
+        self.player.set_location(self.world.biome_config.get_starting_location())
+        self.select_cell(self.player.location)
+        self.camera.set_location(self.player.get_location())
+        self.camera.clamp_pan()
         self.refresh_render()
     
     def set_hovered_cell(self, location):
@@ -278,9 +283,8 @@ class InteractionSystem:
             self.camera.set_location(self.player.get_location())
             self.camera.clamp_pan()
             self.storyteller.movement_history.append({"direction": direction, "biome": self.world.get_biome_at(self.player.location)})
-            print(self.storyteller.movement_history)
             self.refresh_render()
-            
+
 
     def _pan(self, dx, dy):
         if self.state.interaction_type is not InteractionType.MOVE_PLAYER:
