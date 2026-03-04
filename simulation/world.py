@@ -58,7 +58,7 @@ class World:
         self.data.update_stage_3()
     
     def set_biome_with_mask(self, mask, biome_id):
-        self.data.set_map_data_with_mask("biome", mask, biome_id)
+        self.data.set_biome_with_mask(mask, biome_id)
 
     def add_region_with_mask(self, mask, region_id):
         self.region_manager.add_region_with_mask(mask, region_id)
