@@ -56,7 +56,10 @@ class BiomeConfigManager:
         )
 
     def get_starting_location(self):
-        return self.constants['STARTING_LOCATION'][0], self.constants['STARTING_LOCATION'][0]
+        return self.constants['STARTING_LOCATION'][0], self.constants['STARTING_LOCATION'][1]
+
+    def set_starting_location(self, location):
+        self.constants['STARTING_LOCATION'] = [location[0], location[1]]
     
     def resolve_constants(self, obj, constants):
         if isinstance(obj, dict):
