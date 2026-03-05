@@ -7,16 +7,22 @@ class StorytellerManager:
         self.world = world
         self.state = state
 
-        self.world_description = """An isolated alien planet with breathable air and unstable weather patterns. The flora and fauna grow to immense scale—tree canopies like continents, migratory beasts the size of buildings, root systems that reshape the terrain.
-Scattered across the landscape are enormous landmarks: fossilized titans embedded in cliffs, abandoned orbital elevators fused into mountainsides, and vast metallic rings half-swallowed by forest. Their purpose is unknown. The planet shows signs of a powerful past civilization, but no living architects remain.
-The ecosystem is active, reactive, and sometimes hostile. Survival depends on adaptation."""
-        self.character_description = """A wandering human traveller with practical survival skills and no permanent home. You move between settlements trading knowledge, scavenged technology, and rare biological samples in exchange for tools, repairs, and information.
-You are resourceful rather than powerful—skilled in navigation, field repairs, foraging, and reading environmental signs. You carry modular equipment suited for long-distance travel: weather-resistant clothing, improvised tools, salvaged tech of uncertain origin, and a personal journal documenting routes, ruins, and rumors.
-You are cautious but curious. The unknown does not deter you; it compels you. You seek both survival and understanding. Each landmark, creature, and abandoned structure may hold fragments of the planet's history—and possibly clues to why humanity remains stranded here."""  #will just be used to generate an inital character notebook (and maybe history?)
-        self.story_focus_description = """A grounded survival narrative centered on exploration and gradual discovery. The tone should emphasize isolation, scale, and the fragility of human life against an overwhelming environment.
-Conflicts arise from environmental hazards, resource scarcity and unpredictable megafauna. Solutions rely on adaptation and creative use of limited tools.
-The unfolding story reveals the planet's fabled past indirectly—through landmarks, ruins, biological anomalies and environmental clues.
-Encounters should feel realistic within the world's internal logic. Progress is earned through careful decision-making, risk management, and learning from prior experiences."""
+        self.world_description = """The map focuses on a a mysterious continent that has begun to be colonised by a british-empire like civilisation. 
+        The continent was untouched by humans until it began to be colonised.
+        The coast is largely plains, but the interior is covered in dense forests and huge mountain ranges. 
+        Only two major towns sit on the coastline, and the interior is unexplored.
+        Contact with the empire is rare and the colonists are only just starting to discover the strange and mythical creatures that populate the continent interior.
+        The settled coastline is growing quickly with new colonist arriving frequently, but fear and curiosity is spreading about the interior. 
+        """
+        self.character_description = """An explorer who has just arrived on the continent. They have a backpack with a set of useful exploring tools. They were inspired by
+        reports of strange fauna and have come to investigate. They are well-received by locals, who can sense the determination of the character."""  
+        self.story_focus_description = """A grounded survival narrative focusing on the player interacting with the locals and exploring the continent interior to discover it's mysteries. 
+        The player will spend their time travelling the region, but will face hardships and setbacks, as well as friendly, welcoming locals that want to help the player in the expedition.
+        Tone and framing:
+        The world should feel like a newly explored frontier.
+        The environment is vast, poorly understood, and only partially mapped.
+        Occasional references to tracks, survey marks, abandoned camps, or signs of earlier expeditions may appear.
+        The tone should feel exploratory rather than adventurous."""
 
         self.character_notebook = []
         self.character_history  = []
@@ -30,7 +36,7 @@ Encounters should feel realistic within the world's internal logic. Progress is 
         self.input_token_count = 0
         self.output_token_count = 0
 
-        #self.setup_notebook_and_stats()
+        self.setup_notebook_and_stats()
     
     def update_token_counts(self, output_tokens, input_tokens):
         self.output_token_count += output_tokens
@@ -66,7 +72,7 @@ Encounters should feel realistic within the world's internal logic. Progress is 
             },
             "movement": self.get_most_recent_movement_string(),
             "tile": tile,
-            "recent_events_on_this_tile": scenario.get_interactions_string() if scenario else None,
+            "previous_events_on_this_tile": scenario.get_interactions_string() if scenario else None,
             "most_recent_action_on_this_tile": scenario.get_most_recent_action() if scenario else None
         }
 
