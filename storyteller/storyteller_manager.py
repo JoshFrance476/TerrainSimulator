@@ -1,6 +1,7 @@
 from storyteller.scenario import Scenario
 from utils.llm_utils import prompt_scenario, prompt_character_setup, prompt_scenario_summary, prompt_story_setup
 import json
+from config import INITIALISE_NOTEBOOK_AND_STATS
 
 class StorytellerManager:
     def __init__(self, world, state):
@@ -36,7 +37,8 @@ class StorytellerManager:
         self.input_token_count = 0
         self.output_token_count = 0
 
-        self.setup_notebook_and_stats()
+        if INITIALISE_NOTEBOOK_AND_STATS:
+            self.setup_notebook_and_stats()
     
     def update_token_counts(self, output_tokens, input_tokens):
         self.output_token_count += output_tokens
