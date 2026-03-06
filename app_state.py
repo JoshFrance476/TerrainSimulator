@@ -21,6 +21,8 @@ class AppState:
         self.left_mouse_down = False
         self.right_mouse_down = False
 
+        self.debug_mode = False
+
 
 class InteractionType(Enum):
     VIEW_TILE = auto()
