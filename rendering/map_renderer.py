@@ -1,14 +1,13 @@
 import pygame
 import config
 from utils.colour_utils import hsv_to_rgb_array
-from utils.region_border_map import produce_region_border_surface
+from utils.produce_border_maps import produce_region_border_surface, produce_chunk_border_surface
 
 class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""
     def __init__(self, world, camera, state):
         self.world = world
         self.camera = camera
-        self.region_map = self.world.get_region_map()
         self.state = state
 
         self.map_surface = None
@@ -23,10 +22,11 @@ class MapRenderer:
         self.map_surface = self.produce_map_surface(colour_map)
 
         if self.state.debug_mode:
-            region_view = [row[x0:x1] for row in self.world.get_chunk_map()[y0:y1]]
+            chunk_view = self.world.get_chunk_map()[y0:y1,x0:x1]
+            self.region_border_surface = produce_chunk_border_surface(chunk_view)
         else:
             region_view = [row[x0:x1] for row in self.world.get_region_map()[y0:y1]]
-        self.region_border_surface = produce_region_border_surface(region_view)
+            self.region_border_surface = produce_region_border_surface(region_view)
     
 
     def produce_map_surface(self, colour_map):
