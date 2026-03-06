@@ -1,10 +1,9 @@
 from simulation.region import Region
-from config import WORLD_COLS, WORLD_ROWS
 import numpy as np
 
 class RegionManager:
-    def __init__(self):
-        self.region_map = [[set() for _ in range(WORLD_COLS)] for _ in range(WORLD_ROWS)]
+    def __init__(self, rows, cols):
+        self.region_map = [[set() for _ in range(rows)] for _ in range(cols)]
         self.region_list = []
         self.rid_counter = 0
 
