@@ -18,7 +18,7 @@ class AppController:
     def __init__(self, screen, fonts, biome_config):
         self.biome_config = biome_config
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS, self.biome_config)
-        self.world.load_map('data/saved_maps/ColonialFantasy3.npz')
+        self.world.load_map('data/saved_maps/ColonialFantasy.npz')
         self.camera = Camera()
         
         self.player = MapEntity(location = (self.biome_config.get_starting_location()), 
