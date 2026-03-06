@@ -1,7 +1,7 @@
 import pygame
 from ui_components.widgets.text_link import TextLink
 from ui_components.widgets.info_box_list import InfoBoxList
-from utils.ui_utils import wrap_text
+from rendering.ui.text_utils import wrap_text
 
 class InfoBox:
     PADDING = 10

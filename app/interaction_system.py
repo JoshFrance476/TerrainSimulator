@@ -1,6 +1,6 @@
 import pygame
 import config
-from utils.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, KeyUp
+from app.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, KeyUp
 from app_state import InteractionType, LeftPage, RightPage, PaintMode
 
 class InteractionSystem:

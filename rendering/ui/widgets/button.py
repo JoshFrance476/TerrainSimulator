@@ -1,5 +1,5 @@
 import pygame
-from utils.ui_utils import wrap_text
+from rendering.ui.text_utils import wrap_text
 
 class Button:
     def __init__(self,width, height, action, label="", font=None, left_padding = 5, top_padding = 0):

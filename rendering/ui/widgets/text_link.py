@@ -1,5 +1,5 @@
 import pygame
-from utils.ui_utils import wrap_text
+from rendering.ui.text_utils import wrap_text
 
 class TextLink:
     def __init__(self, text, action, font):

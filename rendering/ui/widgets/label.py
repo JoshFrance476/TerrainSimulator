@@ -1,4 +1,4 @@
-from utils.ui_utils import wrap_text
+from rendering.ui.text_utils import wrap_text
 from config import SIDEBAR_WIDTH
 
 class Label:

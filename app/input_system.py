@@ -1,5 +1,5 @@
 import pygame
-from utils.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, KeyUp
+from app.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, KeyUp
 
 class InputSystem:
     def __init__(self, ui_manager, get_cell_at_mouse_position_function):

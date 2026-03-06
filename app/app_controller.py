@@ -1,15 +1,15 @@
 import pygame
 import config
 from app_state import AppState
-from world_editor import WorldEditor
+from editor.world_editor import WorldEditor
 from rendering.map_renderer import MapRenderer
-from rendering.ui_manager import UIManager
+from rendering.ui.ui_manager import UIManager
 from rendering.camera import Camera
 from simulation.world import World
 from simulation.map_entity import MapEntity
 from utils.fps_monitor import FPSMonitor
 from storyteller.storyteller_manager import StorytellerManager
-from brush_manager import BrushManager
+from editor.brush_manager import BrushManager
 from input_system import InputSystem
 from interaction_system import InteractionSystem
 from render_system import RenderSystem
