@@ -18,6 +18,7 @@ class AppController:
     def __init__(self, screen, fonts, biome_config):
         self.biome_config = biome_config
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS, self.biome_config)
+        self.world.load_map('saved_maps/ColonialFantasy2.npz')
         self.camera = Camera()
         
         self.player = MapEntity(location = (self.biome_config.get_starting_location()), 
@@ -26,13 +27,14 @@ class AppController:
         self.camera.set_location(self.player.get_location())
 
         self.fonts = fonts
-
-        self.map_renderer = MapRenderer(self.world, self.camera)
         
         self.brush = BrushManager()
         self.state = AppState()
-        self.storyteller = StorytellerManager(self.world, self.state)
         self.world_editor = WorldEditor(self.world, self.brush, self.biome_config)
+
+        self.map_renderer = MapRenderer(self.world, self.camera, self.state)
+
+        self.storyteller = StorytellerManager(self.world, self.state)
 
         self.ui_manager = UIManager(self.state, self.camera, self.storyteller, fonts, self.world, self.biome_config, self.brush.get_attributes)
         self.input_system = InputSystem(self.ui_manager, self.get_cell_at_mouse_position)
