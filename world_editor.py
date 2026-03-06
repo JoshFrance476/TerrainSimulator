@@ -3,10 +3,11 @@ from skimage.segmentation import flood_fill
 from app_state import PaintMode
 
 class WorldEditor:
-    def __init__(self, world, brush_manager, biome_config):
+    def __init__(self, world, brush_manager, biome_config, state):
         self.world = world
         self.brush = brush_manager
         self.biome_config = biome_config
+        self.state = state
 
         self.paint_mode = PaintMode.BRUSH
 
@@ -26,12 +27,11 @@ class WorldEditor:
         if self.paint_mode is PaintMode.BRUSH:
             self.world.set_biome_with_mask(self.brush.get_brush_mask(location), biome_id)
         elif self.paint_mode is PaintMode.FILL:
-            self.world.data.world_data["biome"] = flood_fill(self.world.data.world_data["biome"], location, new_value=biome_id)
+            self.world.set_map_data("biome", flood_fill(self.world.get_map_data("biome"), location, new_value=biome_id))
         self.recompute_after_biome_change()
     
     def edit_elevation(self, location, negative=False):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LCTRL]:
+        if self.state.lctrl_down:
             brush_mask = self.brush.get_brush_mask(location)
             self.world.apply_smoothing_elevation_mask(brush_mask)
         else:
@@ -48,11 +48,8 @@ class WorldEditor:
     def remove_region(self, location, rid):
         self.world.remove_region_with_mask(self.brush.get_brush_mask(location), rid)
     
-    def set_painted_region_info(self, title, visible_desc, hidden_desc, region_id = None):
-        if region_id is not None:
-            region = self.world.region_manager.region_list[region_id]
-        elif self.state.most_recent_region_paint != None:
-            region = self.world.region_manager.region_list[self.state.most_recent_region_paint]
+    def set_painted_region_info(self, title, visible_desc, hidden_desc, region_id):
+        region = self.world.get_region(region_id)
         region.title = title
         region.visible_desc = visible_desc
         region.hidden_desc = hidden_desc
