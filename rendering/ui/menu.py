@@ -1,8 +1,8 @@
 import pygame
 import config
-from ui_components.widgets.textbox import TextBox
-from ui_components.widgets.label import Label
-from ui_components.widgets.button import Button
+from rendering.ui.widgets.textbox import TextBox
+from rendering.ui.widgets.label import Label
+from rendering.ui.widgets.button import Button
 
 
 class Menu:

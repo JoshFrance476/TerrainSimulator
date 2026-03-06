@@ -1,7 +1,7 @@
 import pygame
 import config
 from app.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, KeyUp
-from app_state import InteractionType, LeftPage, RightPage, PaintMode
+from app.app_state import InteractionType, LeftPage, RightPage, PaintMode
 
 class InteractionSystem:
     def __init__(self, state, camera, player, world_editor, storyteller, world, brush, refresh_render_function, get_cell_at_mouse_position_function, mouse_on_map_function):
@@ -72,10 +72,10 @@ class InteractionSystem:
     
     def save_map(self, file_name):
         player_location = self.player.get_location()
-        self.world.save_map("saved_maps/"+file_name, player_location)
+        self.world.save_map("data/saved_maps/"+file_name, player_location)
     
     def load_map(self, file_name):
-        self.world.load_map("saved_maps/"+file_name+".npz")
+        self.world.load_map("data/saved_maps/"+file_name+".npz")
         self.player.set_location(self.world.biome_config.get_starting_location())
         self.select_cell(self.player.location)
         self.camera.set_location(self.player.get_location())

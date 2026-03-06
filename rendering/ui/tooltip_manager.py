@@ -1,5 +1,5 @@
-from ui_components.widgets.tooltip import Tooltip
-from ui_components.widgets.label import Label
+from rendering.ui.widgets.tooltip import Tooltip
+from rendering.ui.widgets.label import Label
 import pygame
 
 class TooltipManager:

@@ -1,6 +1,6 @@
-from simulation.world_data import WorldData
-from simulation.region_manager import RegionManager
-from simulation.chunk_manager import ChunkManager
+from world.world_data import WorldData
+from world.regions.region_manager import RegionManager
+from world.chunks.chunk_manager import ChunkManager
 import numpy as np
 import config as config
 import json

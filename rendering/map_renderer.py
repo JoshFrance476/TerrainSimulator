@@ -1,7 +1,7 @@
 import pygame
 import config
 from utils.colour_utils import hsv_to_rgb_array
-from utils.produce_border_maps import produce_region_border_surface, produce_chunk_border_surface
+from rendering.produce_border_maps import produce_region_border_surface, produce_chunk_border_surface
 
 class MapRenderer:
     """Handles rendering the terrain and overlays on the screen."""

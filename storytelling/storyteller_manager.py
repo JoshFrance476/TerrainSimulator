@@ -1,4 +1,4 @@
-from storyteller.scenario import Scenario
+from storytelling.scenario import Scenario
 from storytelling.llm_prompting import prompt_scenario, prompt_character_setup, prompt_scenario_summary, prompt_story_setup
 import json
 from config import INITIALISE_NOTEBOOK_AND_STATS

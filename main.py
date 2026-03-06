@@ -1,7 +1,7 @@
 import pygame
 import config as config
-from app_controller import AppController
-from utils.biome_config_manager import BiomeConfigManager
+from app.app_controller import AppController
+from generation.biome_config_manager import BiomeConfigManager
 import json
 
 #import tracemalloc
@@ -11,9 +11,9 @@ pygame.init()
 
 class FontManager:
     def __init__(self):
-        self.header = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE+3)
-        self.large_font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
-        self.small_font = pygame.font.Font("fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE-3)
+        self.header = pygame.font.Font("assets/fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE+3)
+        self.large_font = pygame.font.Font("assets/fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
+        self.small_font = pygame.font.Font("assets/fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE-3)
 
 
 

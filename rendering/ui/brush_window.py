@@ -1,11 +1,11 @@
 import pygame
 import config
-from ui_components.widgets.slider import Slider
-from ui_components.widgets.button import Button
-from ui_components.widgets.label import Label
-from ui_components.widgets.checkbox import Checkbox
-from ui_components.widgets.line_divider import LineDivider
-from app_state import InteractionType
+from rendering.ui.widgets.slider import Slider
+from rendering.ui.widgets.button import Button
+from rendering.ui.widgets.label import Label
+from rendering.ui.widgets.checkbox import Checkbox
+from rendering.ui.widgets.line_divider import LineDivider
+from app.app_state import InteractionType
 
 class BrushWindow:
     def __init__(self, fonts, interaction_system):

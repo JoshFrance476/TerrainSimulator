@@ -1,6 +1,6 @@
 import numpy as np
 from config import STEEPNESS_MULTIPLIER_ON_TRAVERSAL_COST
-from utils.map_utils import calculate_proximity_map
+from generation.map_utils import calculate_proximity_map
 
 
 def calculate_traversal_cost(biome_map, steepness_map, biome_cost_lookup):

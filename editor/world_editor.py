@@ -1,6 +1,6 @@
 import pygame
 from skimage.segmentation import flood_fill
-from app_state import PaintMode
+from app.app_state import PaintMode
 
 class WorldEditor:
     def __init__(self, world, brush_manager, biome_config, state):

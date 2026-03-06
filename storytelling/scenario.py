@@ -1,4 +1,4 @@
-from storyteller.interaction import CompletedInteraction, PendingInteraction
+from storytelling.interaction import CompletedInteraction, PendingInteraction
 
 class Scenario:
     def __init__(self):

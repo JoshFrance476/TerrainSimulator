@@ -1,24 +1,24 @@
 import pygame
 import config
-from app_state import AppState
+from app.app_state import AppState
 from editor.world_editor import WorldEditor
 from rendering.map_renderer import MapRenderer
 from rendering.ui.ui_manager import UIManager
 from rendering.camera import Camera
-from simulation.world import World
-from simulation.map_entity import MapEntity
+from world.world import World
+from world.map_entity import MapEntity
 from utils.fps_monitor import FPSMonitor
-from storyteller.storyteller_manager import StorytellerManager
+from storytelling.storyteller_manager import StorytellerManager
 from editor.brush_manager import BrushManager
-from input_system import InputSystem
-from interaction_system import InteractionSystem
-from render_system import RenderSystem
+from app.input_system import InputSystem
+from app.interaction_system import InteractionSystem
+from app.render_system import RenderSystem
 
 class AppController:
     def __init__(self, screen, fonts, biome_config):
         self.biome_config = biome_config
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS, self.biome_config)
-        self.world.load_map('saved_maps/ColonialFantasy2.npz')
+        self.world.load_map('data/saved_maps/ColonialFantasy3.npz')
         self.camera = Camera()
         
         self.player = MapEntity(location = (self.biome_config.get_starting_location()), 

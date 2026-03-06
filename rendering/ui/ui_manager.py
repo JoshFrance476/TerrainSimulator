@@ -1,13 +1,13 @@
 import pygame
 import config
-from ui_components.left_sidebar import LeftSidebarController
-from ui_components.right_sidebar import RightSidebarController
-from ui_components.menu import Menu
-from ui_components.tooltip_manager import TooltipManager
-from ui_components.widgets.label import Label
-from ui_components.widgets.container_list import ContainerList
-from ui_components.brush_window import BrushWindow
-from app_state import InteractionType, LeftPage, RightPage
+from rendering.ui.left_sidebar import LeftSidebarController
+from rendering.ui.right_sidebar import RightSidebarController
+from rendering.ui.menu import Menu
+from rendering.ui.tooltip_manager import TooltipManager
+from rendering.ui.widgets.label import Label
+from rendering.ui.widgets.container_list import ContainerList
+from rendering.ui.brush_window import BrushWindow
+from app.app_state import InteractionType, LeftPage, RightPage
 
 
 class UIManager:
