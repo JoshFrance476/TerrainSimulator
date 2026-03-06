@@ -21,6 +21,8 @@ class AppState:
         self.left_mouse_down = False
         self.right_mouse_down = False
 
+        self.lctrl_down = False
+
         self.debug_mode = False
 
 
