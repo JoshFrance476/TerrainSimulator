@@ -1,6 +1,6 @@
 import pygame
 import config
-from utils.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown
+from utils.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, KeyUp
 from app_state import InteractionType, LeftPage, RightPage, PaintMode
 
 class InteractionSystem:
@@ -43,6 +43,8 @@ class InteractionSystem:
             self._mouse_wheel(cmd)
         elif isinstance(cmd, KeyDown):
             self._key_down(cmd)
+        elif isinstance(cmd, KeyUp):
+            self._key_up(cmd)
 
     
     def set_region_info(self, title, visible_desc, hidden_desc, region_id):
@@ -265,6 +267,8 @@ class InteractionSystem:
         elif cmd.key == pygame.K_q:
             self.state.debug_mode = not self.state.debug_mode
             self.refresh_render()
+        elif cmd.key == pygame.K_LCTRL:
+            self.state.lctrl_down = True
         
         if self.state.interaction_type == InteractionType.MOVE_PLAYER:
             if cmd.key in (pygame.K_w, pygame.K_UP):
@@ -288,7 +292,10 @@ class InteractionSystem:
             self.storyteller.movement_history.append({"direction": direction, "biome": self.world.get_biome_at(self.player.location)})
             self.refresh_render()
 
-
+    def _key_up(self, cmd: KeyUp):
+        if cmd.key == pygame.K_LCTRL:
+            self.state.lctrl_down = False
+    
     def _pan(self, dx, dy):
         if self.state.interaction_type is not InteractionType.MOVE_PLAYER:
             self.camera.pan(dx, dy)
