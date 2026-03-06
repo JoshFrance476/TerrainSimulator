@@ -262,6 +262,9 @@ class InteractionSystem:
             self.state.interaction_type = InteractionType.VIEW_TILE
         elif cmd.key == pygame.K_v:
             self.state.interaction_type = InteractionType.EDIT_ELEVATION
+        elif cmd.key == pygame.K_q:
+            self.state.debug_mode = not self.state.debug_mode
+            self.refresh_render()
         
         if self.state.interaction_type == InteractionType.MOVE_PLAYER:
             if cmd.key in (pygame.K_w, pygame.K_UP):
