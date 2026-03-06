@@ -4,7 +4,7 @@ import numpy as np
 
 class RegionManager:
     def __init__(self):
-        self.region_map = np.zeros((WORLD_ROWS, WORLD_COLS), dtype=np.uint64)
+        self.region_map = [[set() for _ in range(WORLD_COLS)] for _ in range(WORLD_ROWS)]
         self.region_list = []
         self.rid_counter = 0
 
@@ -16,27 +16,23 @@ class RegionManager:
         return new_region.rid
 
     def add_region_with_mask(self, mask, rid):
-        bit = np.uint64(1) << np.uint64(rid)
-        self.region_map[mask] |= bit
+        ys, xs = np.nonzero(mask)
+        for y, x in zip(ys, xs):
+            self.region_map[y][x].add(rid)
     
     def remove_region_with_mask(self, mask, rid):
-        bit = np.uint64(1) << np.uint64(rid)
-        clear = np.uint64(~bit)
-        self.region_map[mask] &= clear
+        ys, xs = np.nonzero(mask)
+        for y, x in zip(ys, xs):
+            self.region_map[y][x].discard(rid)
 
     def get_region_map(self):
         return self.region_map
     
     def get_regions_at_location(self, location):
-        mask = self.region_map[location]
-        region_list = []
-        bit = 0
-        while mask:
-            if mask & 1:
-                region_list.append(self.region_list[bit])
-            mask >>= 1
-            bit += 1
-        return region_list
+        y, x = location
+        region_ids = self.region_map[y][x]
+
+        return [self.region_list[rid] for rid in region_ids]
 
     def get_region(self, rid):
         return self.region_list[rid]
