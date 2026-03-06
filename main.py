@@ -25,7 +25,7 @@ fonts = FontManager()
 
 biome_config_manager = BiomeConfigManager()
 
-with open("biome_config.json", "r", encoding="utf-8") as f:
+with open("data/biome_config.json", "r", encoding="utf-8") as f:
     biome_config = json.load(f)
 
 biome_config_manager.load_biome_config_file(biome_config)
