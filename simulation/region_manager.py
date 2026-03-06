@@ -3,7 +3,7 @@ import numpy as np
 
 class RegionManager:
     def __init__(self, rows, cols):
-        self.region_map = [[set() for _ in range(rows)] for _ in range(cols)]
+        self.region_map = [[set() for _ in range(cols)] for _ in range(rows)]
         self.region_list = []
         self.rid_counter = 0
 
