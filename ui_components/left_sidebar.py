@@ -139,15 +139,31 @@ class LeftSidebarController:
         self.clear_page()
 
         title_label = Label("Location", self.fonts.header, config.SIDEBAR_WIDTH)
+
+        self.component_list.extend(self.navigation_bar)
+        self.component_list.append(title_label)
         
         if self.state.selected_cell:
             biome_name_label = Label(self.world.get_biome_at(self.state.selected_cell), self.fonts.large_font, top_padding=2)
+            self.component_list.append(biome_name_label)
+            if self.state.debug_mode:
+                cell_data = self.world.get_cell_data(self.state.selected_cell)
+                elevation_label = Label(f"Elevation: {cell_data['elevation']}", self.fonts.small_font)
+                temperature_label = Label(f"Temperature: {cell_data['temperature']}", self.fonts.small_font)
+                rainfall_label = Label(f"Rainfall: {cell_data['rainfall']}", self.fonts.small_font)
+                steepness_label = Label(f"Steepness: {cell_data['steepness']}", self.fonts.small_font)
+                traversal_cost_label = Label(f"Traversal Cost: {cell_data['traversal_cost']}", self.fonts.small_font)
+                chunk_id_label = Label(f"Chunk ID: {self.world.get_chunk_id_at(self.state.selected_cell)}", self.fonts.small_font)
+                self.component_list.append(elevation_label)
+                self.component_list.append(temperature_label)
+                self.component_list.append(rainfall_label)
+                self.component_list.append(steepness_label)
+                self.component_list.append(traversal_cost_label)
+                self.component_list.append(chunk_id_label)
+                
         else:
-            biome_name_label = Label("No tile selected", self.fonts.large_font, top_padding=2)
+            self.component_list.append(Label("No tile selected", self.fonts.large_font, top_padding=2))
         
-        self.component_list.extend(self.navigation_bar)
-        self.component_list.append(title_label)
-        self.component_list.append(biome_name_label)
         self.component_list.append(LineDivider(config.SIDEBAR_WIDTH, 2))
         
 
