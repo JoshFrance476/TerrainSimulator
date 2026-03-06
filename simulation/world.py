@@ -1,5 +1,6 @@
 from simulation.world_data import WorldData
 from simulation.region_manager import RegionManager
+from simulation.world_interpreter import WorldInterpreter
 import numpy as np
 import config as config
 import json
@@ -13,10 +14,15 @@ class World:
 
         self.region_manager = RegionManager()
 
+        self.world_interpreter = WorldInterpreter(self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
+
         self.tick_count = 0
 
     def get_region_map(self): 
         return self.region_manager.get_region_map()
+
+    def get_chunk_map(self):
+        return self.world_interpreter.get_chunk_map()
         
     def step(self):
         self.tick_count += 1
@@ -77,7 +83,6 @@ class World:
     def get_map_data(self, map_name):
         return self.data.get_world_data()[map_name]
     
-    
     def set_map_data(self, map_name, data):
         self.data.set_map_data(map_name, data)
     
@@ -95,24 +100,6 @@ class World:
             return self.data.get_cell_data(selected_cell)
         else:
             return None
-    
-    def get_surrounding_data_map(self, r, c, radius=3, map="all"):
-        r0, r1 = max(0, r-radius), min(self.rows, r+radius+1)
-        c0, c1 = max(0, c-radius), min(self.cols, c+radius+1)
-
-        if map == "all":
-            return self.data.get_biome_data(c0, r0, c1, r1)
-        else:
-            return self.data.get_biome_data(c0, r0, c1, r1)[map]
-    
-    def get_surrounding_data_dict(self, r, c, radius=3, map="biome"):
-        data_map = self.get_surrounding_data_map(r, c, radius, map)
-        ids, counts = np.unique(data_map, return_counts=True)
-        result = {}
-        for id, count in zip(ids, counts):
-            biome_name = config.BIOME_RULES[id]["name"]
-            result[biome_name] = int(count)
-        return result
 
     def save_map(self, file_name, starting_location):
         self.biome_config.set_starting_location(starting_location)
@@ -143,12 +130,15 @@ class World:
         }
 
         # restore region manager
+        
         self.region_manager.region_map = loaded["region_map"]
         self.region_manager.region_list = loaded["region_list"].tolist()
+
+        self.region_manager.rid_counter = 0
         
         self.biome_config.load_biome_config_file(json.loads(str(loaded['biome_config'])))
 
-
+        self.world_interpreter = WorldInterpreter(self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
 
 
 
