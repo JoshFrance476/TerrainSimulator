@@ -30,7 +30,7 @@ class AppController:
         
         self.brush = BrushManager()
         self.state = AppState()
-        self.world_editor = WorldEditor(self.world, self.brush, self.biome_config)
+        self.world_editor = WorldEditor(self.world, self.brush, self.biome_config, self.state)
 
         self.map_renderer = MapRenderer(self.world, self.camera, self.state)
 
