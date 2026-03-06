@@ -49,9 +49,6 @@ class World:
     def get_regions_at_location(self, location):
         return self.region_manager.get_regions_at_location(location)
 
-    def get_chunk_at_location(self, location):
-        return self.world_interpreter.chunk_manager.get_regions_at_location(location)[0]
-
     def get_region(self, region_id):
         return self.region_manager.get_region(region_id)
     
@@ -144,7 +141,7 @@ class World:
         self.region_manager.region_map = loaded["region_map"]
         self.region_manager.region_list = loaded["region_list"].tolist()
 
-        self.region_manager.rid_counter = 0
+        self.region_manager.rid_counter = len(self.region_manager.region_list)
         
         self.biome_config.load_biome_config_file(json.loads(str(loaded['biome_config'])))
 
