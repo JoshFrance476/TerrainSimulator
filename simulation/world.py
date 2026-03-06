@@ -1,6 +1,6 @@
 from simulation.world_data import WorldData
 from simulation.region_manager import RegionManager
-from simulation.world_interpreter import WorldInterpreter
+from simulation.chunk_manager import ChunkManager
 import numpy as np
 import config as config
 import json
@@ -12,9 +12,10 @@ class World:
 
         self.biome_config = biome_config
 
-        self.region_manager = RegionManager()
+        self.region_manager = RegionManager(rows, cols)
 
-        self.world_interpreter = WorldInterpreter(self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
+        self.chunk_manager = ChunkManager(rows, cols)
+        self.build_chunk_map()
 
         self.tick_count = 0
 
@@ -22,7 +23,13 @@ class World:
         return self.region_manager.get_region_map()
 
     def get_chunk_map(self):
-        return self.world_interpreter.get_chunk_map()
+        return self.chunk_manager.get_chunk_map()
+
+    def get_chunk_id_at(self, location):
+        return self.chunk_manager.get_id_at(location)
+    
+    def build_chunk_map(self):
+        self.chunk_manager.generate_chunk_map(self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
         
     def step(self):
         self.tick_count += 1
@@ -41,6 +48,9 @@ class World:
 
     def get_regions_at_location(self, location):
         return self.region_manager.get_regions_at_location(location)
+
+    def get_chunk_at_location(self, location):
+        return self.world_interpreter.chunk_manager.get_regions_at_location(location)[0]
 
     def get_region(self, region_id):
         return self.region_manager.get_region(region_id)
@@ -138,7 +148,8 @@ class World:
         
         self.biome_config.load_biome_config_file(json.loads(str(loaded['biome_config'])))
 
-        self.world_interpreter = WorldInterpreter(self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
+        self.build_chunk_map()
+
 
 
 
