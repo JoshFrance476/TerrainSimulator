@@ -28,3 +28,7 @@ class MouseWheel:
 class KeyDown:
     key: int
     unicode: int
+
+@dataclass
+class KeyUp:
+    key: int
