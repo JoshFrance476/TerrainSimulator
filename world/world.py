@@ -14,7 +14,7 @@ class World:
 
         self.region_manager = RegionManager(rows, cols)
 
-        self.chunk_manager = ChunkManager(rows, cols)
+        self.chunk_manager = ChunkManager(rows, cols, biome_config)
         self.build_chunk_map()
 
         self.tick_count = 0
@@ -30,6 +30,12 @@ class World:
     
     def build_chunk_map(self):
         self.chunk_manager.generate_chunk_map(self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
+    
+    def get_closest_chunks(self, location, count=5):
+        return self.chunk_manager.get_closest_chunks(location, count)
+
+    def get_semantic_chunk_context(self, location):
+        return self.chunk_manager.get_semantic_surroundings(location)
         
     def step(self):
         self.tick_count += 1
@@ -107,6 +113,9 @@ class World:
             return self.data.get_cell_data(selected_cell)
         else:
             return None
+    
+    def get_biome_name_from_id(self, biome_id):
+        return self.data.get_biome_name_from_id(biome_id)
 
     def save_map(self, file_name, starting_location):
         self.biome_config.set_starting_location(starting_location)
