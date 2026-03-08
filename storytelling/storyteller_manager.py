@@ -75,7 +75,8 @@ class StorytellerManager:
             "movement": self.get_most_recent_movement_string(),
             "tile": tile,
             "previous_events_on_this_tile": scenario.get_interactions_string() if scenario else None,
-            "most_recent_action_on_this_tile": scenario.get_most_recent_action() if scenario else None
+            "most_recent_action_on_this_tile": scenario.get_most_recent_action() if scenario else None,
+            "location_context": self.world.get_semantic_chunk_context(self.state.selected_cell)
         }
 
         # IMPORTANT: keep this compact; avoid indent in production to save tokens.
