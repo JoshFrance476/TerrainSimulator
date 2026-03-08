@@ -154,12 +154,17 @@ class LeftSidebarController:
                 steepness_label = Label(f"Steepness: {cell_data['steepness']}", self.fonts.small_font)
                 traversal_cost_label = Label(f"Traversal Cost: {cell_data['traversal_cost']}", self.fonts.small_font)
                 chunk_id_label = Label(f"Chunk ID: {self.world.get_chunk_id_at(self.state.selected_cell)}", self.fonts.small_font)
+
                 self.component_list.append(elevation_label)
                 self.component_list.append(temperature_label)
                 self.component_list.append(rainfall_label)
                 self.component_list.append(steepness_label)
                 self.component_list.append(traversal_cost_label)
                 self.component_list.append(chunk_id_label)
+
+                local_chunks_dict = self.world.get_closest_chunks(self.state.selected_cell)
+                for chunk in local_chunks_dict:
+                    self.component_list.append(Label(f"Local Chunk: {self.world.get_biome_name_from_id(chunk['biome'])}, {chunk['distance']}, {chunk['direction']}", self.fonts.small_font))
                 
         else:
             self.component_list.append(Label("No tile selected", self.fonts.large_font, top_padding=2))
