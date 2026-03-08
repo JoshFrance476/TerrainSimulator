@@ -21,6 +21,9 @@ class BiomeConfigManager:
         self.biomes = self.resolve_constants(biomes, self.constants)
         self.update_lookups()
     
+    def get_biome_name_from_id(self, bid):
+        return self.biomes[bid]["name"]
+    
     
     def add_biome(self, name, h, s, v, traversal_cost):
         new_biome = {
