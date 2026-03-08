@@ -41,7 +41,8 @@ class WorldData:
         else:
             elevation[mask & (elevation < self.biome_config.get_sea_level())] = 0.001
     
-
+    def get_biome_name_from_id(self, bid):
+        return self.biome_config.get_biome_name_from_id(bid)
     
     def get_biome_at(self, location):
         return self.biome_config.biomes[self.world_data["biome"][location]]["name"].title()
