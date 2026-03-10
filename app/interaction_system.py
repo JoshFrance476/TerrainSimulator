@@ -81,6 +81,10 @@ class InteractionSystem:
         self.camera.clamp_pan()
         self.refresh_render()
     
+    def generate_map(self):
+        self.world.generate_map()
+        self.refresh_render()
+
     def set_hovered_cell(self, location):
         self.state.hovered_cell = location
     
