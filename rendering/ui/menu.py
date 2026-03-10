@@ -25,13 +25,16 @@ class Menu:
 
         hide_menu_button = Button(120, 20, lambda: setattr(self.state, "show_menu", False), "Hide Menu", self.fonts.small_font)
 
-        save_map_label = Label("Save map", self.fonts.large_font, config.SIDEBAR_WIDTH)
+        save_map_label = Label("Save map", self.fonts.large_font, self.width)
         save_file_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
         save_button = Button(60, 20, lambda: self.interaction_system.save_map(save_file_name.text), "Save", self.fonts.small_font)
 
-        load_map_label = Label("Load map", self.fonts.large_font, config.SIDEBAR_WIDTH)
+        load_map_label = Label("Load map", self.fonts.large_font, self.width)
         load_file_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
         load_button = Button(60,20, lambda: self.interaction_system.load_map(load_file_name.text), "Load", self.fonts.small_font)
+
+        generate_map_label = Label("Generate new map", self.fonts.large_font, self.width)
+        generate_map_button = Button(100, 20, lambda: self.interaction_system.generate_map(), "Generate", self.fonts.small_font)
 
         self.component_list.append(hide_menu_button)
 
@@ -42,6 +45,9 @@ class Menu:
         self.component_list.append(load_map_label)
         self.component_list.append(load_file_name)
         self.component_list.append(load_button)
+
+        self.component_list.append(generate_map_label)
+        self.component_list.append(generate_map_button)
     
     def draw(self, screen):
         pygame.draw.rect(screen, (220,220,220),self.rect)
