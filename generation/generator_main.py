@@ -4,6 +4,7 @@ import numpy as np
 import time
 import logging
 import config
+import random
 
 from generation.map_utils import generate_perlin_noise_map
 from generation.stage_1_generator import calculate_temperature
@@ -16,14 +17,15 @@ if config.LOGGING:
 
 def generate_data_maps(rows, cols, biome_config):
 
+    seed=random.randint(0,10000)
     ## Stage 1
 
     start_time = time.time()
-    elevation_map = generate_perlin_noise_map(rows, cols, config.SCALE*1.3, config.SEED, False, 8, 0.38, 3.3)     
+    elevation_map = generate_perlin_noise_map(rows, cols, config.SCALE*1.3, seed, False, 8, 0.38, 3.3)     
     logging.debug(f"Elevation map generation took {time.time() - start_time:.2f} seconds")
 
     start_time = time.time()
-    rainfall_map = generate_perlin_noise_map(rows, cols, config.SCALE*2, config.SEED*2, True, 5, 0.5, 2.2)    
+    rainfall_map = generate_perlin_noise_map(rows, cols, config.SCALE*2, seed*2, True, 5, 0.5, 2.2)    
     logging.debug(f"Rainfall map generation took {time.time() - start_time:.2f} seconds")
 
     start_time = time.time()
