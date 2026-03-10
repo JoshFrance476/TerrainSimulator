@@ -3,10 +3,9 @@ from skimage.segmentation import flood_fill
 from app.app_state import PaintMode
 
 class WorldEditor:
-    def __init__(self, world, brush_manager, biome_config, state):
+    def __init__(self, world, brush_manager, state):
         self.world = world
         self.brush = brush_manager
-        self.biome_config = biome_config
         self.state = state
 
         self.paint_mode = PaintMode.BRUSH
@@ -58,10 +57,10 @@ class WorldEditor:
         region.hidden_desc = hidden_desc
     
     def add_biome(self, name, h, s, v, traversal_cost):
-        self.biome_config.add_biome(name, h, s, v, traversal_cost)
+        self.world.add_biome(name, h, s, v, traversal_cost)
         self.recompute_after_biome_change()
     
     def edit_biome(self, index, name, h, s, v, traversal_cost):
-        self.biome_config.edit_biome(index, name, h, s, v, traversal_cost)
+        self.world.edit_biome(index, name, h, s, v, traversal_cost)
         self.recompute_after_biome_change()
     
