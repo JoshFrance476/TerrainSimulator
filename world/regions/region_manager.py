@@ -8,8 +8,8 @@ class RegionManager:
         self.rid_counter = 0
 
     
-    def create_region(self):
-        new_region = Region(self.rid_counter)
+    def create_region(self, title="", visible_desc="", hidden_desc=""):
+        new_region = Region(self.rid_counter, title, visible_desc, hidden_desc)
         self.rid_counter += 1
         self.region_list.append(new_region)
         return new_region.rid
@@ -23,6 +23,10 @@ class RegionManager:
         ys, xs = np.nonzero(mask)
         for y, x in zip(ys, xs):
             self.region_map[y][x].discard(rid)
+    
+    def create_region_at_location(self, location, title, visible_desc, hidden_desc):
+        rid = self.create_region(title, visible_desc, hidden_desc)
+        self.region_map[location[0], location[1]].add(rid)
 
     def get_region_map(self):
         return self.region_map
@@ -35,5 +39,6 @@ class RegionManager:
 
     def get_region(self, rid):
         return self.region_list[rid]
+
 
 
