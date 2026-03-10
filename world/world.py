@@ -1,22 +1,15 @@
 from world.world_data import WorldData
 from world.regions.region_manager import RegionManager
 from world.chunks.chunk_manager import ChunkManager
+from generation.biome_config_manager import BiomeConfigManager
 import numpy as np
 import config as config
 import json
+from pathlib import Path
 
 class World:
-    def __init__(self, rows, cols, biome_config):
+    def __init__(self, rows, cols):
         self.rows, self.cols = rows, cols
-        self.data = WorldData(rows, cols, biome_config)
-
-        self.biome_config = biome_config
-
-        self.region_manager = RegionManager(rows, cols)
-
-        self.chunk_manager = ChunkManager(rows, cols, biome_config)
-        self.build_chunk_map()
-
         self.tick_count = 0
 
     def get_region_map(self): 
@@ -28,14 +21,23 @@ class World:
     def get_chunk_id_at(self, location):
         return self.chunk_manager.get_id_at(location)
     
-    def build_chunk_map(self):
-        self.chunk_manager.generate_chunk_map(self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
-    
     def get_closest_chunks(self, location, count=5):
         return self.chunk_manager.get_closest_chunks(location, count)
 
     def get_semantic_chunk_context(self, location):
         return self.chunk_manager.get_semantic_surroundings(location)
+    
+    def get_biome_data_at_location(self, location):
+        return self.biome_config.biomes[(self.get_cell_data(location)['biome'])]
+    
+    def get_biome_data_from_id(self, biome_id):
+        return self.biome_config.biomes[biome_id]
+
+    def get_biomes(self):
+        return self.biome_config.biomes
+
+    def get_starting_location(self):
+        return self.biome_config.get_starting_location()
         
     def step(self):
         self.tick_count += 1
@@ -99,6 +101,12 @@ class World:
     
     def get_map_data(self, map_name):
         return self.data.get_world_data()[map_name]
+
+    def add_biome(self, name, h, s, v, trav_cost):
+        self.biome_config.add_biome(name, h, s, v, trav_cost)
+    
+    def edit_biome(self, biome_index, new_name, new_h, new_s, new_v, new_trav_cost):
+        self.biome_config.edit_biome(biome_index, new_name, new_h, new_s, new_v, new_trav_cost)
     
     def set_map_data(self, map_name, data):
         self.data.set_map_data(map_name, data)
