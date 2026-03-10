@@ -25,7 +25,16 @@ class World:
 
 
     # Loading/Saving ############################################################################################
+    def generate_map(self):
+        config_path = Path("data/saved_maps/DefaultConfig.json")
 
+        with open(config_path, "r") as f:
+            biome_config = json.load(f)
+
+        self.biome_config = BiomeConfigManager(biome_config)        
+        self.data = WorldData(self.rows, self.cols, self.biome_config)
+        self.region_manager = RegionManager(self.rows, self.cols)
+        self.chunk_manager = ChunkManager(self.rows, self.cols, self.get_map_data("colour").copy(), self.get_map_data("biome").copy(), self.biome_config)
 
     def load_map(self, file_name):
         path = Path("data/saved_maps") / file_name
@@ -130,6 +139,7 @@ class World:
     
     def get_semantic_tile_data(self, location):
         biome_data = self.get_biome_data_at_location(location)
+        print(biome_data)
         info = {
             "Biome": biome_data["name"],
             "Biome Description": biome_data["description"],
@@ -151,6 +161,7 @@ class World:
     
     def get_biome_data_from_id(self, biome_id):
         return self.biome_config.biomes[biome_id]
+
 
     def get_biomes(self):
         return self.biome_config.biomes
