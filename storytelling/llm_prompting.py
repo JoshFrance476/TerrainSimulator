@@ -159,39 +159,44 @@ def prompt_character_setup(character_desc, world_desc, story_focus_desc):
     return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"], data["attribute_list"]
 
 
-
-
-summary_schema = {
-    "type": "object",
-    "properties": {
-        "new_region":
-        {
-            "type": "object",
-            "properties": {
-                "feature_id": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string",
-                    "description": "1-4 words"
-                },
-                "visible_description": {
-                    "type": "string",
-                    "description": "Describe what the player expects to find at the location"
-                },
-                "hidden_description": {
-                    "type": "string",
-                    "description": "Explicit hidden lore and story prompts that the player will discover by investigating the location"
-                }
+new_region_schema = {
+    "name": "create_region",
+    "parameters":{
+        "type": "object",
+        "properties": {
+            "feature_id": {
+                "type": "integer"
+            },
+            "title": {
+                "type": "string",
+                "description": "1-4 words"
+            },
+            "visible_description": {
+                "type": "string",
+                "description": "Describe what the player expects to find at the location"
+            },
+            "hidden_description": {
+                "type": "string",
+                "description": "Explicit hidden lore and story prompts that the player will discover by investigating the location"
             }
         },
-        "summary": {
-            "type": "string",
-            "description": "Very short summary of the character's experience"
-        }
-    },
-    "required": ["new_region", "summary"],
-    "additionalProperties": False
+        "required": ["feature_id", "title", "visible_description", "hidden_description"]
+    }
+}
+
+summary_schema = {
+    "name": "generate_summary",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "summary": {
+                "type": "string",
+                "description": "Very short summary of the character's experience"
+            }
+        },
+        "required": ["summary"],
+        "additionalProperties": False
+    }
 }
 
 def prompt_scenario_summary(scenario, chunk_list):
@@ -209,7 +214,7 @@ def prompt_scenario_summary(scenario, chunk_list):
                 You will be given a short section of story which involves actions that the player has performed.
                 Produce a short summary of what the player has gained from the interaction.
                 You will also be provided with a list of features around the player.
-                If the player has learned about something in the area, produce a 'region' schema to add the region to the world.
+                If the player has learned about landmark or point-of-interest that they are not currently at, produce a 'region' schema to add the region to the world.
                 The feature_id will be used to add the region to the relevant feature on the map.
                 The region should describe what the player will find at the location, and will be used to generate a narrative when the player arrives there.
 
@@ -217,9 +222,6 @@ def prompt_scenario_summary(scenario, chunk_list):
                 - 5-15 words only
                 - Describe specifically what the character gained from the interaction
                 - Should describe where the action took place
-
-                
-                Return ONLY valid JSON matching this schema {json.dumps(summary_schema)}.
                 """
             },
             {
@@ -227,14 +229,33 @@ def prompt_scenario_summary(scenario, chunk_list):
                 "content": f"{scenario}. Feature List: {chunk_list}"
             }
         ],
-        response_format={
-            "type": "json_schema",
-            "schema": summary_schema
-        }
+        tools=[{"type": "function", "function": new_region_schema},
+               {"type": "function", "function": summary_schema}],
     )
     print(response)
-    data = json.loads(response.choices[0].message.content)
-    return response.usage.completion_tokens, response.usage.prompt_tokens, data["summary"], data['new_region']
+
+    summary = None
+    new_region = None
+
+    for tool_call in response.choices[0].message.tool_calls:
+        args = json.loads(tool_call.function.arguments)
+
+        if tool_call.function.name == "generate_summary":
+            summary = args.get("summary")
+        elif tool_call.function.name == "create_region":
+            new_region = {
+                "feature_id": args.get("feature_id"),
+                "title": args.get("title"),
+                "visible_description": args.get("visible_description"),
+                "hidden_description": args.get("hidden_description")
+            }
+        
+    return {
+        "completion_tokens": response.usage.completion_tokens,
+        "prompt_tokens": response.usage.prompt_tokens,
+        "summary": summary,
+        "new_region": new_region
+    }
 
 
 
