@@ -31,7 +31,6 @@ class InteractionSystem:
 
         self.tile_interaction(location)
 
-
     def handle(self, cmd):
         if isinstance(cmd, MouseDown):
             self._mouse_down(cmd)
@@ -45,8 +44,7 @@ class InteractionSystem:
             self._key_down(cmd)
         elif isinstance(cmd, KeyUp):
             self._key_up(cmd)
-
-    
+ 
     def set_region_info(self, title, visible_desc, hidden_desc, region_id):
         self.world_editor.set_painted_region_info(title, visible_desc, hidden_desc, region_id)
         self.state.active_region_edit_id = None
@@ -76,7 +74,7 @@ class InteractionSystem:
         self.world.save_map(save_name, player_location)
     
     def load_map(self, file_name):
-        self.world.load_map(file_name)
+        self.world.load_map(file_name+".npz")
         self.player.set_location(self.world.biome_config.get_starting_location())
         self.select_cell(self.player.location)
         self.camera.set_location(self.player.get_location())
@@ -105,7 +103,6 @@ class InteractionSystem:
         self.world_editor.edit_biome(index, name, h, s, v, traversal_cost)
         self.state.left_page = LeftPage.BIOME_EDITOR
         self.refresh_render()
-    
     
     def clear_focus(self):
         if self.state.focused_entity:
@@ -176,8 +173,6 @@ class InteractionSystem:
         
         self.set_hovered_cell(location)
     
-        
-
     def _mouse_down(self, cmd: MouseDown):
         if cmd.button == 3:
             self.state.right_mouse_down = True
@@ -198,7 +193,6 @@ class InteractionSystem:
                 cmd.clicked_ui.focused = True
                 self.state.focused_entity = cmd.clicked_ui
                 
-
     def _map_mouse_down(self, location):
         mode = self.state.interaction_type
         if mode == InteractionType.PAINT_REGION:
@@ -233,7 +227,6 @@ class InteractionSystem:
         if self.state.interaction_type is InteractionType.PAINT_REGION:
             if self.state.active_region_edit_id is not None:
                 self.state.left_page = LeftPage.REGION_EDITOR
-
 
     def _mouse_move(self, cmd: MouseMove):
         if cmd.left_down and self.state.focused_entity and hasattr(self.state.focused_entity, "is_dragged"):
