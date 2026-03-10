@@ -77,18 +77,20 @@ class LeftSidebarController:
         if biome_index != -1:
             biome_info = self.world.get_biome_data_from_id(biome_index)
             tile_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, biome_info["name"])
+            tile_desc = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, biome_info["description"])
             tile_trav_cost = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, str(biome_info["base_traversal_cost"]))
             hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["h"], top_padding=2)
             sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["s"]*100, top_padding=2)
             val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["v"]*100, top_padding=2)
-            submit_button = Button(50, 25, lambda: self.interaction_system.edit_biome(biome_index, tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text)), "Submit", self.fonts.small_font)
+            submit_button = Button(50, 25, lambda: self.interaction_system.edit_biome(biome_index, tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text), tile_desc.text), "Submit", self.fonts.small_font)
         else:
             tile_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
+            tile_desc = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
             tile_trav_cost = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, "0") 
             hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120, top_padding=2)
             sat_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100, top_padding=2)
             val_slider = Slider(self.fonts.small_font, 0, 100, config.SIDEBAR_WIDTH - 120, 100, top_padding=2)
-            submit_button = Button(50, 25, lambda: self.interaction_system.add_biome(tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text)),"Submit", self.fonts.small_font)
+            submit_button = Button(50, 25, lambda: self.interaction_system.add_biome(tile_name.text, hue_slider.value, sat_slider.value/100, val_slider.value/100, float(tile_trav_cost.text), tile_desc.text),"Submit", self.fonts.small_font)
 
         self.component_list.append(
             Label("Tile Manager", self.fonts.header)
@@ -98,6 +100,9 @@ class LeftSidebarController:
 
         self.component_list.append(Label("Tile name:", self.fonts.large_font))
         self.component_list.append(tile_name)
+
+        self.component_list.append(Label("Tile Description:", self.fonts.large_font))
+        self.component_list.append(tile_desc)
 
         self.component_list.append(Label("Traversal Cost:", self.fonts.large_font))
         self.component_list.append(tile_trav_cost)
@@ -143,8 +148,11 @@ class LeftSidebarController:
         self.component_list.append(title_label)
         
         if self.state.selected_cell:
-            biome_name_label = Label(self.world.get_biome_at(self.state.selected_cell), self.fonts.large_font, top_padding=2)
+            biome_data = self.world.get_biome_data_at_location(self.state.selected_cell)
+            biome_name_label = Label(biome_data["name"], self.fonts.large_font, top_padding=2)
+            biome_description_label = Label(biome_data["description"], self.fonts.small_font, top_padding=2)
             self.component_list.append(biome_name_label)
+            self.component_list.append(biome_description_label)
             if self.state.debug_mode:
                 cell_data = self.world.get_cell_data(self.state.selected_cell)
                 elevation_label = Label(f"Elevation: {cell_data['elevation']}", self.fonts.small_font)

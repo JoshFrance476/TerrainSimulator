@@ -56,11 +56,11 @@ class WorldEditor:
         region.visible_desc = visible_desc
         region.hidden_desc = hidden_desc
     
-    def add_biome(self, name, h, s, v, traversal_cost):
-        self.world.add_biome(name, h, s, v, traversal_cost)
+    def add_biome(self, name, h, s, v, traversal_cost, description):
+        self.world.add_biome(name, h, s, v, traversal_cost, description)
         self.recompute_after_biome_change()
     
-    def edit_biome(self, index, name, h, s, v, traversal_cost):
-        self.world.edit_biome(index, name, h, s, v, traversal_cost)
+    def edit_biome(self, index, name, h, s, v, traversal_cost, description):
+        self.world.edit_biome(index, name, h, s, v, traversal_cost, description)
         self.recompute_after_biome_change()
     

@@ -1,6 +1,4 @@
-import json
 import numpy as np
-import colorsys
 
 class BiomeConfigManager:
     def __init__(self, biome_config=None):
@@ -28,18 +26,20 @@ class BiomeConfigManager:
         return self.biomes[bid]["name"]
     
     
-    def add_biome(self, name, h, s, v, traversal_cost):
+    def add_biome(self, name, h, s, v, traversal_cost, description=""):
         new_biome = {
             "name": name,
+            "description": description,
             "colour": {"h": h, "s": s, "v": v},
             "base_traversal_cost": traversal_cost
         }
         self.biomes.append(new_biome)
         self.update_lookups()
     
-    def edit_biome(self, index, name, h, s, v, traversal_cost):
+    def edit_biome(self, index, name, h, s, v, traversal_cost, description=""):
         biome_to_edit = self.biomes[index]
         biome_to_edit["name"] = name
+        biome_to_edit["description"] = description
         biome_to_edit["colour"]["h"] = h
         biome_to_edit["colour"]["s"] = s
         biome_to_edit["colour"]["v"] = v

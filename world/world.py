@@ -122,9 +122,6 @@ class World:
     def get_biome_data(self, x0, y0, x1, y1):
         return self.data.get_biome_data(x0, y0, x1, y1)
 
-    def get_biome_at(self, location):
-        return self.data.get_biome_at(location)
-
     def get_cell_data(self, selected_cell):
         if selected_cell:
             return self.data.get_cell_data(selected_cell)
@@ -132,8 +129,10 @@ class World:
             return None
     
     def get_semantic_tile_data(self, location):
+        biome_data = self.get_biome_data_at_location(location)
         info = {
-            "Biome": self.get_biome_at(location),
+            "Biome": biome_data["name"],
+            "Biome Description": biome_data["description"],
             "Details": {}
         }
         for region in self.region_manager.get_regions_at_location(location):
@@ -159,11 +158,11 @@ class World:
     def get_starting_location(self):
         return self.biome_config.get_starting_location()
 
-    def add_biome(self, name, h, s, v, trav_cost):
-        self.biome_config.add_biome(name, h, s, v, trav_cost)
+    def add_biome(self, name, h, s, v, trav_cost, description):
+        self.biome_config.add_biome(name, h, s, v, trav_cost, description)
     
-    def edit_biome(self, biome_index, new_name, new_h, new_s, new_v, new_trav_cost):
-        self.biome_config.edit_biome(biome_index, new_name, new_h, new_s, new_v, new_trav_cost)
+    def edit_biome(self, biome_index, new_name, new_h, new_s, new_v, new_trav_cost, description):
+        self.biome_config.edit_biome(biome_index, new_name, new_h, new_s, new_v, new_trav_cost, description)
     
 
     # Chunks ############################################################################################

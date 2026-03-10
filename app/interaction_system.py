@@ -94,13 +94,13 @@ class InteractionSystem:
 
         self.state.left_page = LeftPage.REGION_EDITOR
     
-    def add_biome(self, name, h, s, v, traversal_cost):
-        self.world_editor.add_biome(name, h, s, v, traversal_cost)
+    def add_biome(self, name, h, s, v, traversal_cost, description):
+        self.world_editor.add_biome(name, h, s, v, traversal_cost, description)
         self.state.left_page = LeftPage.BIOME_EDITOR
         self.refresh_render()
     
-    def edit_biome(self, index, name, h, s, v, traversal_cost):
-        self.world_editor.edit_biome(index, name, h, s, v, traversal_cost)
+    def edit_biome(self, index, name, h, s, v, traversal_cost, description):
+        self.world_editor.edit_biome(index, name, h, s, v, traversal_cost, description)
         self.state.left_page = LeftPage.BIOME_EDITOR
         self.refresh_render()
     
