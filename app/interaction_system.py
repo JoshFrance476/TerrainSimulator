@@ -71,12 +71,12 @@ class InteractionSystem:
         self.storyteller.prompt_new_interaction()
         self.state.update_right_page = True
     
-    def save_map(self, file_name):
+    def save_map(self, save_name):
         player_location = self.player.get_location()
-        self.world.save_map("data/saved_maps/"+file_name, player_location)
+        self.world.save_map(save_name, player_location)
     
     def load_map(self, file_name):
-        self.world.load_map("data/saved_maps/"+file_name+".npz")
+        self.world.load_map(file_name)
         self.player.set_location(self.world.biome_config.get_starting_location())
         self.select_cell(self.player.location)
         self.camera.set_location(self.player.get_location())
