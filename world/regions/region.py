@@ -1,7 +1,7 @@
 class Region:
-    def __init__(self, rid):
+    def __init__(self, rid, title="", visible_desc="", hidden_desc=""):
         self.rid = rid
-        self.title = ""
-        self.visible_desc = ""
-        self.hidden_desc = ""
+        self.title = title
+        self.visible_desc = visible_desc
+        self.hidden_desc = hidden_desc
         
