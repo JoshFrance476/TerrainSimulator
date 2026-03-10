@@ -90,6 +90,10 @@ class World:
     def create_region(self):
         return self.region_manager.create_region()
 
+    def add_new_region_to_chunk(self, chunk_id, title, visible_desc, hidden_desc):
+        location = self.chunk_manager.get_random_location_in_chunk(chunk_id)
+        self.region_manager.create_region_at_location(location, title, visible_desc, hidden_desc)
+
     def get_world_data(self):
         return self.data.get_world_data()  
     
