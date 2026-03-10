@@ -74,7 +74,7 @@ class InteractionSystem:
         self.world.save_map(save_name, player_location)
     
     def load_map(self, file_name):
-        self.world.load_map(file_name+".npz")
+        self.world.load_map(file_name)
         self.player.set_location(self.world.biome_config.get_starting_location())
         self.select_cell(self.player.location)
         self.camera.set_location(self.player.get_location())
