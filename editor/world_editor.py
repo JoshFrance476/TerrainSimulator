@@ -48,6 +48,9 @@ class WorldEditor:
     def remove_region(self, location, rid):
         self.world.remove_region_with_mask(self.brush.get_brush_mask(location), rid)
     
+    def add_region_to_location(self, location, rid):
+        self.world.add_region_to_location(location, rid)
+    
     def set_painted_region_info(self, title, visible_desc, hidden_desc, region_id):
         region = self.world.get_region(region_id)
         region.title = title
