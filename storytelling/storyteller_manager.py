@@ -96,11 +96,12 @@ class StorytellerManager:
     def submit_action(self, action_index):
         self.current_scenario.submit_action(action_index)
         if self.current_scenario.ended:
-            output_tokens, input_tokens, summary, new_region = prompt_scenario_summary(self.current_scenario.get_interactions_string(), self.world.get_semantic_chunk_context(self.state.selected_cell))
-            if new_region:
+            response = prompt_scenario_summary(self.current_scenario.get_interactions_string(), self.world.get_semantic_chunk_context(self.state.selected_cell))
+            if response["new_region"]:
+                new_region = response["new_region"]
                 self.world.add_new_region_to_chunk(new_region["feature_id"], new_region["title"], new_region["visible_description"], new_region["hidden_description"])
-            self.character_history.append(summary)
-            self.update_token_counts(output_tokens, input_tokens)
+            self.character_history.append(response["summary"])
+            self.update_token_counts(response["completion_tokens"], response["prompt_tokens"])
         else:
             self.prompt_new_interaction()
         
