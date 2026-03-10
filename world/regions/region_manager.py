@@ -31,7 +31,7 @@ class RegionManager:
     
     def create_region_at_location(self, location, title, visible_desc, hidden_desc):
         rid = self.create_region(title, visible_desc, hidden_desc)
-        self.region_map[location[0], location[1]].add(rid)
+        self.region_map[location[0]][location[1]].add(rid)
 
     def get_region_map(self):
         return self.region_map
