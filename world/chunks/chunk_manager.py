@@ -60,7 +60,7 @@ class ChunkManager:
 
             results.append({
                 "id": chunk_id,
-                "biome": self.biome_config.get_biome_name_from_id(chunk_data["biome"]),
+                "biome": (chunk_data["biome"]),
                 "distance": float(np.sqrt(min_dist2)),
                 "direction": direction
             })
