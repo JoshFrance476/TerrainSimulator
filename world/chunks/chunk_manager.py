@@ -58,6 +58,7 @@ class ChunkManager:
             direction = self.vector_to_direction(nearest_row - row, nearest_col - col)
 
             results.append({
+                "id": chunk_id,
                 "biome": self.biome_config.get_biome_name_from_id(chunk_data["biome"]),
                 "distance": float(np.sqrt(min_dist2)),
                 "direction": direction
@@ -65,12 +66,17 @@ class ChunkManager:
 
         results.sort(key=lambda x: x["distance"])
         return results[:count]
+
+    def get_random_location_in_chunk(self, chunk_id):
+        coords = self.chunks[chunk_id]["coords"]
+        index = np.random.randint(0, len(coords))
+        return coords[index]
     
     def get_semantic_surroundings(self, location):
         surrounding_chunks = self.get_closest_chunks(location, 5)
         description = ""
         for chunk in surrounding_chunks:
-            description += f"Biome: {chunk['biome']}, Direction: {chunk['direction']}. "
+            description += f"ID: {chunk['id']}, Biome: {chunk['biome']}, Direction: {chunk['direction']}. "
         return description
 
     def vector_to_direction(self, dy, dx):
