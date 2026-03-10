@@ -56,6 +56,7 @@ class InteractionSystem:
     
     def submit_pending_interaction_action(self, action_index):
         self.storyteller.submit_action(action_index)
+        self.refresh_render()
         self.state.update_right_page = True
     
     def submit_custom_pending_interaction_action(self, action_desc):
