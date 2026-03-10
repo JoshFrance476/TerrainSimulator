@@ -164,52 +164,67 @@ def prompt_character_setup(character_desc, world_desc, story_focus_desc):
 summary_schema = {
     "type": "object",
     "properties": {
-        "notebook_list": {
-            "type": "array",
-            "description": "list of key details about the user's character",
-            "items": {"type": "string"}
+        "new_region":
+        {
+            "type": "object",
+            "properties": {
+                "feature_id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string",
+                    "description": "1-4 words"
+                },
+                "visible_description": {
+                    "type": "string",
+                    "description": "Describe what the player expects to find at the location"
+                },
+                "hidden_description": {
+                    "type": "string",
+                    "description": "Explicit hidden lore and story prompts that the player will discover by investigating the location"
+                }
+            }
         },
         "summary": {
             "type": "string",
-            "description": "Very short summary of the character's experience to add to character history"
+            "description": "Very short summary of the character's experience"
         }
     },
-    "required": ["notebook_list", "summary"],
+    "required": ["new_region", "summary"],
     "additionalProperties": False
 }
 
-def prompt_scenario_summary(scenario, notebook):
+def prompt_scenario_summary(scenario, chunk_list):
     response = client.chat.completions.create(
         model=model,
-        temperature=1,
+        temperature=0.7,
         max_tokens=400,
         reasoning_effort="low",
         messages=[
             {
                 "role": "system",
                 "content": f"""
-                You summarise logs of events that the user's character experiences.
-                You will be given a short section of story which involves actions that the user's character has performed.
-                CRITICAL RULES (must follow):
-                1) Notebook updates are RARE. Do NOT add or modify notebook items unless the story causes a durable change in the character:
-                - New or lost equipment/resources that persist
-                - New learned skill/training gained
-                - Injury/condition that persists
-                - Major reputation/faction relationship change
-                - Major objective/role change
-                If none of the above occurred, return the notebook_list EXACTLY as provided, with no additions, removals, or edits.
+                You summarise interactions that the player has in a singleplayer procedural story game.
+                The world is dynamic and reacts to the players decisions.
+                You will be given a short section of story which involves actions that the player has performed.
+                Produce a short summary of what the player has gained from the interaction.
+                You will also be provided with a list of features around the player.
+                If the player has learned about something in the area, produce a 'region' schema to add the region to the world.
+                The feature_id will be used to add the region to the relevant feature on the map.
+                The region should describe what the player will find at the location, and will be used to generate a narrative when the player arrives there.
 
-                2) Summary must be succinct:
+                Summary must be succinct:
                 - 5-15 words only
                 - Describe specifically what the character gained from the interaction
                 - Should describe where the action took place
+
+                
                 Return ONLY valid JSON matching this schema {json.dumps(summary_schema)}.
-                Provided is the current notebook: {notebook}.
                 """
             },
             {
                 "role": "user",
-                "content": scenario
+                "content": f"{scenario}. Feature List: {chunk_list}"
             }
         ],
         response_format={
@@ -219,7 +234,7 @@ def prompt_scenario_summary(scenario, notebook):
     )
     print(response)
     data = json.loads(response.choices[0].message.content)
-    return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"], data["summary"]
+    return response.usage.completion_tokens, response.usage.prompt_tokens, data["summary"], data['new_region']
 
 
 
@@ -258,11 +273,9 @@ def prompt_scenario(prompt, world_desc, story_focus_desc):
                 "role": "system",
                 "content": f"""You are the storyteller in a single-player game set on a procedurally-generated map.
                 The game is focused on realism and immersion in a given world. Situations should be natural and believable.
+                The world is made up of tiles representing a small area of the map. Each interaction takes place on one tile and shouldn't involve moving to other tiles.
                 The user has defined the world context, their character and the type of stories they want to experience.
                 Based on the previous actions the player has taken, write a short description of the player's situation.
-                Most interactions should feel like brief moments during travel.
-                Situations are usually small observations, minor obstacles, or short interactions.
-                Focus on the immediate surroundings of the player, do not mention things in the distance.
                 The description should be in the second-person.
                 Provide the player with several actions that they can perform, with a probability of success (as a percentage) based on the character and the situation.
                 Actions should be directly related to the description you provide and the character's abilities.
@@ -270,19 +283,18 @@ def prompt_scenario(prompt, world_desc, story_focus_desc):
                 You will receive a single JSON object in the user message under CONTEXT_JSON.
                 The context you will be provided with:
                 Character notebook: Provides key details on the character. Base actions on this.
-                Previous actions on other tiles: This is what the player has already experienced. Use it to provide continuity and build on it.
-                Movement: Describes the biome the player was previously on, which direction they moved, and the biome they are on now. Use it to frame the situation.
-                Tile: 
+                Previous actions on other tiles: This is what the player has already experienced elsewhere on the map. Use it to provide continuity and build on it.
+                Movement: Describes the tile the player was previously on, which direction they moved, and the tile they are on now. Use it to frame the situation.
+                Tile: Describes the current tile the player is on.
                 Biome: Self explanatory
                 Details: Provides a list of all relevant story context.
-                Visible description: This is context that the player can see. Treat this as fact.
+                Visible description: This is context that is known to the player. Treat this as fact.
                 Hidden description: This is context that is hidden from the player. Use it to build exciting and engaging narratives.
                 Previous events on this tile: If the player has already begun their interaction on the current tile, this will show the previous descriptions and player actions. These are provided in chronological order, you should follow on from the last one.
+                Location context: This describes the tiles around the player and their direction. Use it to immerse the player.
                 Interaction descriptions should be no longer than 50 words, and each action should be summarised in less than 15 words.
-                Keep the tone and content of interactions consistent with the context provided.
                 Interactions should follow on previous interactions if provided, but MUST end after a few interactions. 
                 The player can read their previous interactions, so don't repeat details if it's not necessary.
-                You should assume that the context describes a small area around the character, and actions must not move the player from that area.
                 Any option that results in the player leaving, travelling on, sleeping or resting should end the interaction by setting the exit_flag to True.
                 Unless the current situation is unavoidable, the player should be provided an option to continue travelling with exit_flag. This option should be a vague "carry on moving" and not a "travel to (location)"
                 Return ONLY valid JSON matching this schema: {json.dumps(scenario_schema)}.
