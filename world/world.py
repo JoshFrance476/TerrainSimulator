@@ -122,44 +122,57 @@ class World:
         return self.data.get_biome_name_from_id(biome_id)
 
     def save_map(self, file_name, starting_location):
+        path = Path("data/saved_maps") / file_name
+        path.mkdir(parents=True, exist_ok=True)
+
         self.biome_config.set_starting_location(starting_location)
         np.savez(
-            file_name,
+            path / file_name,
             # numeric maps
             **self.data.world_data,
 
             # region manager (python objects)
             region_map=np.array(self.region_manager.region_map, dtype=object),
             region_list=np.array(self.region_manager.region_list, dtype=object),
-
-            biome_config = json.dumps({
-                "constants": self.biome_config.constants,
-                "biomes": self.biome_config.biomes
-})
         )
+        biome_config = {
+                "constants": self.biome_config.constants,
+                "biomes": self.biome_config.biomes}
+        
+        with open(f'{path/file_name}.json', 'w') as f:
+            json.dump(biome_config, f)
 
-    
+
     def load_map(self, file_name):
-        loaded = np.load(file_name, allow_pickle=True)
+        path = Path("data/saved_maps") / file_name
+        npz_path = path / f"{file_name}.npz"
+        json_path = path / f"{file_name}.json"
 
-        # restore numeric maps only
-        self.data.world_data = {
+        with open(json_path, "r") as f:
+            biome_config = json.load(f)
+
+        self.biome_config = BiomeConfigManager(biome_config)
+
+        loaded = np.load(npz_path, allow_pickle=True)
+
+        # Restore numeric maps only
+        world_data = {
             k: loaded[k]
             for k in loaded.files
-            if k not in ("region_map", "region_list", "biome_config")
+            if k not in ("region_map", "region_list")
         }
 
-        # restore region manager
-        
-        self.region_manager.region_map = loaded["region_map"]
-        self.region_manager.region_list = loaded["region_list"].tolist()
+        # Restore region manager
+        region_map = loaded["region_map"].tolist()
+        region_list = loaded["region_list"].tolist()
+        rid_counter = len(region_list)
 
-        self.region_manager.rid_counter = len(self.region_manager.region_list)
-        
-        self.biome_config.load_biome_config_file(json.loads(str(loaded['biome_config'])))
 
-        self.build_chunk_map()
+        self.data = WorldData(self.rows, self.cols, self.biome_config, world_data)
 
+        self.region_manager = RegionManager(self.rows, self.cols, region_map, region_list, rid_counter)
+
+        self.chunk_manager = ChunkManager(self.rows, self.cols, self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
 
 
 
