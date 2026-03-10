@@ -3,15 +3,18 @@ import numpy as np
 import colorsys
 
 class BiomeConfigManager:
-    def __init__(self):
+    def __init__(self, biome_config=None):
+        
+        if biome_config:
+            self.load_biome_config_file(biome_config)
+        else:
+            self.biomes = {}
+            self.constants = {}
 
-        self.biomes = {}
-        self.constants = {}
-
-        self.name_to_id = {}
-        self.by_name = {}
-        self.colour_lookup = {}
-        self.cost_lookup = {}
+            self.name_to_id = {}
+            self.by_name = {}
+            self.colour_lookup = {}
+            self.cost_lookup = {}
 
     
     def load_biome_config_file(self, biome_config_file):         

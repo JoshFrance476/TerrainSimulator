@@ -1,11 +1,15 @@
 from generation.generator_main import generate_data_maps, update_stage_3, update_steepness, update_biome
 
 class WorldData:
-    def __init__(self, rows, cols, biome_config):
+    def __init__(self, rows, cols, biome_config, world_data=None):
         self.rows, self.cols = rows, cols
         self.biome_config = biome_config
-        self.world_data = generate_data_maps(self.rows, self.cols, self.biome_config)
-        
+        if world_data:
+            self.world_data = world_data
+        else:
+            self.world_data = generate_data_maps(self.rows, self.cols, self.biome_config)
+    
+
     def get_cell_data(self, pos):
         r, c = pos
 

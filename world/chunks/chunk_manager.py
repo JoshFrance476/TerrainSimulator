@@ -4,10 +4,11 @@ from skimage.measure import regionprops, label
 from utils.colour_utils import hsv_to_rgb_array
 
 class ChunkManager:
-    def __init__(self, rows, cols, biome_config):
-        self.biome_config = biome_config
+    def __init__(self, rows, cols, colour_map, biome_map):
         self.chunk_map = np.full((rows, cols), -1, dtype=np.int16)
         self.chunks = {}
+
+        self.generate_chunk_map(colour_map, biome_map)
 
     def get_local_chunks(self, location, radius = 3):
         h, w = self.chunk_map.shape
@@ -147,8 +148,6 @@ class ChunkManager:
 
         for chunk in regionprops(chunk_map):
             self.chunks[chunk.label]["centroid"] = chunk.centroid
-
-        
 
         self.chunk_map = chunk_map
     

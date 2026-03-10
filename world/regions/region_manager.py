@@ -2,10 +2,15 @@ from world.regions.region import Region
 import numpy as np
 
 class RegionManager:
-    def __init__(self, rows, cols):
-        self.region_map = [[set() for _ in range(cols)] for _ in range(rows)]
-        self.region_list = []
-        self.rid_counter = 0
+    def __init__(self, rows, cols, region_map=None, region_list=None, rid_counter=None):
+        if region_map:
+            self.region_map = region_map
+            self.region_list = region_list
+            self.rid_counter = rid_counter
+        else:
+            self.region_map = [[set() for _ in range(cols)] for _ in range(rows)]
+            self.region_list = []
+            self.rid_counter = 0
 
     
     def create_region(self, title="", visible_desc="", hidden_desc=""):
