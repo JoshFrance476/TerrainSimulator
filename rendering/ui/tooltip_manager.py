@@ -3,9 +3,8 @@ from rendering.ui.widgets.label import Label
 import pygame
 
 class TooltipManager:
-    def __init__(self, fonts, world, biome_config):
+    def __init__(self, fonts, world):
         self.world = world
-        self.biome_config = biome_config
         self.fonts = fonts
 
         self.tooltip_list = []
@@ -14,9 +13,9 @@ class TooltipManager:
         self.tooltip_list = []
         regions = self.world.get_regions_at_location(location)
 
-        biome = self.biome_config.biomes[self.world.get_cell_data(location)["biome"]]["name"].title()
+        biome_name = self.world.get_biome_data_at_location(location)['name'].title()
         tooltip = Tooltip(self.fonts.small_font)
-        tooltip.add_components([Label(biome, self.fonts.large_font, tooltip.max_width, left_padding=0)])
+        tooltip.add_components([Label(biome_name, self.fonts.large_font, tooltip.max_width, left_padding=0)])
         self.tooltip_list.append(tooltip)
 
         for region in regions:

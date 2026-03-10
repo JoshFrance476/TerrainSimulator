@@ -11,12 +11,11 @@ from app.app_state import InteractionType, LeftPage, RightPage
 
 
 class UIManager:
-    def __init__(self, state, camera, storyteller, fonts, world, biome_config, get_brush_attributes):
+    def __init__(self, state, camera, storyteller, fonts, world, get_brush_attributes):
         self.state = state
         self.camera = camera
         self.interaction_system = None
         self.storyteller = storyteller
-        self.biome_config = biome_config
         self.world = world
         self.fonts = fonts
 
@@ -31,10 +30,10 @@ class UIManager:
 
     def set_interaction_system(self, interaction_system):
         self.interaction_system = interaction_system
-        self.left_sidebar = LeftSidebarController(self.fonts, self.state, self.world, self.interaction_system, self.storyteller, self.biome_config)
-        self.right_sidebar = RightSidebarController(self.fonts, self.storyteller, self.interaction_system, self.biome_config)
+        self.left_sidebar = LeftSidebarController(self.fonts, self.state, self.world, self.interaction_system, self.storyteller)
+        self.right_sidebar = RightSidebarController(self.fonts, self.storyteller, self.interaction_system)
         self.menu = Menu(self.fonts, self.interaction_system, self.state)
-        self.tooltips = TooltipManager(self.fonts, self.world, self.biome_config)
+        self.tooltips = TooltipManager(self.fonts, self.world)
         self.brush_window = BrushWindow(self.fonts, self.interaction_system)
 
         self.right_sidebar.show_current_scenario_screen()

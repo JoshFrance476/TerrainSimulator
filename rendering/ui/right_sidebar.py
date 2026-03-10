@@ -9,10 +9,9 @@ from rendering.ui.widgets.textbox import TextBox
 
 
 class RightSidebarController:
-    def __init__(self, fonts, storyteller, interaction_system, biome_config):
+    def __init__(self, fonts, storyteller, interaction_system):
         self.fonts = fonts
         self.component_list = []
-        self.biome_config = biome_config
 
         self.interaction_system = interaction_system
         self.storyteller = storyteller

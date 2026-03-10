@@ -11,12 +11,11 @@ from rendering.ui.widgets.line_divider import LineDivider
 from app.app_state import LeftPage
 
 class LeftSidebarController:
-    def __init__(self, fonts, state, world, interaction_system, storyteller, biome_config):
+    def __init__(self, fonts, state, world, interaction_system, storyteller):
         self.state = state
         self.world = world
         self.fonts = fonts
         self.component_list = []
-        self.biome_config = biome_config
 
         self.interaction_system = interaction_system
         self.storyteller = storyteller
@@ -76,7 +75,7 @@ class LeftSidebarController:
         self.clear_page()
 
         if biome_index != -1:
-            biome_info = self.biome_config.biomes[biome_index]
+            biome_info = self.world.get_biome_data_from_id(biome_index)
             tile_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, biome_info["name"])
             tile_trav_cost = TextBox(self.interaction_system, self.fonts.small_font, 150, 20, str(biome_info["base_traversal_cost"]))
             hue_slider = Slider(self.fonts.small_font, 0, 360, config.SIDEBAR_WIDTH - 120, biome_info["colour"]["h"], top_padding=2)
@@ -122,7 +121,7 @@ class LeftSidebarController:
         self.component_list.extend(self.navigation_bar)
         self.component_list.append(Label("Biome Manager", self.fonts.header))
         biome_container_list = ContainerList(config.SIDEBAR_WIDTH-10, 500)
-        for index, biome in enumerate(self.biome_config.biomes):
+        for index, biome in enumerate(self.world.get_biomes()):
             biome_container = ComponentContainer(True)
             biome_container.add_component(Label(biome["name"].capitalize(), self.fonts.large_font, left_padding=5, top_padding=5))
             biome_container.add_component([ColourPreview(20, 20, biome["colour"]["h"], biome["colour"]["s"], biome["colour"]["v"]),
