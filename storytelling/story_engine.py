@@ -47,6 +47,9 @@ class StoryEngine:
 
     def clear_scenario(self):
         self.state.current_scene = None
+    
+    def add_to_movement_history(self, movement):
+        self.state.movement_history.append(movement)
 
     
     def get_most_recent_movement_string(self):
