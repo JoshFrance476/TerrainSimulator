@@ -287,7 +287,7 @@ class InteractionSystem:
             self.select_cell(self.player.location)
             self.camera.set_location(self.player.get_location())
             self.camera.clamp_pan()
-            self.story_engine.movement_history.append({"direction": direction, "biome": self.world.get_biome_at(self.player.location)})
+            self.story_engine.add_to_movement_history({"direction": direction, "biome": self.world.get_biome_data_at_location(self.player.location)["name"]})
             self.refresh_render()
 
     def _key_up(self, cmd: KeyUp):
