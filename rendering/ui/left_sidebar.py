@@ -136,6 +136,7 @@ class LeftSidebarController:
             biome_container_list.add_container(biome_container)
         
         self.component_list.append(biome_container_list)
+        self.component_list.append(LineDivider(config.SIDEBAR_WIDTH, thickness=0, top_padding=10))
         self.component_list.append(Button(100, 20, lambda: (setattr(self.state, "active_biome_edit_id", -1),
                                                             setattr(self.state, "left_page", LeftPage.TILE_EDITOR)), "Add Region", self.fonts.small_font))
     
