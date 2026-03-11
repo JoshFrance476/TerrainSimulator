@@ -8,16 +8,18 @@ from rendering.camera import Camera
 from world.world import World
 from world.map_entity import MapEntity
 from utils.fps_monitor import FPSMonitor
-from storytelling.storyteller_manager import StorytellerManager
+from storytelling.story_engine import StoryEngine
 from editor.brush_manager import BrushManager
 from app.input_system import InputSystem
 from app.interaction_system import InteractionSystem
 from app.render_system import RenderSystem
+from storytelling.story_state import StoryState
 
 class AppController:
     def __init__(self, screen, fonts):
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
-        self.world.load_map('ColonialFantasyTest')
+        #self.world.load_map('ColonialFantasy')
+        self.world.generate_map()
         self.camera = Camera()
         
         self.player = MapEntity(location = (self.world.get_starting_location()), 
@@ -28,17 +30,19 @@ class AppController:
         self.fonts = fonts
         
         self.brush = BrushManager()
-        self.state = AppState()
-        self.world_editor = WorldEditor(self.world, self.brush, self.state)
+        self.app_state = AppState()
+        self.world_editor = WorldEditor(self.world, self.brush, self.app_state)
 
-        self.map_renderer = MapRenderer(self.world, self.camera, self.state)
+        self.map_renderer = MapRenderer(self.world, self.camera, self.app_state)
 
-        self.storyteller = StorytellerManager(self.world, self.state)
+        self.story_state = StoryState()
+        self.storyteller = StoryEngine(self.world, self.story_state)
+        
 
-        self.ui_manager = UIManager(self.state, self.camera, self.storyteller, fonts, self.world, self.brush.get_attributes)
+        self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush.get_attributes)
         self.input_system = InputSystem(self.ui_manager, self.get_cell_at_mouse_position)
 
-        self.interaction_system = InteractionSystem(self.state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.get_cell_at_mouse_position, self.ui_manager.mouse_on_map)
+        self.interaction_system = InteractionSystem(self.app_state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.get_cell_at_mouse_position, self.ui_manager.mouse_on_map)
 
         self.ui_manager.set_interaction_system(self.interaction_system)
         
