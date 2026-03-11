@@ -4,14 +4,14 @@ from app.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, Key
 from app.app_state import InteractionType, LeftPage, RightPage, PaintMode
 
 class InteractionSystem:
-    def __init__(self, state, camera, player, world_editor, storyteller, world, brush, refresh_render_function, get_cell_at_mouse_position_function, mouse_on_map_function):
+    def __init__(self, state, camera, player, world_editor, story_engine, world, brush, refresh_render_function, get_cell_at_mouse_position_function, mouse_on_map_function):
         self.state = state
         self.camera = camera
         self.player = player
         self.world_editor = world_editor
         self.world = world
         self.brush = brush
-        self.storyteller = storyteller
+        self.story_engine = story_engine
         self.refresh_render = refresh_render_function
         self.get_cell = get_cell_at_mouse_position_function
         self.mouse_on_map = mouse_on_map_function
@@ -53,20 +53,20 @@ class InteractionSystem:
         self.state.left_page = LeftPage.BIOME_EDITOR
     
     def submit_pending_interaction_action(self, action_index):
-        self.storyteller.submit_action(action_index)
+        self.story_engine.choose_action(action_index, self.state.selected_cell)
         self.refresh_render()
         self.state.update_right_page = True
     
     def submit_custom_pending_interaction_action(self, action_desc):
-        self.storyteller.submit_custom_action(action_desc)
+        self.story_engine.submit_custom_action(action_desc)
         self.state.update_right_page = True
     
     def exit_scenario(self):
-        self.storyteller.current_scenario = None
+        self.story_engine.clear_scenario()
         self.state.update_right_page = True
     
     def prompt_scenario(self):
-        self.storyteller.prompt_new_interaction()
+        self.story_engine.begin_or_continue_scene(self.state.selected_cell)
         self.state.update_right_page = True
     
     def save_map(self, save_name):
@@ -287,7 +287,7 @@ class InteractionSystem:
             self.select_cell(self.player.location)
             self.camera.set_location(self.player.get_location())
             self.camera.clamp_pan()
-            self.storyteller.movement_history.append({"direction": direction, "biome": self.world.get_biome_at(self.player.location)})
+            self.story_engine.movement_history.append({"direction": direction, "biome": self.world.get_biome_at(self.player.location)})
             self.refresh_render()
 
     def _key_up(self, cmd: KeyUp):
