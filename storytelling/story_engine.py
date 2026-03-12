@@ -7,20 +7,32 @@ class StoryEngine:
         self.world = world
         self.state = state
         self.llm = StoryLLM()
+
+        self.completion_tokens = 0
+        self.prompt_tokens = 0
+
+        self.story_inspo = self.setup_story(self.state.character_description, self.state.world_description, self.state.story_focus_description)
     
     def setup_character(self, character_desc, world_desc, story_desc):
-        notebook, stats, usage = self.llm.prompt_character_setup(character_desc, world_desc, story_desc)
-        self.state.notebook = notebook
-        self.state.stats = stats
+        response = self.llm.prompt_character_setup(character_desc, world_desc, story_desc)
+        self.state.notebook = response["notebook"]
+        self.state.stats = response["attributes"]
+        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
+    
+    def setup_story(self, character_desc, world_desc, story_desc):
+        response = self.llm.prompt_story_setup(character_desc, world_desc, story_desc)
+        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
+        return response["story_list"]
     
     def begin_or_continue_scene(self, selected_cell):
         context = self._build_context(selected_cell)
-        response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description)
+        response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description, self.story_inspo)
 
         if self.state.current_scene is None:
             self.state.current_scene = Scenario()
         
         self.state.current_scene.set_pending_interaction(response["description"], response["actions"])
+        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
     
     def choose_action(self, action_index, selected_cell):
         scene = self.state.current_scene
@@ -28,6 +40,7 @@ class StoryEngine:
 
         if scene.ended:
             response = self.llm.prompt_scene_summary(scene.get_interactions_string(), self.world.get_semantic_chunk_context(selected_cell))
+            self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
             self.state.character_history.append(response["summary"])
             new_region = response["new_region"]
             if new_region:
@@ -76,3 +89,10 @@ class StoryEngine:
             "location_context": self.world.get_semantic_chunk_context(selected_cell)
         }
         return json.dumps(context, ensure_ascii=False)
+    
+    def update_tokens(self, prompt_tokens, completion_tokens):
+        self.prompt_tokens += prompt_tokens
+        self.completion_tokens += completion_tokens
+    
+    def get_token_usage(self):
+        return f"Prompt tokens: {self.prompt_tokens}. Completion tokens: {self.completion_tokens}. Total cost (gpt-oss-120b): {round(self.prompt_tokens*0.000015+self.completion_tokens*0.00006, 5)} cents"
