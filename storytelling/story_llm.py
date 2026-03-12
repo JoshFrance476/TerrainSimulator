@@ -1,4 +1,4 @@
-from storytelling.llm_prompting import new_region_schema, scene_schema, story_setup_schema, summary_schema, character_setup_schema
+from storytelling.llm_prompting import new_region_schema, scene_schema, story_setup_schema, summary_schema, character_setup_schema, scene_setup_schema
 from together import Together
 import json
 
@@ -15,7 +15,7 @@ class StoryLLM:
         self.summary_schema = summary_schema
         self.character_setup_schema = character_setup_schema
     
-    def prompt_scene(self, prompt, world_desc, story_focus_desc):
+    def prompt_scene(self, context, world_desc, story_focus_desc, scene_focus=""):
         response = self.client.chat.completions.create(
             model=self.model,
             temperature=0.7,
@@ -28,8 +28,7 @@ class StoryLLM:
                     The game is focused on realism and immersion in a given world. Situations should be natural and believable.
                     The world is made up of tiles representing a small area of the map. Each interaction takes place on one tile and shouldn't involve moving to other tiles.
                     The user has defined the world context, their character and the type of stories they want to experience.
-                    Based on the previous actions the player has taken, write a short description of the player's situation.
-                    The description should be in the second-person.
+                    Based on the given context, write a short second-person description of the player's situation.
                     Provide the player with several actions that they can perform, with a probability of success (as a percentage) based on the character and the situation.
                     Actions should be directly related to the description you provide and the character's abilities.
                     Most actions should have a probability of 100, only give 'challenging' actions a non-certain probability.
@@ -40,26 +39,30 @@ class StoryLLM:
                     Movement: Describes the tile the player was previously on, which direction they moved, and the tile they are on now. Use it to frame the situation.
                     Tile: Describes the current tile the player is on.
                     Biome: Self explanatory
-                    Details: Provides a list of all relevant story context.
-                    Visible description: This is context that is known to the player. Treat this as fact.
-                    Hidden description: This is context that is hidden from the player. Use it to build exciting and engaging narratives.
-                    Previous events on this tile: If the player has already begun their interaction on the current tile, this will show the previous descriptions and player actions. These are provided in chronological order, you should follow on from the last one.
-                    Location context: This describes the tiles around the player and their direction. Use it to immerse the player.
-                    Interaction descriptions should be no longer than 50 words, and each action should be summarised in less than 15 words.
+                    Details: All relevant story context.
+                    Visible description: Context known to the player. Treat this as fact.
+                    Hidden description: Context hidden from the player. Use it to build exciting and engaging narratives.
+                    Previous events on this tile: Will show the previous descriptions and player actions. Provided in chronological order. Follow on from the last one.
+                    Location context: The tiles around the player and their direction. Use it to immerse the player.
+                    Interaction descriptions should be no longer than 50 words, and each action summarised in less than 15 words.
                     Interactions should follow on previous interactions if provided, but MUST end after a few interactions. 
                     The player can read their previous interactions, so don't repeat details if it's not necessary.
                     Any option that results in the player leaving, travelling on, sleeping or resting should end the interaction by setting the exit_flag to True.
                     Unless the current situation is unavoidable, the player should be provided an option to continue travelling with exit_flag. This option should be a vague "carry on moving" and not a "travel to (location)"
-                    Description of the world: {world_desc}. Description of the story focus: {story_focus_desc}."""
+                    Description of the world: {world_desc}. Description of the story focus: {story_focus_desc}.
+                    Return only JSON matching the provided schema."""
                 },
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": f"{context} Scene focus: {scene_focus}"
                 }
             ],
             response_format={
                 "type": "json_schema",
-                "schema": scene_schema
+                "json_schema": {
+                    "name": "scene",
+                    "schema": scene_schema
+                }
             }
         )
         print(response)
@@ -75,16 +78,18 @@ class StoryLLM:
         response = self.client.chat.completions.create(
             model=self.model,
             temperature=1,
-            max_tokens=800,
+            max_tokens=2000,
             reasoning_effort="medium",
             messages=[
                 {
                     "role": "system",
                     "content": f"""
-                    You are setting up a list of possible scenarios for a singleplayer story game.
-                    Given the context that the user has provided, generate a list of 8-14 different scenario prompts that the user might experience in the world.
-                    Scenarios should be short and ambiguous.
-                    Return ONLY valid JSON matching this schema: {json.dumps(story_setup_schema)}
+                    You are setting up a list of potential scenes to give to a storyteller in a single-player game set on a procedurally-generated map.
+                    This list of scenes will be used to inspire quests and situations that the player will find themselves in and make decisions about.
+                    The game is focused on realism and immersion in a given world. Scenes should be natural and believable within the given context.
+                    Given the context that the user has provided, generate a list of 8-14 different scenes that the user might experience in the world.
+                    Each scene should be one sentence describing a location or a situation that the player might find themselves in.
+                    Scenes should be immersive and unpredictable to create an exciting role-playing story game where the players decisions have an impact on their experience.
                     """
                 },
                 {
@@ -92,7 +97,7 @@ class StoryLLM:
                     "content": f"""
                     Character description: {character_desc},
                     World description: {world_desc},
-                    "Story focus: {story_focus_desc}.
+                    Story focus: {story_focus_desc}.
                     """
                 }
             ],
@@ -165,6 +170,48 @@ class StoryLLM:
             "summary": summary,
             "new_region": new_region
         }
+
+    def prompt_scene_setup(self, context, world_desc, story_focus_desc):
+        response = self.client.chat.completions.create(
+            model=self.model,
+            temperature=0.7,
+            max_tokens=500,
+            reasoning_effort="medium",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""
+                    You are providing scene prompts to an LLM storyteller in a single-player procedural story game.
+                    The prompt you provide will be given to an LLM to set up a small scene for the player in which the player will be presented with a description of the area
+                    and actions they can choose to take. 
+                    The game is focused on realism and immersion in a given world. Scenes should be natural and believable within the given context.
+                    The scene should be immersive and engaging.
+                    The prompt should be a short sentence that will be used to inspire a quest or situation, and should be left open-ended.
+                    The prompt should be based purely on the context provided and should not infer details about the surroundings. 
+                    If there are no notable features, build the prompt around that.
+                    Description of the world: {world_desc}.
+                    Description of the story focus: {story_focus_desc}.
+                    """
+                },
+                {
+                    "role": "user",
+                    "content": f"""
+                    Location context: {context}
+                """
+                }
+            ],
+            response_format={
+                "type": "json_schema",
+                "schema": scene_setup_schema
+            }
+        )
+        print(response)
+        data = json.loads(response.choices[0].message.content)
+        return {
+            "completion_tokens": response.usage.completion_tokens,
+            "prompt_tokens": response.usage.prompt_tokens,
+            "focus": data["scene_focus"],
+            }
     
     def prompt_character_setup(self, character_desc, world_desc, story_focus_desc):
         response = self.client.chat.completions.create(
