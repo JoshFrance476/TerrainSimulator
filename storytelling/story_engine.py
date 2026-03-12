@@ -20,14 +20,25 @@ class StoryEngine:
         response = self.llm.prompt_story_setup(character_desc, world_desc, story_desc)
         self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
         return response["story_list"]
-    
-    def begin_or_continue_scene(self, selected_cell):
-        context = self._build_context(selected_cell)
-        response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description, self.story_inspo)
 
+    def setup_scene(self, context):
+        response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description)
+
+        self.state.current_scene = Scenario(focus=response["focus"])
+
+
+    
+    def generate_scene_interaction(self, selected_cell):
         if self.state.current_scene is None:
-            self.state.current_scene = Scenario()
+            context = self._build_context(selected_cell, full_context=True)
+            self.setup_scene(context)
         
+        context = self._build_context(selected_cell, full_context=False)
+        
+        if self.state.current_scene.interaction_count == 0:
+            response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description, self.state.current_scene.focus)
+        else:
+            response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description)
         self.state.current_scene.set_pending_interaction(response["description"], response["actions"])
         self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
     
