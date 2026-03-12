@@ -1,6 +1,7 @@
 from storytelling.scenario import Scenario
 from storytelling.story_llm import StoryLLM
 import json
+import random
 
 class StoryEngine:
     def __init__(self, world, state):
@@ -23,32 +24,35 @@ class StoryEngine:
         return response["story_list"]
 
     def setup_scene(self, context):
-        response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description)
+        signficance_options = ["Very low", "Low", "Medium", "High", "Very high"]
+        scene_significance = signficance_options[random.randint(0, len(signficance_options)-1)]
+        response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description, self.state.character_description, scene_significance)
 
-        self.state.current_scene = Scenario(focus=response["focus"])
+        return response["focus"], response["environment"], scene_significance
 
 
     
     def generate_scene_interaction(self, selected_cell):
         if self.state.current_scene is None:
-            context = self._build_context(selected_cell, full_context=True)
-            self.setup_scene(context)
+            scene_focus, scene_evironment, scene_significance = self.setup_scene(self._build_scene_setup_context(selected_cell))
+            self.state.current_scene = Scenario(scene_focus, scene_evironment, scene_significance)
         
-        context = self._build_context(selected_cell, full_context=False)
+        context = self._build_scene_context()
         
         if self.state.current_scene.interaction_count == 0:
-            response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description, self.state.current_scene.focus)
+            response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description)
         else:
             response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description)
         self.state.current_scene.set_pending_interaction(response["description"], response["actions"])
         self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
     
+
     def choose_action(self, action_index, selected_cell):
         scene = self.state.current_scene
         scene.submit_action(action_index)
 
         if scene.ended:
-            response = self.llm.prompt_scene_summary(scene.get_interactions_string(), self.world.get_semantic_chunk_context(selected_cell))
+            response = self.llm.prompt_scene_summary(scene.get_interactions_json(), self.world.get_chunk_context_json(selected_cell))
             self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
             self.state.character_history.append(response["summary"])
             new_region = response["new_region"]
