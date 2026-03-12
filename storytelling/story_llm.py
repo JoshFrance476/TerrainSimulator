@@ -103,7 +103,10 @@ class StoryLLM:
         )
         print(response)
         data = json.loads(response.choices[0].message.content)
-        return response.usage.completion_tokens, response.usage.prompt_tokens, data["scenario_list"]
+        return {
+            "completion_tokens": response.usage.completion_tokens, 
+            "prompt_tokens": response.usage.prompt_tokens, 
+            "story_list": data["story_list"]}
 
     def prompt_scene_summary(self, scene, chunk_list):
         response = self.client.chat.completions.create(
@@ -225,4 +228,9 @@ class StoryLLM:
         )
         print(response)
         data = json.loads(response.choices[0].message.content)
-        return response.usage.completion_tokens, response.usage.prompt_tokens, data["notebook_list"], data["attribute_list"]
+        return {
+            "completion_tokens": response.usage.completion_tokens,
+            "prompt_tokens": response.usage.prompt_tokens,
+            "notebook": data["notebook_list"],
+            "attributes": data["attribute_list"]
+            }
