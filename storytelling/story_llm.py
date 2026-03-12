@@ -15,7 +15,7 @@ class StoryLLM:
         self.summary_schema = summary_schema
         self.character_setup_schema = character_setup_schema
     
-    def prompt_scene(self, context, world_desc, story_focus_desc, scene_focus=""):
+    def prompt_scene(self, context, world_desc, story_focus_desc):
         response = self.client.chat.completions.create(
             model=self.model,
             temperature=0.7,
@@ -34,18 +34,15 @@ class StoryLLM:
                     Most actions should have a probability of 100, only give 'challenging' actions a non-certain probability.
                     You will receive a single JSON object in the user message under CONTEXT_JSON.
                     The context you will be provided with:
+                    Tile interaction history: Will show the previous descriptions and player actions. Provided in chronological order.
+                    Latest tile action: Follow on from this.
                     Character notebook: Provides key details on the character. Base actions on this.
-                    Previous actions on other tiles: This is what the player has already experienced elsewhere on the map. Use it to provide continuity and build on it.
-                    Movement: Describes the tile the player was previously on, which direction they moved, and the tile they are on now. Use it to frame the situation.
-                    Tile: Describes the current tile the player is on.
-                    Biome: Self explanatory
-                    Details: All relevant story context.
-                    Visible description: Context known to the player. Treat this as fact.
-                    Hidden description: Context hidden from the player. Use it to build exciting and engaging narratives.
-                    Previous events on this tile: Will show the previous descriptions and player actions. Provided in chronological order. Follow on from the last one.
-                    Location context: The tiles around the player and their direction. Use it to immerse the player.
+                    The scene_prompt is only the initial premise of the scene.
+                    If tile interaction history is not null, do not restate or restart the scene_prompt unless the latest action directly causes attention to return to it.
+                    If tile interaction history is null, introduce the scene using scene_prompt and scene_environment.
+                    Each interaction should meaningfully progress the scene.
+                    Scene environment: Use this to immerse the player in the world.
                     Interaction descriptions should be no longer than 50 words, and each action summarised in less than 15 words.
-                    Interactions should follow on previous interactions if provided, but MUST end after a few interactions. 
                     The player can read their previous interactions, so don't repeat details if it's not necessary.
                     Any option that results in the player leaving, travelling on, sleeping or resting should end the interaction by setting the exit_flag to True.
                     Unless the current situation is unavoidable, the player should be provided an option to continue travelling with exit_flag. This option should be a vague "carry on moving" and not a "travel to (location)"
@@ -54,7 +51,7 @@ class StoryLLM:
                 },
                 {
                     "role": "user",
-                    "content": f"{context} Scene focus: {scene_focus}"
+                    "content": context
                 }
             ],
             response_format={
@@ -65,8 +62,8 @@ class StoryLLM:
                 }
             }
         )
-        print(response)
         data = json.loads(response.choices[0].message.content)
+        print(response)
         return {
             "completion_tokens": response.usage.completion_tokens,
             "prompt_tokens": response.usage.prompt_tokens,
@@ -106,8 +103,8 @@ class StoryLLM:
                 "schema": story_setup_schema
             }
         )
-        print(response)
         data = json.loads(response.choices[0].message.content)
+        print(response)
         return {
             "completion_tokens": response.usage.completion_tokens, 
             "prompt_tokens": response.usage.prompt_tokens, 
@@ -146,10 +143,10 @@ class StoryLLM:
             tools=[{"type": "function", "function": new_region_schema},
                 {"type": "function", "function": summary_schema}],
         )
-        print(response)
-
         summary = None
         new_region = None
+
+        print(response)
 
         for tool_call in response.choices[0].message.tool_calls:
             args = json.loads(tool_call.function.arguments)
