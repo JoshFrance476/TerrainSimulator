@@ -1,24 +1,28 @@
 from storytelling.interaction import CompletedInteraction, PendingInteraction
 
 class Scenario:
-    def __init__(self):
+    def __init__(self, focus=""):
         self.completed_interactions = []
         self.pending_interaction = None
         self.ended = False
+        self.focus = focus
+        self.interaction_count = 0
     
     def add_interaction(self, description, decision):
         interaction = CompletedInteraction(description, decision)
         self.completed_interactions.append(interaction)
+        self.interaction_count += 1
         self.pending_interaction = None
     
     def end(self):
         self.ended = True
     
-    def get_interactions_string(self):
-        interactions_string = ""
+    def get_interactions_json(self):
+        interactions = []
         for interaction in self.completed_interactions:
-            interactions_string += "Situation: "+interaction.description+" The user chose to "+interaction.decision + "\n"
-        return interactions_string
+            interactions.append({"Situation": interaction.description,
+                                 "Action": interaction.decision})
+        return interactions
 
     def set_pending_interaction(self, description, actions):
         self.pending_interaction = PendingInteraction(description, actions)
