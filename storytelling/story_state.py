@@ -15,5 +15,5 @@ class StoryState:
 
         self.current_scene = None
 
-        self.input_token_count = 0
-        self.output_token_count = 0
+        self.completion_tokens = 0
+        self.prompt_tokens = 0

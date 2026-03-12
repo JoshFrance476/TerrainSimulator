@@ -8,9 +8,6 @@ class StoryEngine:
         self.state = state
         self.llm = StoryLLM()
 
-        self.completion_tokens = 0
-        self.prompt_tokens = 0
-
         self.story_inspo = self.setup_story(self.state.character_description, self.state.world_description, self.state.story_focus_description)
     
     def setup_character(self, character_desc, world_desc, story_desc):
@@ -91,8 +88,8 @@ class StoryEngine:
         return json.dumps(context, ensure_ascii=False)
     
     def update_tokens(self, prompt_tokens, completion_tokens):
-        self.prompt_tokens += prompt_tokens
-        self.completion_tokens += completion_tokens
+        self.state.prompt_tokens += prompt_tokens
+        self.state.completion_tokens += completion_tokens
     
     def get_token_usage(self):
-        return f"Prompt tokens: {self.prompt_tokens}. Completion tokens: {self.completion_tokens}. Total cost (gpt-oss-120b): {round(self.prompt_tokens*0.000015+self.completion_tokens*0.00006, 5)} cents"
+        return f"Prompt tokens: {self.state.prompt_tokens}. Completion tokens: {self.state.completion_tokens}. Total cost (gpt-oss-120b): {round(self.state.prompt_tokens*0.000015+self.state.completion_tokens*0.00006, 5)} cents"
