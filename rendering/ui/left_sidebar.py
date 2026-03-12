@@ -170,6 +170,16 @@ class LeftSidebarController:
                 self.component_list.append(traversal_cost_label)
                 self.component_list.append(chunk_id_label)
 
+                current_scenario_data = self.storyteller.get_current_scenario_debug_info()
+
+                if current_scenario_data:
+                    scenario_focus_label = Label(f"Scene focus: {current_scenario_data['focus']}", self.fonts.small_font)
+                    scenario_environment_label = Label(f"Scene environment: {current_scenario_data['environment']}", self.fonts.small_font)
+                    scenario_significance_label = Label(f"Scene significance: {current_scenario_data['significance']}", self.fonts.small_font)
+                    self.component_list.append(scenario_focus_label)
+                    self.component_list.append(scenario_environment_label)
+                    self.component_list.append(scenario_significance_label)
+
                 local_chunks_dict = self.world.get_closest_chunks(self.state.selected_cell)
                 for chunk in local_chunks_dict:
                     self.component_list.append(Label(f"Local Chunk: {chunk['biome']}, {chunk['distance']}, {chunk['direction']}", self.fonts.small_font))
