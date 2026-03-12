@@ -8,6 +8,16 @@ story_setup_schema = {
     }
 }
 
+scene_setup_schema = {
+    "type": "object",
+    "properties": {
+        "scene_focus": {
+            "type": "string",
+            "description": "A short sentence to prompt the LLM"
+        }
+    }
+}
+
 
 character_setup_schema = {
     "type": "object",
