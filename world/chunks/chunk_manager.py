@@ -74,12 +74,16 @@ class ChunkManager:
         index = np.random.randint(0, len(coords))
         return coords[index]
     
-    def get_semantic_surroundings(self, location):
+    def get_surroundings_json(self, location):
         surrounding_chunks = self.get_closest_chunks(location, 5)
-        description = ""
+        descriptions = []
         for chunk in surrounding_chunks:
-            description += f"ID: {chunk['id']}, Biome: {chunk['biome']}, Direction: {chunk['direction']}. "
-        return description
+            descriptions.append({
+                "direction": chunk['direction'],
+                "biome": chunk['biome'],
+                "chunk_id": chunk['id']
+            })
+        return descriptions
 
     def vector_to_direction(self, dy, dx):
         if abs(dy) > abs(dx):
