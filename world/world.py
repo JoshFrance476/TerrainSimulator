@@ -65,7 +65,7 @@ class World:
 
         self.region_manager = RegionManager(self.rows, self.cols, region_map, region_list, rid_counter)
 
-        self.chunk_manager = ChunkManager(self.rows, self.cols, self.get_map_data("colour").copy(), self.get_map_data("biome").copy())
+        self.chunk_manager = ChunkManager(self.rows, self.cols, self.get_map_data("colour").copy(), self.get_map_data("biome").copy(), self.biome_config)
     
 
     def save_map(self, file_name, starting_location):

@@ -4,9 +4,10 @@ from skimage.measure import regionprops, label
 from utils.colour_utils import hsv_to_rgb_array
 
 class ChunkManager:
-    def __init__(self, rows, cols, colour_map, biome_map):
+    def __init__(self, rows, cols, colour_map, biome_map, biome_config):
         self.chunk_map = np.full((rows, cols), -1, dtype=np.int16)
         self.chunks = {}
+        self.biome_config = biome_config
 
         self.generate_chunk_map(colour_map, biome_map)
 
@@ -60,7 +61,7 @@ class ChunkManager:
 
             results.append({
                 "id": chunk_id,
-                "biome": (chunk_data["biome"]),
+                "biome": (self.biome_config.get_biome_name_from_id(chunk_data["biome"])),
                 "distance": float(np.sqrt(min_dist2)),
                 "direction": direction
             })
