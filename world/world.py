@@ -137,9 +137,8 @@ class World:
         else:
             return None
     
-    def get_semantic_tile_data(self, location):
+    def get_tile_data_json(self, location):
         biome_data = self.get_biome_data_at_location(location)
-        print(biome_data)
         info = {
             "Biome": biome_data["name"],
             "Biome Description": biome_data["description"],
@@ -188,8 +187,8 @@ class World:
     def get_closest_chunks(self, location, count=5):
         return self.chunk_manager.get_closest_chunks(location, count)
 
-    def get_semantic_chunk_context(self, location):
-        return self.chunk_manager.get_semantic_surroundings(location)
+    def get_chunk_context_json(self, location):
+        return self.chunk_manager.get_surroundings_json(location)
 
 
     # Regions ##############################################################################################
