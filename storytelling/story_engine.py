@@ -86,22 +86,32 @@ class StoryEngine:
         else:
             return {}
     
-    def _build_context(self, selected_cell, full_context=False):
+    def _build_scene_setup_context(self, selected_cell):
         tile = self.world.get_tile_data_json(selected_cell)
         current_scenario = self.state.current_scene
 
         context = {
-            "recent_movement": self.get_most_recent_movement_json(),
+            ""
+            "character_notebook": list(self.state.notebook),
+            "previous_scenes_on_other_tiles": list(self.state.character_history),
+            "nearby_features": self.world.get_chunk_context_json(selected_cell),
             "current_tile": tile,
+            "recent_movement": self.get_most_recent_movement_json()
+            
+        }
+        return json.dumps(context, ensure_ascii=False)
+    
+    def _build_scene_context(self):
+        current_scenario = self.state.current_scene
+
+        context = {
             "tile_interaction_history": current_scenario.get_interactions_json() if current_scenario else None,
             "latest_tile_action": current_scenario.get_most_recent_action() if current_scenario else None,
-            "adjacent_chunks": self.world.get_chunk_context_json(selected_cell)
+            "character_notebook": list(self.state.notebook),
+            "scene_prompt": self.state.current_scene.focus,
+            "scene_environment": self.state.current_scene.environment
         }
-        if full_context:
-            context["character"] = {
-                "notebook": list(self.state.notebook),
-                "previous_actions_on_other_tiles": list(self.state.character_history),
-            }
+
         return json.dumps(context, ensure_ascii=False)
     
     def update_tokens(self, prompt_tokens, completion_tokens):
