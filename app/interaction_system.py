@@ -69,7 +69,7 @@ class InteractionSystem:
         self.state.update_right_page = True
     
     def prompt_scenario(self):
-        self.story_engine.begin_or_continue_scene(self.state.selected_cell)
+        self.story_engine.generate_scene_interaction(self.state.selected_cell)
         self.state.update_right_page = True
     
     def save_map(self, save_name):
