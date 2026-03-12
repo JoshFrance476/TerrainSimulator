@@ -8,7 +8,8 @@ class StoryEngine:
         self.state = state
         self.llm = StoryLLM()
 
-        self.story_inspo = self.setup_story(self.state.character_description, self.state.world_description, self.state.story_focus_description)
+        #self.story_inspo = self.setup_story(self.state.character_description, self.state.world_description, self.state.story_focus_description)
+        self.story_inspo = None
     
     def setup_character(self, character_desc, world_desc, story_desc):
         response = self.llm.prompt_character_setup(character_desc, world_desc, story_desc)
@@ -55,7 +56,7 @@ class StoryEngine:
                 self.world.add_new_region_to_chunk(new_region["feature_id"], new_region["title"], new_region["visible_description"], new_region["hidden_description"])
             self.state.current_scene = None
         else:
-            self.begin_or_continue_scene(selected_cell)
+            self.generate_scene_interaction(selected_cell)
 
     def get_notebook(self):
         return self.state.notebook
@@ -73,29 +74,34 @@ class StoryEngine:
         self.state.movement_history.append(movement)
 
     
-    def get_most_recent_movement_string(self):
+    def get_most_recent_movement_json(self):
         if len(self.state.movement_history) > 1:
             current_movement_entry = self.state.movement_history[-1]
             past_movement_entry = self.state.movement_history[-2]
-            return f"Moved {current_movement_entry['direction']} from {past_movement_entry['biome']} to {current_movement_entry['biome']}"
+            return {
+                "direction": current_movement_entry['direction'],
+                "from_biome": past_movement_entry['biome'],
+                "to_biome": current_movement_entry['biome']
+            }
         else:
-            return None
+            return {}
     
-    def _build_context(self, selected_cell):
-        tile = self.world.get_semantic_tile_data(selected_cell)
+    def _build_context(self, selected_cell, full_context=False):
+        tile = self.world.get_tile_data_json(selected_cell)
         current_scenario = self.state.current_scene
 
         context = {
-            "character": {
+            "recent_movement": self.get_most_recent_movement_json(),
+            "current_tile": tile,
+            "tile_interaction_history": current_scenario.get_interactions_json() if current_scenario else None,
+            "latest_tile_action": current_scenario.get_most_recent_action() if current_scenario else None,
+            "adjacent_chunks": self.world.get_chunk_context_json(selected_cell)
+        }
+        if full_context:
+            context["character"] = {
                 "notebook": list(self.state.notebook),
                 "previous_actions_on_other_tiles": list(self.state.character_history),
-            },
-            "movement": self.get_most_recent_movement_string(),
-            "tile": tile,
-            "previous_events_on_this_tile": current_scenario.get_interactions_string() if current_scenario else None,
-            "most_recent_action_on_this_tile": current_scenario.get_most_recent_action() if current_scenario else None,
-            "location_context": self.world.get_semantic_chunk_context(selected_cell)
-        }
+            }
         return json.dumps(context, ensure_ascii=False)
     
     def update_tokens(self, prompt_tokens, completion_tokens):
