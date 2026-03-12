@@ -120,3 +120,13 @@ class StoryEngine:
     
     def get_token_usage(self):
         return f"Prompt tokens: {self.state.prompt_tokens}. Completion tokens: {self.state.completion_tokens}. Total cost (gpt-oss-120b): {round(self.state.prompt_tokens*0.000015+self.state.completion_tokens*0.00006, 5)} cents"
+
+    def get_current_scenario_debug_info(self):
+        if self.state.current_scene:
+            return {
+                "focus": self.state.current_scene.focus, 
+                "environment": self.state.current_scene.environment,
+                "significance": self.state.current_scene.significance
+            }
+        else:
+            return None
