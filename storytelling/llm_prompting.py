@@ -1,7 +1,7 @@
 story_setup_schema = {
     "type": "object",
     "properties": {
-        "scenario_list": {
+        "story_list": {
             "type": "array",
             "items": {"type": "string"}
         }
@@ -108,18 +108,34 @@ summary_schema = {
 scene_schema = {
     "type": "object",
     "properties": {
-        "interaction_description": {"type": "string"},
+        "interaction_description": {
+            "type": "string",
+            "description": "A second-person scene description under 50 words"
+            },
         "actions": {
             "type": "array",
-            "description": "a list of 2-4 actions that the user can choose",
+            "description": "2-4 player actions",
+            "minItems": 2,
+            "maxItems": 4,
             "items": {
                 "type": "object",
                 "properties": {
-                    "action": {"type": "string"},
-                    "exit_flag": {"type": "boolean"},
-                    "probability": {"type": "integer"}
+                    "action": {
+                        "type": "string",
+                        "description": "A short action label under 15 words"
+                        },
+                    "exit_flag": {
+                        "type": "boolean",
+                        "description": "True if this action ends the current tile interaction"
+                        },
+                    "probability": {
+                        "type": "integer",
+                        "description": "Chance of success as a percentage",
+                        "minimum": 0,
+                        "maximum": 100
+                        }
                 },
-                "required": ["action", "exit_flag"],
+                "required": ["action", "exit_flag", "probability"],
                 "additionalProperties": False
             }
         }
