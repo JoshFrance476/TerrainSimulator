@@ -11,11 +11,16 @@ story_setup_schema = {
 scene_setup_schema = {
     "type": "object",
     "properties": {
-        "scene_focus": {
+        "scene_prompt": {
             "type": "string",
             "description": "A short sentence to prompt the LLM"
+        },
+        "environment_description": {
+            "type": "string",
+            "description": "A sentence describing the scene's location"
         }
-    }
+    },
+    "required": ["scene_prompt", "environment_description"]
 }
 
 
