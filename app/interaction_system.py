@@ -1,5 +1,6 @@
 import pygame
 import config
+import sys
 from app.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, KeyUp
 from app.app_state import InteractionType, LeftPage, RightPage, PaintMode
 
@@ -44,6 +45,8 @@ class InteractionSystem:
             self._key_down(cmd)
         elif isinstance(cmd, KeyUp):
             self._key_up(cmd)
+        elif cmd.type == pygame.QUIT:
+            self._quit()
  
     def set_region_info(self, title, visible_desc, hidden_desc, region_id):
         self.world_editor.set_painted_region_info(title, visible_desc, hidden_desc, region_id)
@@ -294,6 +297,11 @@ class InteractionSystem:
         if cmd.key == pygame.K_LCTRL:
             self.state.lctrl_down = False
     
+    def _quit(self):
+        print(self.story_engine.get_token_usage())
+        pygame.quit()
+        sys.exit()
+
     def _pan(self, dx, dy):
         if self.state.interaction_type is not InteractionType.MOVE_PLAYER:
             self.camera.pan(dx, dy)
