@@ -179,45 +179,32 @@ class StoryLLM:
                     "role": "system",
                     "content": f"""
                     You generate scene setup prompts for a single-player procedural storytelling game.
-
                     Your task is to produce a short scene setup that will later be expanded by another LLM storyteller.
-
                     The game prioritizes realism, immersion, and believable situations within the world.
-
                     OUTPUT REQUIREMENTS
-
                     Return ONLY valid JSON matching the provided schema.
-
                     The JSON must contain:
-
                     1. scene_prompt
                     - Exactly ONE sentence.
                     - Describes the situation the player finds themselves in.
-                    - Should be engaging, realistic, and slightly unpredictable.
-                    - Should suggest a situation where the player may need to make a decision.
-
+                    - Should be engaging and realistic.
+                    - Should suggest a situation where the player may need to make a decision, but should not be a decision of where to travel.
                     2. environment_description
                     - Exactly ONE sentence.
-                    - Describes the immediate environment or location.
+                    - Describes the environment or location.
                     - Must be based ONLY on the provided context.
                     - Do NOT invent new environmental features.
-                    - If the location has little detail, acknowledge the lack of notable features rather than inventing them.
-
                     SCENE DESIGN RULES
-
                     - Scenes should feel natural within the world.
                     - Avoid dramatic or unrealistic events unless strongly supported by the context.
                     - The situation should feel like something the player has just encountered.
                     - Keep descriptions concise and grounded.
                     - Do not narrate outcomes or player actions.
-
-                    You will also receive a "significance" level indicating how impactful the situation should be:
+                    You will also receive a significance level:
                     - low: minor or atmospheric moment
                     - medium: interesting situation with potential interaction
                     - high: important or tense moment affecting the story
-                    
                     CONTEXT:
-
                     World description: {world_desc}.
                     Story focus: {story_focus_desc}.
                     Character description: {character_desc}.
