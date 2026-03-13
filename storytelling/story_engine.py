@@ -95,7 +95,6 @@ class StoryEngine:
         current_scenario = self.state.current_scene
 
         context = {
-            ""
             "character_notebook": list(self.state.notebook),
             "previous_scenes_on_other_tiles": list(self.state.character_history),
             "nearby_features": self.world.get_chunk_context_json(selected_cell),
