@@ -7,7 +7,6 @@ class TextBox:
         self.wrapped_text = []
         self.small_font = small_font
         self.width = width
-        self.height = height
         self.interaction_system = interaction_system
         self.focused = False
         self.rect = None
