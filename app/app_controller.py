@@ -20,6 +20,7 @@ import yaml
 class AppController:
     def __init__(self, screen, fonts):
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
+        self.story_state = StoryState()
         self.load_file('ColonialFantasy', update_interaction_system=False)
 
         self.camera = Camera()
@@ -37,7 +38,6 @@ class AppController:
 
         self.map_renderer = MapRenderer(self.world, self.camera, self.app_state)
 
-        self.story_state = StoryState()
         self.storyteller = StoryEngine(self.world, self.story_state)
         
 
@@ -79,7 +79,12 @@ class AppController:
         path = Path("data/saved_maps") / file_name
         map_data_path = path / "map_data.npz"
         biome_config_path = path / "biome_config.yaml"
+        story_setup_path = path / "story_setup.yaml"
         
+        with open(story_setup_path, "r") as f:
+            story_setup = yaml.safe_load(f)
+
+        self.story_state.setup(story_setup)
 
         with open(biome_config_path, "r") as f:
             biome_config = yaml.safe_load(f)
@@ -97,6 +102,8 @@ class AppController:
 
         map_data, region_data, biome_config = self.world.get_data()
 
+        story_setup = self.story_state.get_setup()
+
         np.savez(
             path / "map_data",
             **map_data,
@@ -108,6 +115,8 @@ class AppController:
         with open(f'{path}/biome_config.yaml', 'w') as f:
             yaml.dump(biome_config, f, sort_keys=False)
 
+        with open(f'{path}/story_setup.yaml', 'w') as f:
+            yaml.dump(story_setup, f, sort_keys=False)
 
     def refresh_map_render(self):
         self.map_renderer.refresh_view()
