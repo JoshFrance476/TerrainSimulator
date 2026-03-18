@@ -125,7 +125,7 @@ class LeftSidebarController:
         self.clear_page()
         self.component_list.extend(self.navigation_bar)
         self.component_list.append(Label("Biome Manager", self.fonts.header))
-        biome_container_list = ContainerList(config.SIDEBAR_WIDTH-10, 500)
+        biome_container_list = ContainerList(config.SIDEBAR_WIDTH-10, 800)
         for index, biome in enumerate(self.world.get_biomes()):
             biome_container = ComponentContainer(True)
             biome_container.add_component(Label(biome["name"].capitalize(), self.fonts.large_font, left_padding=5, top_padding=5))
