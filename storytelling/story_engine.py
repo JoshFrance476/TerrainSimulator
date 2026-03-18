@@ -1,12 +1,13 @@
 from storytelling.scenario import Scenario
 from storytelling.story_llm import StoryLLM
+from storytelling.story_state import StoryState
 import json
 import random
 
 class StoryEngine:
-    def __init__(self, world, state):
+    def __init__(self, world):
         self.world = world
-        self.state = state
+        self.state = StoryState()
         self.llm = StoryLLM()
 
         #self.story_inspo = self.setup_story(self.state.character_description, self.state.world_description, self.state.story_focus_description)
@@ -133,3 +134,15 @@ class StoryEngine:
             }
         else:
             return None
+    
+    def setup(self, story_setup):
+        self.state.world_description = story_setup['world_description']
+        self.state.character_description = story_setup['character_description']
+        self.state.story_focus_description = story_setup['story_focus_description']
+    
+    def get_setup(self):
+        return {
+            "world_description": self.state.world_description, 
+            "character_description": self.state.character_description, 
+            "story_focus_description": self.state.story_focus_description
+        }

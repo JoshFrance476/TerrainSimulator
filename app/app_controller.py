@@ -12,7 +12,6 @@ from editor.brush_manager import BrushManager
 from app.input_system import InputSystem
 from app.interaction_system import InteractionSystem
 from app.render_system import RenderSystem
-from storytelling.story_state import StoryState
 from pathlib import Path
 import numpy as np
 import yaml
@@ -20,7 +19,8 @@ import yaml
 class AppController:
     def __init__(self, screen, fonts):
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
-        self.story_state = StoryState()
+        self.storyteller = StoryEngine(self.world)
+
         self.load_file('ColonialFantasy', update_interaction_system=False)
 
         self.camera = Camera()
@@ -37,8 +37,6 @@ class AppController:
         self.world_editor = WorldEditor(self.world, self.brush, self.app_state)
 
         self.map_renderer = MapRenderer(self.world, self.camera, self.app_state)
-
-        self.storyteller = StoryEngine(self.world, self.story_state)
         
 
         self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush.get_attributes, self.generate_map, self.load_file, self.save_file)
@@ -84,7 +82,7 @@ class AppController:
         with open(story_setup_path, "r") as f:
             story_setup = yaml.safe_load(f)
 
-        self.story_state.setup(story_setup)
+        self.storyteller.setup(story_setup)
 
         with open(biome_config_path, "r") as f:
             biome_config = yaml.safe_load(f)
@@ -102,7 +100,7 @@ class AppController:
 
         map_data, region_data, biome_config = self.world.get_data()
 
-        story_setup = self.story_state.get_setup()
+        story_setup = self.storyteller.get_setup()
 
         np.savez(
             path / "map_data",
