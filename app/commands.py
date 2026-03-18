@@ -13,6 +13,7 @@ class MouseUp:
 
 @dataclass
 class MouseMove:
+    pos: Tuple[int, int]
     left_down: bool
 
 @dataclass
