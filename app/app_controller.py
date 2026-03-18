@@ -40,9 +40,9 @@ class AppController:
         
 
         self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush.get_attributes)
-        self.input_system = InputSystem(self.ui_manager, self.get_cell_at_mouse_position)
+        self.input_system = InputSystem(self.ui_manager)
 
-        self.interaction_system = InteractionSystem(self.app_state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.get_cell_at_mouse_position, self.ui_manager.mouse_on_map)
+        self.interaction_system = InteractionSystem(self.app_state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.ui_manager.mouse_on_map)
 
         self.ui_manager.set_interaction_system(self.interaction_system)
         
@@ -53,8 +53,8 @@ class AppController:
         self.screen = screen
     
     def tick(self, events):
-        keys = self.input_system.continuous()
-        self.interaction_system.handle_continuous(keys)
+        keys, mouse_pos = self.input_system.continuous()
+        self.interaction_system.handle_continuous(keys, mouse_pos)
 
         commands = self.input_system.build_commands(events)
 
@@ -63,19 +63,6 @@ class AppController:
 
         self.render_system.render(self.screen)
 
-
-    def get_cell_at_mouse_position(self):
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-            
-        # Convert screen coordinates to world coordinates
-        world_x = (mouse_x - config.SIDEBAR_WIDTH) + (self.camera.x_pos * config.CELL_SIZE)
-        world_y = mouse_y + (self.camera.y_pos * config.CELL_SIZE)
-
-        # Convert world coordinates to grid cell indices
-        cell_x = int(world_x // config.CELL_SIZE)
-        cell_y = int(world_y // config.CELL_SIZE)
-
-        return (cell_y, cell_x)
 
     def refresh_map_render(self):
         self.map_renderer.refresh_view()

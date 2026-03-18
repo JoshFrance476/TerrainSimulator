@@ -1,25 +1,24 @@
 import pygame
 from app.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, KeyUp
+import config
 
 class InputSystem:
-    def __init__(self, ui_manager, get_cell_at_mouse_position_function):
+    def __init__(self, ui_manager):
         self.ui = ui_manager
-        self.get_cell = get_cell_at_mouse_position_function
 
     def build_commands(self, events):
         cmds = []
-        location = self.get_cell()
 
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 clicked = self.ui.get_clicked_component(event.pos)
-                cmds.append(MouseDown(event.button, event.pos, location, clicked))
+                cmds.append(MouseDown(event.button, event.pos, clicked))
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                cmds.append(MouseUp(event.button, event.pos))
+                cmds.append(MouseUp(event.button))
 
             elif event.type == pygame.MOUSEMOTION:
-                cmds.append(MouseMove(event.pos, pygame.mouse.get_pressed()[0]))
+                cmds.append(MouseMove(pygame.mouse.get_pressed()[0]))
 
             elif event.type == pygame.MOUSEWHEEL:
                 cmds.append(MouseWheel(event.y))
@@ -37,4 +36,5 @@ class InputSystem:
 
     def continuous(self):
         keys = pygame.key.get_pressed()
-        return keys
+        mouse_pos = pygame.mouse.get_pos()
+        return keys, mouse_pos

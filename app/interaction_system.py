@@ -5,7 +5,7 @@ from app.commands import MouseDown, MouseMove, MouseUp, MouseWheel, KeyDown, Key
 from app.app_state import InteractionType, LeftPage, RightPage, PaintMode
 
 class InteractionSystem:
-    def __init__(self, state, camera, player, world_editor, story_engine, world, brush, refresh_render_function, get_cell_at_mouse_position_function, mouse_on_map_function):
+    def __init__(self, state, camera, player, world_editor, story_engine, world, brush, refresh_render_function, mouse_on_map_function):
         self.state = state
         self.camera = camera
         self.player = player
@@ -14,10 +14,9 @@ class InteractionSystem:
         self.brush = brush
         self.story_engine = story_engine
         self.refresh_render = refresh_render_function
-        self.get_cell = get_cell_at_mouse_position_function
         self.mouse_on_map = mouse_on_map_function
 
-    def handle_continuous(self, keys):
+    def handle_continuous(self, keys, mouse_pos):
         if not self.state.focused_entity and self.state.interaction_type is not InteractionType.MOVE_PLAYER:
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 self._pan(-config.PAN_STEP, 0)
@@ -27,10 +26,8 @@ class InteractionSystem:
                 self._pan(0, -config.PAN_STEP)
             if keys[pygame.K_DOWN] or keys[pygame.K_s]:
                 self._pan(0, config.PAN_STEP)
-        
-        location = self.get_cell()
 
-        self.tile_interaction(location)
+        self.tile_interaction(self.get_cell_at_mouse_position(mouse_pos))
 
     def handle(self, cmd):
         if isinstance(cmd, MouseDown):
@@ -192,7 +189,7 @@ class InteractionSystem:
         self.clear_focus()
 
         if self.mouse_on_map():
-            self._map_mouse_down(cmd.location)
+            self._map_mouse_down(self.get_cell_at_mouse_position(cmd.pos))
         elif cmd.clicked_ui:
             if hasattr(cmd.clicked_ui, "is_clicked"):
                 cmd.clicked_ui.is_clicked(cmd)
@@ -312,3 +309,14 @@ class InteractionSystem:
 
     def _matches_hovered_tile(self, location):
         return self.state.hovered_cell == location
+
+    def get_cell_at_mouse_position(self, mouse_pos):
+        # Convert screen coordinates to world coordinates
+        world_x = (mouse_pos[0] - config.SIDEBAR_WIDTH) + (self.camera.x_pos * config.CELL_SIZE)
+        world_y = mouse_pos[1] + (self.camera.y_pos * config.CELL_SIZE)
+
+        # Convert world coordinates to grid cell indices
+        cell_x = int(world_x // config.CELL_SIZE)
+        cell_y = int(world_y // config.CELL_SIZE)
+
+        return (cell_y, cell_x)
