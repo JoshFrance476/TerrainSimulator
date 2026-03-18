@@ -72,6 +72,8 @@ class AppController:
             biome_config = yaml.safe_load(f)
         
         self.world.load_data(biome_config)
+
+        self.interaction_system.init_start()
     
     def load_file(self, file_name, update_interaction_system = True):
         path = Path("data/saved_maps") / file_name
