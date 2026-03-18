@@ -18,7 +18,7 @@ class InputSystem:
                 cmds.append(MouseUp(event.button))
 
             elif event.type == pygame.MOUSEMOTION:
-                cmds.append(MouseMove(pygame.mouse.get_pressed()[0]))
+                cmds.append(MouseMove(event.pos, pygame.mouse.get_pressed()[0]))
 
             elif event.type == pygame.MOUSEWHEEL:
                 cmds.append(MouseWheel(event.y))
