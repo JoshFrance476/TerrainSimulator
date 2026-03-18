@@ -77,14 +77,14 @@ class AppController:
     
     def load_file(self, file_name, update_interaction_system = True):
         path = Path("data/saved_maps") / file_name
-        npz_path = path / f"{file_name}.npz"
-        yaml_path = path / f"{file_name}.yaml"
+        map_data_path = path / "map_data.npz"
+        biome_config_path = path / "biome_config.yaml"
         
 
-        with open(yaml_path, "r") as f:
+        with open(biome_config_path, "r") as f:
             biome_config = yaml.safe_load(f)
         
-        world_data = np.load(npz_path, allow_pickle=True)
+        world_data = np.load(map_data_path, allow_pickle=True)
 
         self.world.load_data(biome_config, world_data)
 
@@ -98,14 +98,14 @@ class AppController:
         map_data, region_data, biome_config = self.world.get_data()
 
         np.savez(
-            path / file_name,
+            path / "map_data",
             **map_data,
 
             region_map=np.array(region_data["map"], dtype=object),
             region_list=np.array(region_data["list"], dtype=object),
         )
 
-        with open(f'{path/file_name}.yaml', 'w') as f:
+        with open(f'{path}/biome_config.yaml', 'w') as f:
             yaml.dump(biome_config, f, sort_keys=False)
 
 
