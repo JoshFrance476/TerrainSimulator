@@ -6,7 +6,7 @@ from rendering.ui.widgets.button import Button
 
 
 class Menu:
-    def __init__(self, fonts, interaction_system, state):
+    def __init__(self, fonts, interaction_system, state, generate_map_func, load_file_func, save_file_func):
         self.component_list = []
         self.fonts = fonts
         self.interaction_system = interaction_system
@@ -16,6 +16,10 @@ class Menu:
         self.height = 400
 
         self.rect = pygame.Rect((config.SCREEN_WIDTH+config.SIDEBAR_WIDTH)/2-self.width/2, config.SCREEN_HEIGHT/2-self.height, 300, 400)
+
+        self.generate_map_func = generate_map_func
+        self.load_file_func = load_file_func
+        self.save_file_func = save_file_func
 
         self.show_menu()
     
@@ -27,14 +31,14 @@ class Menu:
 
         save_map_label = Label("Save map", self.fonts.large_font, self.width)
         save_file_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
-        save_button = Button(60, 20, lambda: self.interaction_system.save_map(save_file_name.text), "Save", self.fonts.small_font)
+        save_button = Button(60, 20, lambda: self.save_file_func(save_file_name.text), "Save", self.fonts.small_font)
 
         load_map_label = Label("Load map", self.fonts.large_font, self.width)
         load_file_name = TextBox(self.interaction_system, self.fonts.small_font, 150, 20)
-        load_button = Button(60,20, lambda: self.interaction_system.load_map(load_file_name.text), "Load", self.fonts.small_font)
+        load_button = Button(60,20, lambda: self.load_file_func(load_file_name.text), "Load", self.fonts.small_font)
 
         generate_map_label = Label("Generate new map", self.fonts.large_font, self.width)
-        generate_map_button = Button(100, 20, lambda: self.interaction_system.generate_map(), "Generate", self.fonts.small_font)
+        generate_map_button = Button(100, 20, lambda: self.generate_map_func(), "Generate", self.fonts.small_font)
 
         self.component_list.append(hide_menu_button)
 

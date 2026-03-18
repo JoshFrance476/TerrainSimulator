@@ -16,6 +16,8 @@ class InteractionSystem:
         self.refresh_render = refresh_render_function
         self.mouse_on_map = mouse_on_map_function
 
+        self.init_start()
+
     def handle_continuous(self, keys, mouse_pos):
         if not self.state.focused_entity and self.state.interaction_type is not InteractionType.MOVE_PLAYER:
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
@@ -44,6 +46,13 @@ class InteractionSystem:
             self._key_up(cmd)
         elif cmd.type == pygame.QUIT:
             self._quit()
+    
+    def init_start(self):
+        self.player.set_location(self.world.biome_config.get_starting_location())
+        self.select_cell(self.player.location)
+        self.camera.set_location(self.player.get_location())
+        self.camera.clamp_pan()
+        self.refresh_render()
  
     def set_region_info(self, title, visible_desc, hidden_desc, region_id):
         self.world_editor.set_painted_region_info(title, visible_desc, hidden_desc, region_id)
@@ -69,17 +78,6 @@ class InteractionSystem:
         self.story_engine.generate_scene_interaction(self.state.selected_cell)
         self.state.update_right_page = True
     
-    def save_map(self, save_name):
-        player_location = self.player.get_location()
-        self.world.save_map(save_name, player_location)
-    
-    def load_map(self, file_name):
-        self.world.load_map(file_name)
-        self.player.set_location(self.world.biome_config.get_starting_location())
-        self.select_cell(self.player.location)
-        self.camera.set_location(self.player.get_location())
-        self.camera.clamp_pan()
-        self.refresh_render()
     
     def generate_map(self):
         self.world.generate_map()

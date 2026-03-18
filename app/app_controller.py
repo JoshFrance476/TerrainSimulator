@@ -1,4 +1,3 @@
-import pygame
 import config
 from app.app_state import AppState
 from editor.world_editor import WorldEditor
@@ -14,12 +13,15 @@ from app.input_system import InputSystem
 from app.interaction_system import InteractionSystem
 from app.render_system import RenderSystem
 from storytelling.story_state import StoryState
+from pathlib import Path
+import numpy as np
+import yaml
 
 class AppController:
     def __init__(self, screen, fonts):
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
-        #self.world.load_map('ColonialFantasy')
-        self.world.generate_map()
+        self.load_file('ColonialFantasy', update_interaction_system=False)
+
         self.camera = Camera()
         
         self.player = MapEntity(location = (self.world.get_starting_location()), 
@@ -39,7 +41,7 @@ class AppController:
         self.storyteller = StoryEngine(self.world, self.story_state)
         
 
-        self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush.get_attributes)
+        self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush.get_attributes, self.generate_map, self.load_file, self.save_file)
         self.input_system = InputSystem(self.ui_manager)
 
         self.interaction_system = InteractionSystem(self.app_state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.ui_manager.mouse_on_map)
@@ -62,6 +64,47 @@ class AppController:
             self.interaction_system.handle(command)
 
         self.render_system.render(self.screen)
+    
+    def generate_map(self):
+        config_path = Path("data/saved_maps/DefaultConfig.yaml")
+
+        with open(config_path, "r") as f:
+            biome_config = yaml.safe_load(f)
+        
+        self.world.load_data(biome_config)
+    
+    def load_file(self, file_name, update_interaction_system = True):
+        path = Path("data/saved_maps") / file_name
+        npz_path = path / f"{file_name}.npz"
+        yaml_path = path / f"{file_name}.yaml"
+        
+
+        with open(yaml_path, "r") as f:
+            biome_config = yaml.safe_load(f)
+        
+        world_data = np.load(npz_path, allow_pickle=True)
+
+        self.world.load_data(biome_config, world_data)
+
+        if update_interaction_system:
+            self.interaction_system.init_start()
+    
+    def save_file(self, file_name):
+        path = Path("data/saved_maps") / file_name
+        path.mkdir(parents=True, exist_ok=True)
+
+        map_data, region_data, biome_config = self.world.get_data()
+
+        np.savez(
+            path / file_name,
+            **map_data,
+
+            region_map=np.array(region_data["map"], dtype=object),
+            region_list=np.array(region_data["list"], dtype=object),
+        )
+
+        with open(f'{path/file_name}.yaml', 'w') as f:
+            yaml.dump(biome_config, f, sort_keys=False)
 
 
     def refresh_map_render(self):

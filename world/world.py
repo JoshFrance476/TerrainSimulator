@@ -2,10 +2,7 @@ from world.world_data import WorldData
 from world.regions.region_manager import RegionManager
 from world.chunks.chunk_manager import ChunkManager
 from generation.biome_config_manager import BiomeConfigManager
-import numpy as np
 import config as config
-import json
-from pathlib import Path
 
 class World:
     """
@@ -25,41 +22,24 @@ class World:
 
 
     # Loading/Saving ############################################################################################
-    def generate_map(self):
-        config_path = Path("data/saved_maps/DefaultConfig.json")
+    def load_data(self, biome_config, pickled_world_data = None):
+        if pickled_world_data:
+            world_data = {
+                k: pickled_world_data[k]
+                for k in pickled_world_data.files
+                if k not in ("region_map", "region_list")
+            }
 
-        with open(config_path, "r") as f:
-            biome_config = json.load(f)
-
-        self.biome_config = BiomeConfigManager(biome_config)        
-        self.data = WorldData(self.rows, self.cols, self.biome_config)
-        self.region_manager = RegionManager(self.rows, self.cols)
-        self.chunk_manager = ChunkManager(self.rows, self.cols, self.get_map_data("colour").copy(), self.get_map_data("biome").copy(), self.biome_config)
-
-    def load_map(self, file_name):
-        path = Path("data/saved_maps") / file_name
-        npz_path = path / f"{file_name}.npz"
-        json_path = path / f"{file_name}.json"
-
-        with open(json_path, "r") as f:
-            biome_config = json.load(f)
+            region_map = pickled_world_data["region_map"].tolist()
+            region_list = pickled_world_data["region_list"].tolist()
+            rid_counter = len(region_list)
+        else:
+            world_data = None
+            region_map = None
+            region_list = None
+            rid_counter = None
 
         self.biome_config = BiomeConfigManager(biome_config)
-
-        loaded = np.load(npz_path, allow_pickle=True)
-
-        # Restore numeric maps only
-        world_data = {
-            k: loaded[k]
-            for k in loaded.files
-            if k not in ("region_map", "region_list")
-        }
-
-        # Restore region manager
-        region_map = loaded["region_map"].tolist()
-        region_list = loaded["region_list"].tolist()
-        rid_counter = len(region_list)
-
 
         self.data = WorldData(self.rows, self.cols, self.biome_config, world_data)
 
@@ -68,26 +48,21 @@ class World:
         self.chunk_manager = ChunkManager(self.rows, self.cols, self.get_map_data("colour").copy(), self.get_map_data("biome").copy(), self.biome_config)
     
 
-    def save_map(self, file_name, starting_location):
-        path = Path("data/saved_maps") / file_name
-        path.mkdir(parents=True, exist_ok=True)
-
-        self.biome_config.set_starting_location(starting_location)
-        np.savez(
-            path / file_name,
-            # numeric maps
-            **self.data.world_data,
-
-            # region manager (python objects)
-            region_map=np.array(self.region_manager.region_map, dtype=object),
-            region_list=np.array(self.region_manager.region_list, dtype=object),
-        )
+    def get_data(self):
         biome_config = {
                 "constants": self.biome_config.constants,
-                "biomes": self.biome_config.biomes}
+                "biomes": self.biome_config.biomes
+        }
         
-        with open(f'{path/file_name}.json', 'w') as f:
-            json.dump(biome_config, f)
+        map_data = self.data.world_data
+
+        region_data = {
+            "map": self.region_manager.region_map,
+            "list": self.region_manager.region_list
+        }
+
+        
+        return map_data, region_data, biome_config
 
 
     # World Data ############################################################################################
