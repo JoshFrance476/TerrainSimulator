@@ -146,3 +146,8 @@ class StoryEngine:
             "character_description": self.state.character_description, 
             "story_focus_description": self.state.story_focus_description
         }
+    
+    def clear_setup(self):
+        self.state.world_description = ""
+        self.state.character_description = ""
+        self.state.story_focus_description = ""

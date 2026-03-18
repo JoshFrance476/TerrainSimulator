@@ -71,6 +71,8 @@ class AppController:
         
         self.world.load_data(biome_config)
 
+        self.storyteller.clear_setup()
+
         self.interaction_system.init_start()
     
     def load_file(self, file_name, update_interaction_system = True):
