@@ -62,7 +62,7 @@ class InteractionSystem:
         self.state.left_page = LeftPage.BIOME_EDITOR
     
     def submit_pending_interaction_action(self, action_index):
-        self.story_engine.choose_action(action_index, self.state.selected_cell)
+        self.story_engine.choose_action(action_index, self.player.get_location())
         self.refresh_render()
         self.state.update_right_page = True
     
