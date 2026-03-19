@@ -53,15 +53,19 @@ class StoryEngine:
         scene.submit_action(action_index)
 
         if scene.ended:
-            response = self.llm.prompt_scene_summary(scene.get_interactions_json(), self.world.get_chunk_context_json(selected_cell))
-            self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
-            self.state.character_history.append(response["summary"])
-            new_region = response["new_region"]
-            if new_region:
-                self.world.add_new_region_to_chunk(new_region["feature_id"], new_region["title"], new_region["visible_description"], new_region["hidden_description"])
-            self.state.current_scene = None
+            self.end_scene(scene, selected_cell)
         else:
             self.generate_scene_interaction(selected_cell)
+    
+    def end_scene(self, scene, selected_cell):
+        response = self.llm.prompt_scene_summary(scene.get_interactions_json(), self.world.get_chunk_context_json(selected_cell))
+        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
+        self.state.character_history.append(response["summary"])
+        new_quests = response["new_quests"]
+        for quest in new_quests:
+            print(f"Adding quest: {quest['chunk_id']} {quest['title']} {quest['visible_description']} {quest['hidden_description']}")
+            self.world.add_new_region_to_chunk(quest["chunk_id"], quest["title"], quest["visible_description"], quest["hidden_description"])
+        self.state.current_scene = None
 
     def get_notebook(self):
         return self.state.notebook
