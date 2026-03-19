@@ -1,4 +1,4 @@
-from storytelling.llm_schemas import quest_schema, scene_schema, story_setup_schema, summary_schema, character_setup_schema, scene_setup_schema
+from storytelling.llm_prompting import quest_schema, scene_schema, story_setup_schema, summary_schema, character_setup_schema, scene_setup_schema
 from together import Together
 import json
 
