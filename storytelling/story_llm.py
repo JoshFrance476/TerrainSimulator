@@ -1,4 +1,4 @@
-from storytelling.llm_prompting import new_region_schema, scene_schema, story_setup_schema, summary_schema, character_setup_schema, scene_setup_schema
+from storytelling.llm_schemas import quest_schema, scene_schema, story_setup_schema, summary_schema, character_setup_schema, scene_setup_schema
 from together import Together
 import json
 
@@ -8,12 +8,6 @@ class StoryLLM:
     def __init__(self):
         self.client = Together()
         self.model = "openai/gpt-oss-120b"
-
-        self.new_region_schema = new_region_schema
-        self.scene_schema = scene_schema
-        self.story_setup_schema = story_setup_schema
-        self.summary_schema = summary_schema
-        self.character_setup_schema = character_setup_schema
     
     def prompt_scene(self, context, world_desc, story_focus_desc):
         response = self.client.chat.completions.create(
@@ -44,8 +38,8 @@ class StoryLLM:
                     Scene environment: Use this to immerse the player in the world.
                     Interaction descriptions should be no longer than 50 words, and each action summarised in less than 15 words.
                     The player can read their previous interactions, so don't repeat details if it's not necessary.
-                    Any option that results in the player leaving, travelling on, sleeping or resting should end the interaction by setting the exit_flag to True.
-                    Unless the current situation is unavoidable, the player should be provided an option to continue travelling with exit_flag. This option should be a vague "carry on moving" and not a "travel to (location)"
+                    Any decision that results in the player leaving their location, moving on, sleeping or resting should end the interaction by setting the exit_flag to True.
+                    Unless the current situation is unavoidable, the player should be provided an option to move on.
                     Description of the world: {world_desc}. Description of the story focus: {story_focus_desc}.
                     Return only JSON matching the provided schema."""
                 },
@@ -124,10 +118,11 @@ class StoryLLM:
                     The world is dynamic and reacts to the players decisions.
                     You will be given a short section of story which involves actions that the player has performed.
                     Produce a short summary of what the player has gained from the interaction.
-                    You will also be provided with a list of features around the player.
-                    If the player has learned about landmark or point-of-interest that they are not currently at, produce a 'region' schema to add the region to the world.
-                    The feature_id will be used to add the region to the relevant feature on the map.
-                    The region should describe what the player will find at the location, and will be used to generate a narrative when the player arrives there.
+                    You will also be provided with a list of chunks around the player, in order of proximity from closest to furthest away.
+                    Each chunk represent a small area of the world. 
+                    If the player has learned of a quest or a point-of-interest, produce a 'quest' schema for it.
+                    The chunk_id will be used to add the quest to a specific chunk on the map.
+                    The quest description will be used to generate a narrative when the player arrives there.
 
                     Summary must be succinct:
                     - 5-15 words only
@@ -137,35 +132,36 @@ class StoryLLM:
                 },
                 {
                     "role": "user",
-                    "content": f"{scene}. Feature List: {chunk_list}"
+                    "content": f"{scene}. Chunk List: {str(chunk_list)}"
                 }
             ],
-            tools=[{"type": "function", "function": new_region_schema},
+            tools=[{"type": "function", "function": quest_schema},
                 {"type": "function", "function": summary_schema}],
         )
         summary = None
         new_region = None
 
         print(response)
+        new_quests = []
 
         for tool_call in response.choices[0].message.tool_calls:
             args = json.loads(tool_call.function.arguments)
 
             if tool_call.function.name == "generate_summary":
                 summary = args.get("summary")
-            elif tool_call.function.name == "create_region":
-                new_region = {
-                    "feature_id": args.get("feature_id"),
+            elif tool_call.function.name == "add_quest":
+                new_quests.append({
+                    "chunk_id": args.get("chunk_id"),
                     "title": args.get("title"),
                     "visible_description": args.get("visible_description"),
                     "hidden_description": args.get("hidden_description")
-                }
+                })
             
         return {
             "completion_tokens": response.usage.completion_tokens,
             "prompt_tokens": response.usage.prompt_tokens,
             "summary": summary,
-            "new_region": new_region
+            "new_quests": new_quests
         }
 
     def prompt_scene_setup(self, context, world_desc, story_focus_desc, character_desc, significance):
