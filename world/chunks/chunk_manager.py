@@ -75,7 +75,7 @@ class ChunkManager:
         return coords[index]
     
     def get_surroundings_json(self, location):
-        surrounding_chunks = self.get_closest_chunks(location, 5)
+        surrounding_chunks = self.get_closest_chunks(location, 10)[1:]
         descriptions = []
         for chunk in surrounding_chunks:
             descriptions.append({
