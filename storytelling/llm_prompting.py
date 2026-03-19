@@ -8,6 +8,31 @@ story_setup_schema = {
     }
 }
 
+quest_schema = {
+    "name": "add_quest",
+    "parameters":{
+        "type": "object",
+        "properties": {
+            "chunk_id": {
+                "type": "integer"
+            },
+            "title": {
+                "type": "string",
+                "description": "1-4 words"
+            },
+            "visible_description": {
+                "type": "string",
+                "description": "Describe what the player expects to find at the location"
+            },
+            "hidden_description": {
+                "type": "string",
+                "description": "Describe what the player will discover by investigating the location"
+            }
+        },
+        "required": ["chunk_id", "title", "visible_description", "hidden_description"]
+    }
+}
+
 scene_setup_schema = {
     "type": "object",
     "properties": {
