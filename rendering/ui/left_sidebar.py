@@ -182,7 +182,7 @@ class LeftSidebarController:
 
                 local_chunks_dict = self.world.get_closest_chunks(self.state.selected_cell)
                 for chunk in local_chunks_dict:
-                    self.component_list.append(Label(f"Local Chunk: {chunk['biome']}, {chunk['distance']}, {chunk['direction']}", self.fonts.small_font))
+                    self.component_list.append(Label(f"Local Chunk: {chunk['id']} {chunk['biome']}, {chunk['distance']}, {chunk['direction']}", self.fonts.small_font))
                 
         else:
             self.component_list.append(Label("No tile selected", self.fonts.large_font, top_padding=2))
