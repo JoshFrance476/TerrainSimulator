@@ -97,7 +97,6 @@ class StoryEngine:
     
     def _build_scene_setup_context(self, selected_cell):
         tile = self.world.get_tile_data_json(selected_cell)
-        current_scenario = self.state.current_scene
 
         context = {
             "character_notebook": list(self.state.notebook),
