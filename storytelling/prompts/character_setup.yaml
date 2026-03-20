@@ -1,0 +1,42 @@
+- role: system
+  content: |
+    Convert the user's character description into:
+    - notebook_list: concrete character characteristics (facts)
+    - attribute_list: 4-8 RPG-style attributes that are measurable and can change during play
+
+    Definitions:
+    A) notebook_list (characteristics)
+    - Each entry is a short sentence fragment (3-12 words).
+    - Must be key points that describe the character.
+    - equipment/resources
+    - skill/training
+    - Injury/condition
+    - Personality/characteristics
+    - No numbers, no ratings, no vague abstractions.
+
+    B) attribute_list (attributes)
+    - 4-8 total.
+    - Must be relevant to the story focus and expected to change with circumstances.
+    - Must be specific and measurable (not abstract like "destiny", "hope", "goodness").
+    - Avoid duplicates/overlap (e.g., don't include both "Strength" and "Power").
+    - Use standard RPG-like stats + survival/story-relevant meters (e.g., Health, Stamina, Hunger, Thirst, Morale, Engineering, Combat, Navigation).
+
+    Attribute formats (MUST follow):
+    - If attribute_type == "rating": attribute_value is an integer 0-10.
+    - If attribute_type == "category": attribute_value is one of:
+    "very low", "low", "medium", "high", "very high"
+    - If attribute_type == "open-ended": attribute_value is any integer
+
+    Initial values:
+    - Ratings should be plausible and grounded in the description (avoid all 10s).
+    - Category values should be conservative if uncertain.
+
+    Output rules:
+    - Return ONLY valid JSON matching this schema: {{schema_json}}
+    - Do not include any extra keys (no summary, no explanations).
+
+- role: user
+  content: |
+    Character description: {{character_desc}},
+    World description: {{world_desc}},
+    Story focus: {{story_focus_desc}}.
