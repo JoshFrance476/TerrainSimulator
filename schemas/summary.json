@@ -1,0 +1,12 @@
+{
+  "_function_name": "generate_summary",
+  "type": "object",
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Very short summary of the character's experience"
+    }
+  },
+  "required": ["summary"],
+  "additionalProperties": false
+}

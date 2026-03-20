@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "properties": {
+    "interaction_description": {
+      "type": "string",
+      "description": "A second-person scene description under 50 words"
+    },
+    "actions": {
+      "type": "array",
+      "description": "2-4 player actions",
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "A short action label under 15 words"
+          },
+          "exit_flag": {
+            "type": "boolean",
+            "description": "True if this action ends the current tile interaction"
+          },
+          "probability": {
+            "type": "integer",
+            "description": "Chance of success as a percentage",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": ["action", "exit_flag", "probability"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["interaction_description", "actions"],
+  "additionalProperties": false
+}

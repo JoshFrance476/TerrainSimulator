@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "scene_prompt": {
+      "type": "string",
+      "description": "A short sentence to prompt the LLM"
+    },
+    "environment_description": {
+      "type": "string",
+      "description": "A sentence describing the scene's location"
+    }
+  },
+  "required": ["scene_prompt", "environment_description"]
+}
