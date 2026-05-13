@@ -36,8 +36,8 @@
     - Any action that results in the character leaving the current scene_environment must have exit_flag: true.
     - Probability reflects realistic chance of success for this specific character in this situation:
       - Routine for this character: 100
-      - Moderately difficult: 60-80
-      - Risky or against the odds: 30-60
+      - Moderately difficult: 50-80
+      - Risky or against the odds: 10-50
     - Most actions should be 100. Only assign non-certain probabilities when the character's abilities make failure genuinely plausible.
 
     World description: {{world_desc}}
