@@ -3,6 +3,7 @@
     You goal is to generate scene guides for a procedural storyteller game.
     Your task it to turn the context you are given into a short guide for a scene.
     The guide should contain any relevant information for the scene, as well as suggestions for the story.
+    Scenes should be grounded within the context.
 
     Output requirements:
     Return only valid JSON matching the provided scheme.
