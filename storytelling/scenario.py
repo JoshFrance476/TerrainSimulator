@@ -1,13 +1,11 @@
 from storytelling.interaction import CompletedInteraction, PendingInteraction
 
 class Scenario:
-    def __init__(self, focus="", environment="", scene_significance=""):
+    def __init__(self, guide=""):
         self.completed_interactions = []
         self.pending_interaction = None
         self.ended = False
-        self.focus = focus
-        self.environment = environment
-        self.significance = scene_significance
+        self.guide = guide
         self.interaction_count = 0
     
     def add_interaction(self, description, decision):

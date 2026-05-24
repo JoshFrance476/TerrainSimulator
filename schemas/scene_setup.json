@@ -1,14 +1,34 @@
 {
   "type": "object",
   "properties": {
-    "scene_prompt": {
-      "type": "string",
-      "description": "A short sentence to prompt the LLM"
-    },
     "environment_description": {
       "type": "string",
-      "description": "A sentence describing the scene's location"
+      "description": "One grounded sentence describing the environment"
+    },
+    "story_suggestion": {
+      "type": "string",
+      "description": "One sentence suggesting what the player could encounter in the scene - based on scene significance"
+    },
+    "outcome_suggestions": {
+      "type": "array",
+      "description": "2-4 potential outcomes",
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "description": "A short sentence describing a potential outcome of the scene"
+      } 
+    },
+    "character_profiles": {
+      "type": "array",
+      "description": "0-2 brief descriptions",
+      "minItems": 0,
+      "maxItems": 2,
+      "items": {
+        "type": "string",
+        "description": "One short sentence describing a possible character in the scene"
+      }
     }
   },
-  "required": ["scene_prompt", "environment_description"]
+  "required": ["environment_description", "story_suggestion", "outcome_suggestions"]
 }

@@ -10,7 +10,7 @@ class StoryLLM:
         self.loader = PromptLoader()
 
     def prompt_scene(self, context, world_desc, story_focus_desc):
-        messages = self.loader.load_messages("scene", {
+        messages = self.loader.load_messages("scene_v2", {
             "context": context,
             "world_desc": world_desc,
             "story_focus_desc": story_focus_desc
@@ -91,7 +91,7 @@ class StoryLLM:
         }
 
     def prompt_scene_setup(self, context, world_desc, story_focus_desc, character_desc, significance):
-        messages = self.loader.load_messages("scene_setup", {
+        messages = self.loader.load_messages("scene_setup_v2", {
             "context": context,
             "world_desc": world_desc,
             "story_focus_desc": story_focus_desc,
@@ -111,8 +111,7 @@ class StoryLLM:
         return {
             "completion_tokens": response.usage.completion_tokens,
             "prompt_tokens": response.usage.prompt_tokens,
-            "focus": data["scene_prompt"],
-            "environment": data["environment_description"]
+            "guide": data
         }
 
     def prompt_character_setup(self, character_desc, world_desc, story_focus_desc):

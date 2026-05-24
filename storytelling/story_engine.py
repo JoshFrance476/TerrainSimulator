@@ -29,14 +29,14 @@ class StoryEngine:
         scene_significance = signficance_options[random.randint(0, len(signficance_options)-1)]
         response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description, self.state.character_description, scene_significance)
 
-        return response["focus"], response["environment"], scene_significance
+        return response["guide"]
 
 
     
     def generate_scene_interaction(self, selected_cell):
         if self.state.current_scene is None:
-            scene_focus, scene_evironment, scene_significance = self.setup_scene(self._build_scene_setup_context(selected_cell))
-            self.state.current_scene = Scenario(scene_focus, scene_evironment, scene_significance)
+            scene_guide = self.setup_scene(self._build_scene_setup_context(selected_cell))
+            self.state.current_scene = Scenario(scene_guide)
         
         context = self._build_scene_context()
         
@@ -115,8 +115,7 @@ class StoryEngine:
             "tile_interaction_history": current_scenario.get_interactions_json() if current_scenario else None,
             "latest_tile_action": current_scenario.get_most_recent_action() if current_scenario else None,
             "character_notebook": list(self.state.notebook),
-            "scene_prompt": self.state.current_scene.focus,
-            "scene_environment": self.state.current_scene.environment
+            "scene_guide": self.state.current_scene.guide,
         }
 
         return json.dumps(context, ensure_ascii=False)
