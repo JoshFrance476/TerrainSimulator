@@ -1,3 +1,4 @@
+
 import pygame
 import config
 from rendering.ui.left_sidebar import LeftSidebarController
@@ -148,13 +149,14 @@ class UIManager:
     def draw_hover_highlight(self, hovered_cell, screen, color=(255, 255, 255, 100)):
         """Draws a semi-transparent highlight over the hovered cell."""
         cell_y, cell_x = hovered_cell
+        cs = self.camera.cell_size
 
         # Convert grid cell to screen coordinates
-        screen_x = (cell_x - self.camera.x_pos) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
-        screen_y = (cell_y - self.camera.y_pos) * config.CELL_SIZE
+        screen_x = (cell_x - self.camera.x_pos) * cs + config.SIDEBAR_WIDTH
+        screen_y = (cell_y - self.camera.y_pos) * cs
 
         # Create transparent surface for the highlight
-        highlight_surface = pygame.Surface((config.CELL_SIZE, config.CELL_SIZE), pygame.SRCALPHA)
+        highlight_surface = pygame.Surface((cs, cs), pygame.SRCALPHA)
         highlight_surface.fill(color)
 
         # Blit highlight onto the screen
@@ -163,22 +165,23 @@ class UIManager:
     def draw_selected_cell_border(self, selected_cell, screen, color=(255, 255, 0)):
         """Draws a border around the selected cell."""
         cell_y, cell_x = selected_cell
+        cs = self.camera.cell_size
 
         # Convert grid cell to screen coordinates
-        screen_x = (cell_x - self.camera.x_pos) * config.CELL_SIZE  + config.SIDEBAR_WIDTH
-        screen_y = (cell_y - self.camera.y_pos) * config.CELL_SIZE
+        screen_x = (cell_x - self.camera.x_pos) * cs + config.SIDEBAR_WIDTH
+        screen_y = (cell_y - self.camera.y_pos) * cs
 
         # Create transparent surface for the border
-        highlight_surface = pygame.Surface((config.CELL_SIZE, config.CELL_SIZE), pygame.SRCALPHA)
-        
-        
+        highlight_surface = pygame.Surface((cs, cs), pygame.SRCALPHA)
+
         # Draw rectangle border with scaled thickness
         pygame.draw.rect(
             highlight_surface,
             color,
-            (0, 0, config.CELL_SIZE, config.CELL_SIZE),
-            1
+            (0, 0, cs, cs),
+            max(1, cs // 8)  # Scale border thickness with zoom
         )
 
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
+ 

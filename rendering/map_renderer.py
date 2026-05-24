@@ -23,18 +23,19 @@ class MapRenderer:
 
         if self.state.debug_mode:
             chunk_view = self.world.get_chunk_map()[y0:y1,x0:x1]
-            self.region_border_surface = produce_chunk_border_surface(chunk_view)
+            self.region_border_surface = produce_chunk_border_surface(chunk_view, self.camera.cell_size)
         else:
             region_view = [row[x0:x1] for row in self.world.get_region_map()[y0:y1]]
-            self.region_border_surface = produce_region_border_surface(region_view)
+            self.region_border_surface = produce_region_border_surface(region_view, self.camera.cell_size)
     
 
     def produce_map_surface(self, colour_map):
         rgb_map = hsv_to_rgb_array(colour_map)
 
         map_surface = pygame.surfarray.make_surface(rgb_map.swapaxes(0, 1))
-        map_surface = pygame.transform.scale(map_surface, (rgb_map.shape[1] * config.CELL_SIZE, 
-                                                rgb_map.shape[0] * config.CELL_SIZE))
+        cell = self.camera.cell_size
+        map_surface = pygame.transform.scale(map_surface, (rgb_map.shape[1] * cell,
+                                                rgb_map.shape[0] * cell))
         return map_surface
         
 

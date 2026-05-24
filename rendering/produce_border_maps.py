@@ -9,11 +9,11 @@ def region_id_to_color(region_id: int):
     return (r, g, b, 255)
 
 
-def produce_region_border_surface(region_map):
+def produce_region_border_surface(region_map, cell_size=None):
     rows = len(region_map)
     cols = len(region_map[0]) if rows else 0
 
-    cs = config.CELL_SIZE
+    cs = cell_size if cell_size is not None else config.CELL_SIZE
     surface = pygame.Surface((cols * cs, rows * cs), pygame.SRCALPHA)
     thickness = config.REGION_BORDER_THICKNESS
 
@@ -50,10 +50,10 @@ def produce_region_border_surface(region_map):
     return surface
 
 
-def produce_chunk_border_surface(chunk_map):
+def produce_chunk_border_surface(chunk_map, cell_size=None):
     rows, cols = chunk_map.shape
 
-    cs = config.CELL_SIZE
+    cs = cell_size if cell_size is not None else config.CELL_SIZE
     thickness = config.REGION_BORDER_THICKNESS
     surface = pygame.Surface((cols * cs, rows * cs), pygame.SRCALPHA)
 

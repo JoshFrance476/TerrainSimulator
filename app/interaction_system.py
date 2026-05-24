@@ -237,6 +237,16 @@ class InteractionSystem:
     def _mouse_wheel(self, cmd: MouseWheel):
         if self.state.focused_entity and hasattr(self.state.focused_entity, "scroll"):
             self.state.focused_entity.scroll(cmd.y)
+            return
+
+        # Zoom the map, keeping the cell under the cursor stationary
+        mouse_pos = pygame.mouse.get_pos()
+        if self.mouse_on_map():
+            hovered = self.get_cell_at_mouse_position(mouse_pos)
+            self.camera.zoom(cmd.y, mouse_world_col=hovered[1], mouse_world_row=hovered[0])
+        else:
+            self.camera.zoom(cmd.y)
+        self.refresh_render()
 
     def _key_down(self, cmd: KeyDown):
         # Port keybindings from AppController
@@ -310,11 +320,12 @@ class InteractionSystem:
 
     def get_cell_at_mouse_position(self, mouse_pos):
         # Convert screen coordinates to world coordinates
-        world_x = (mouse_pos[0] - config.SIDEBAR_WIDTH) + (self.camera.x_pos * config.CELL_SIZE)
-        world_y = mouse_pos[1] + (self.camera.y_pos * config.CELL_SIZE)
+        cell = self.camera.cell_size
+        world_x = (mouse_pos[0] - config.SIDEBAR_WIDTH) + (self.camera.x_pos * cell)
+        world_y = mouse_pos[1] + (self.camera.y_pos * cell)
 
         # Convert world coordinates to grid cell indices
-        cell_x = int(world_x // config.CELL_SIZE)
-        cell_y = int(world_y // config.CELL_SIZE)
+        cell_x = int(world_x // cell)
+        cell_y = int(world_y // cell)
 
         return (cell_y, cell_x)

@@ -5,7 +5,7 @@ LOGGING = True
 TARGET_FPS = 60
 
 CAMERA_ROWS, CAMERA_COLS = 57, 87
-WORLD_ROWS, WORLD_COLS = CAMERA_ROWS*4, CAMERA_COLS*4
+WORLD_ROWS, WORLD_COLS = 228, 341
 
 CELL_SIZE = 16 # Decreasing this by one increases generation time 4 fold
 
