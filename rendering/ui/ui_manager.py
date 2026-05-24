@@ -1,4 +1,3 @@
-
 import pygame
 import config
 from rendering.ui.left_sidebar import LeftSidebarController
@@ -12,13 +11,14 @@ from app.app_state import InteractionType, LeftPage, RightPage
 
 
 class UIManager:
-    def __init__(self, state, camera, storyteller, fonts, world, get_brush_attributes, generate_map_func, load_file_func, save_file_func):
+    def __init__(self, state, camera, storyteller, fonts, world, brush, generate_map_func, load_file_func, save_file_func):
         self.state = state
         self.camera = camera
         self.interaction_system = None
         self.storyteller = storyteller
         self.world = world
         self.fonts = fonts
+        self.brush = brush
 
         self._last_left_page = None
 
@@ -26,8 +26,6 @@ class UIManager:
 
         self._last_selected_cell = None
         self._last_hovered_cell = None
-
-        self.get_brush_attributes = get_brush_attributes
 
         self.generate_map_func = generate_map_func
         self.load_file_func = load_file_func
@@ -75,6 +73,9 @@ class UIManager:
                 self.tooltips.generate_tooltip_list(hovered_cell)
                 self._last_hovered_cell = hovered_cell
             self.tooltips.draw(screen)
+
+            if self.state.interaction_type in {InteractionType.PAINT_REGION, InteractionType.PAINT_TILE, InteractionType.EDIT_ELEVATION}:
+                self.draw_brush_outline(screen)
         
         if self.state.show_menu:
             self.menu.draw(screen)
@@ -83,7 +84,7 @@ class UIManager:
             if self.state.interaction_type is not self._current_brush_type:
                 self.brush_window.show_page(self.state.interaction_type)
                 self._current_brush_type = self.state.interaction_type
-                self.brush_window.set_attributes(self.get_brush_attributes())
+                self.brush_window.set_attributes(self.brush.get_attributes())
             self.brush_window.draw(screen)
 
 
@@ -162,6 +163,44 @@ class UIManager:
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
 
+    def draw_brush_outline(self, screen, color=(255, 255, 255, 180)):
+        """Draws a grid-aligned outline around the tiles covered by the brush."""
+        hovered_cell = self.state.hovered_cell
+        if hovered_cell is None:
+            return
+
+        cs = self.camera.cell_size
+        thickness = max(1, cs // 8)
+
+        # Get the boolean mask of which world tiles the brush covers
+        mask = self.brush.get_brush_mask(hovered_cell, boolean=True)
+
+        # Only iterate over the visible camera region to avoid off-screen work
+        x0, y0, x1, y1 = self.camera.get_boundaries()
+
+        overlay = pygame.Surface((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.SRCALPHA)
+
+        for world_y in range(max(0, y0), min(mask.shape[0], y1)):
+            for world_x in range(max(0, x0), min(mask.shape[1], x1)):
+                if not mask[world_y, world_x]:
+                    continue
+
+                # Screen position of this tile's top-left corner
+                sx = (world_x - self.camera.x_pos) * cs + config.SIDEBAR_WIDTH
+                sy = (world_y - self.camera.y_pos) * cs
+
+                # Draw a border edge wherever the neighbour is outside the brush mask
+                if world_y == 0 or not mask[world_y - 1, world_x]:  # top edge
+                    pygame.draw.line(overlay, color, (sx, sy), (sx + cs, sy), thickness)
+                if world_y + 1 >= mask.shape[0] or not mask[world_y + 1, world_x]:  # bottom edge
+                    pygame.draw.line(overlay, color, (sx, sy + cs), (sx + cs, sy + cs), thickness)
+                if world_x == 0 or not mask[world_y, world_x - 1]:  # left edge
+                    pygame.draw.line(overlay, color, (sx, sy), (sx, sy + cs), thickness)
+                if world_x + 1 >= mask.shape[1] or not mask[world_y, world_x + 1]:  # right edge
+                    pygame.draw.line(overlay, color, (sx + cs, sy), (sx + cs, sy + cs), thickness)
+
+        screen.blit(overlay, (0, 0))
+
     def draw_selected_cell_border(self, selected_cell, screen, color=(255, 255, 0)):
         """Draws a border around the selected cell."""
         cell_y, cell_x = selected_cell
@@ -184,4 +223,3 @@ class UIManager:
 
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
- 

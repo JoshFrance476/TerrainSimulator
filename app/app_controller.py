@@ -39,7 +39,7 @@ class AppController:
         self.map_renderer = MapRenderer(self.world, self.camera, self.app_state)
         
 
-        self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush.get_attributes, self.generate_map, self.load_file, self.save_file)
+        self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush, self.generate_map, self.load_file, self.save_file)
         self.input_system = InputSystem(self.ui_manager)
 
         self.interaction_system = InteractionSystem(self.app_state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.ui_manager.mouse_on_map)
@@ -90,6 +90,12 @@ class AppController:
             biome_config = yaml.safe_load(f)
         
         world_data = np.load(map_data_path, allow_pickle=True)
+
+        rows, cols = world_data["biome"].shape
+        config.WORLD_ROWS = rows
+        config.WORLD_COLS = cols
+        self.world.rows = rows
+        self.world.cols = cols
 
         self.world.load_data(biome_config, world_data)
 
