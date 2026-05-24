@@ -18,16 +18,6 @@
         "type": "string",
         "description": "A short sentence describing a potential outcome of the scene"
       } 
-    },
-    "character_profiles": {
-      "type": "array",
-      "description": "0-2 brief descriptions",
-      "minItems": 0,
-      "maxItems": 2,
-      "items": {
-        "type": "string",
-        "description": "One short sentence describing a possible character in the scene"
-      }
     }
   },
   "required": ["environment_description", "story_suggestion", "outcome_suggestions"]
