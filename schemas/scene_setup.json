@@ -5,6 +5,9 @@
       "type": "string",
       "description": "One grounded sentence describing the environment"
     },
+    "precise_location": {
+      "type": "string"
+    },
     "story_suggestion": {
       "type": "string",
       "description": "One sentence suggesting what the player could encounter in the scene - based on scene significance"
@@ -20,5 +23,5 @@
       } 
     }
   },
-  "required": ["environment_description", "story_suggestion", "outcome_suggestions"]
+  "required": ["environment_description", "precise_location", "story_suggestion", "outcome_suggestions"]
 }
