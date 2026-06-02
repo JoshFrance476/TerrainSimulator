@@ -1,5 +1,3 @@
-import random
-
 LOGGING = True
 
 TARGET_FPS = 60
