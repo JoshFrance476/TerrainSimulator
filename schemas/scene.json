@@ -7,9 +7,7 @@
     },
     "actions": {
       "type": "array",
-      "description": "2-4 player actions",
-      "minItems": 2,
-      "maxItems": 4,
+      "description": "player actions",
       "items": {
         "type": "object",
         "properties": {
@@ -19,16 +17,10 @@
           },
           "exit_flag": {
             "type": "boolean",
-            "description": "True if this action ends the current tile interaction"
-          },
-          "probability": {
-            "type": "integer",
-            "description": "Chance of success as a percentage",
-            "minimum": 0,
-            "maximum": 100
+            "description": "True if this action ends the current scene"
           }
         },
-        "required": ["action", "exit_flag", "probability"],
+        "required": ["action", "exit_flag"],
         "additionalProperties": false
       }
     }
