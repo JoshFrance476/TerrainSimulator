@@ -28,4 +28,5 @@
     Story focus: {{story_focus_desc}}
 
 - role: user
-  content: "{{context}}"
+  content: |
+    {{context}}

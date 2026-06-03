@@ -25,8 +25,4 @@
       Character description: {{character_desc}}.
 - role: user
   content: |
-    Location context: {{context}}.
-    Significance: {{significance}}.
-    Character notebook: {{character_notebook}}.
-    Scene trigger: {{previous_scene_outcome}}.
-    Scene history (chronological, most recent last): {{scene_history}}.
+    {{context}}
