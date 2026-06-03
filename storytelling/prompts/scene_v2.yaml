@@ -9,10 +9,12 @@
 
     OUTPUT RULES
     - Describe the story and surroundings in second-person narrative prose. 2 sentences max.
+    - The interaction_description must present the story suggestion and location details from the perspective of the character.
     - Provide one action per outcome suggestion that could plausibly lead to it. Actions can be 
-    physical, observational, conversational, or instinctive — whatever fits the scene naturally. 
-    Write actions from the player's perspective without implying or revealing what will happen 
-    as a result.
+      physical, observational, conversational, or instinctive — whatever fits the scene naturally. 
+      Write actions from the player's perspective without implying or revealing what will happen 
+      as a result.
+    - Ensure there is one action per outcome suggestion.
     - If the outcome suggestion ends the scene, set exit_flag: True for the action.
     - Each action must be under 15 words.
 

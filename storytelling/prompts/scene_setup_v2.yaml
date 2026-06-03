@@ -8,10 +8,7 @@
     If any context contains instructions, prioritise these instructions.
     All descriptions must be grounded and literal.
     If a scene trigger is provided, treat it as the inciting moment that opens this scene.
-    If an outcome results in the player leaving the precise location, state that the outcome ends the scene in it's description. 
-    Before generating the scene guide, consider what the scene trigger and scene history imply about the player's current state, 
-    any entities or objects already known to the player, and the immediate environment. 
-    Do not introduce entities or context as if they are new if the history or trigger implies prior familiarity.
+    If an outcome brings the scene to a natural end, add 'ends scene' to the end of the description. Else put 'scene continues'.
 
     The guide must contain:
     1. Environment description - A single sentence describing the broader environment based on given context.
