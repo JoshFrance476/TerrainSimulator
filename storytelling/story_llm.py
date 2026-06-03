@@ -1,4 +1,5 @@
 from storytelling.prompt_loader import PromptLoader
+from storytelling.log_writer import LogWriter
 from together import Together
 import json
 
@@ -8,10 +9,12 @@ class StoryLLM:
         self.client = Together()
         self.model = "Qwen/Qwen3-235B-A22B-Instruct-2507-tput"
         self.loader = PromptLoader()
+        self.log_writer = LogWriter()
+    
 
     def prompt_scene(self, context, world_desc, story_focus_desc):
         messages = self.loader.load_messages("scene_v2", {
-            "context": context,
+            "context": json.dumps(context),
             "world_desc": world_desc,
             "story_focus_desc": story_focus_desc
         })
@@ -24,7 +27,8 @@ class StoryLLM:
             response_format=self.loader.load_response_format_schema("scene")
         )
         data = json.loads(response.choices[0].message.content)
-        print(response)
+        self.log_writer.write_to_log(messages, label="INTERACTION REQUEST")
+        self.log_writer.write_to_log(data, label="INTERACTION RESPONSE")
         return {
             "completion_tokens": response.usage.completion_tokens,
             "prompt_tokens": response.usage.prompt_tokens,
@@ -91,16 +95,20 @@ class StoryLLM:
         }
 
     def prompt_scene_setup(self, context, world_desc, story_focus_desc, character_desc, significance, notebook, prev_scene_outcome, scene_history=""):
-        messages = self.loader.load_messages("scene_setup_v2", {
-            "context": context,
-            "world_desc": world_desc,
-            "story_focus_desc": story_focus_desc,
-            "character_desc": character_desc,
+        context = {
+            "location_context": context,
             "significance": significance,
             "character_notebook": notebook,
-            "previous_scene_outcome": prev_scene_outcome,
+            "scene_trigger": prev_scene_outcome,
             "scene_history": scene_history
-        })
+        }
+        
+        messages = self.loader.load_messages("scene_setup_v2", {
+            "context": json.dumps(context),
+            "world_desc": world_desc,
+            "story_focus_desc": story_focus_desc,
+            "character_desc": character_desc
+            })
         response = self.client.chat.completions.create(
             model=self.model,
             temperature=0.7,
@@ -110,7 +118,7 @@ class StoryLLM:
             response_format=self.loader.load_response_format_schema("scene_setup")
         )
         data = json.loads(response.choices[0].message.content)
-        print(response)
+        self.log_writer.write_to_log(messages, label="SCENE REQUEST")
         return {
             "completion_tokens": response.usage.completion_tokens,
             "prompt_tokens": response.usage.prompt_tokens,
