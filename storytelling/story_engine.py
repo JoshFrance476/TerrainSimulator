@@ -110,7 +110,7 @@ class StoryEngine:
             "recent_movement": self.get_most_recent_movement_json(),
             
         }
-        return json.dumps(context, ensure_ascii=False)
+        return context
     
     def _build_scene_context(self):
         current_scenario = self.state.current_scene
@@ -122,7 +122,7 @@ class StoryEngine:
             "scene_guide": self.state.current_scene.guide,
         }
 
-        return json.dumps(context, ensure_ascii=False)
+        return context
     
     def update_tokens(self, prompt_tokens, completion_tokens):
         self.state.prompt_tokens += prompt_tokens
