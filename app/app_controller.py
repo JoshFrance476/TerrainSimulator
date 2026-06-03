@@ -21,8 +21,14 @@ class AppController:
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
         self.storyteller = StoryEngine(self.world)
 
-        #self.load_file('ColonialFantasy', update_interaction_system=False)
-        self.generate_map()
+        if config.MAP_NAME:
+            try:
+                self.load_file(config.MAP_NAME, update_interaction_system=False)
+            except Exception as e:
+                print("invalid map file name - generating procedural map")
+                self.generate_map()
+        else:
+            self.generate_map()
 
         self.camera = Camera()
         
@@ -44,6 +50,8 @@ class AppController:
         self.input_system = InputSystem(self.ui_manager)
 
         self.interaction_system = InteractionSystem(self.app_state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.ui_manager.mouse_on_map)
+
+        self.interaction_system.init_start()
 
         self.ui_manager.set_interaction_system(self.interaction_system)
         
@@ -73,8 +81,6 @@ class AppController:
         self.world.load_data(biome_config)
 
         self.storyteller.clear_setup()
-
-        self.interaction_system.init_start()
     
     def load_file(self, file_name, update_interaction_system = True):
         path = Path("data/saved_maps") / file_name
