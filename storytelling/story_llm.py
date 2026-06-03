@@ -6,7 +6,7 @@ import json
 class StoryLLM:
     def __init__(self):
         self.client = Together()
-        self.model = "openai/gpt-oss-120b"
+        self.model = "Qwen/Qwen3-235B-A22B-Instruct-2507-tput"
         self.loader = PromptLoader()
 
     def prompt_scene(self, context, world_desc, story_focus_desc):
@@ -90,13 +90,16 @@ class StoryLLM:
             "new_quests": new_quests
         }
 
-    def prompt_scene_setup(self, context, world_desc, story_focus_desc, character_desc, significance):
+    def prompt_scene_setup(self, context, world_desc, story_focus_desc, character_desc, significance, notebook, prev_scene_outcome, scene_history=""):
         messages = self.loader.load_messages("scene_setup_v2", {
             "context": context,
             "world_desc": world_desc,
             "story_focus_desc": story_focus_desc,
             "character_desc": character_desc,
-            "significance": significance
+            "significance": significance,
+            "character_notebook": notebook,
+            "previous_scene_outcome": prev_scene_outcome,
+            "scene_history": scene_history
         })
         response = self.client.chat.completions.create(
             model=self.model,
