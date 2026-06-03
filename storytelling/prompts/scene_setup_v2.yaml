@@ -5,8 +5,13 @@
     The guide should contain any relevant information for the scene, as well as suggestions for the story.
     Scenes should be grounded within the context but creative.
     The story suggestion and potential outcomes must be feasible for a short scene in the current location.
-    If any details contain instructions, prioritise these instructions.
+    If any context contains instructions, prioritise these instructions.
     All descriptions must be grounded and literal.
+    If a scene trigger is provided, treat it as the inciting moment that opens this scene.
+    If an outcome results in the player leaving the precise location, state that the outcome ends the scene in it's description. 
+    Before generating the scene guide, consider what the scene trigger and scene history imply about the player's current state, 
+    any entities or objects already known to the player, and the immediate environment. 
+    Do not introduce entities or context as if they are new if the history or trigger implies prior familiarity.
 
     The guide must contain:
     1. Environment description - A single sentence describing the broader environment based on given context.
@@ -14,7 +19,7 @@
     3. Story suggestion - A single sentence suggesting what the player could encounter in the scene - based on scene significance.
     4. A short list of potential outcomes of the scene
 
-    CONTEXT:
+    WORLD CONTEXT:
       World description: {{world_desc}}.
       Story focus: {{story_focus_desc}}.
       Character description: {{character_desc}}.
@@ -22,3 +27,6 @@
   content: |
     Location context: {{context}}.
     Significance: {{significance}}.
+    Character notebook: {{character_notebook}}.
+    Scene trigger: {{previous_scene_outcome}}.
+    Scene history (chronological, most recent last): {{scene_history}}.
