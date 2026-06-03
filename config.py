@@ -1,5 +1,7 @@
 LOGGING = True
 
+MAP_NAME = "ColonialFantasy2"
+
 TARGET_FPS = 60
 
 CAMERA_ROWS, CAMERA_COLS = 57, 87
