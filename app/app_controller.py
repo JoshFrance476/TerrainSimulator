@@ -81,6 +81,8 @@ class AppController:
         self.world.load_data(biome_config)
 
         self.storyteller.clear_setup()
+
+        self.interaction_system.refresh_render()
     
     def load_file(self, file_name, update_interaction_system = True):
         path = Path("data/saved_maps") / file_name
