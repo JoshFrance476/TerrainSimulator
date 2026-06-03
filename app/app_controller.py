@@ -21,7 +21,8 @@ class AppController:
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
         self.storyteller = StoryEngine(self.world)
 
-        self.load_file('ColonialFantasy', update_interaction_system=False)
+        #self.load_file('ColonialFantasy', update_interaction_system=False)
+        self.generate_map()
 
         self.camera = Camera()
         

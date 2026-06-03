@@ -4,7 +4,7 @@ from skimage.measure import regionprops, label
 from skimage.segmentation import watershed
 from skimage.morphology import binary_dilation
 from skimage.graph import merge_hierarchical
-from noise import pnoise2
+from opensimplex import noise2
 
 def find_x_largest_value_locations(data, x):
     flat_map = data.ravel()
@@ -32,7 +32,7 @@ def generate_perlin_noise_map(rows, cols, scale, seed, only_positive=False, octa
     noise_map = np.zeros((rows, cols), dtype=float)
     for r in range(rows):
         for c in range(cols):
-            noise_value = pnoise2((r + seed) / scale, (c + seed) / scale, octaves=octaves, persistence=persistence, lacunarity=lacunarity)
+            noise_value = noise2((r + seed) / scale, (c + seed) / scale, octaves=octaves, persistence=persistence, lacunarity=lacunarity)
             noise_map[r][c] = noise_value
     
     # Normalises map between 0 and 1
