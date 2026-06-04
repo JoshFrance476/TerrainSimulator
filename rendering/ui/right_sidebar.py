@@ -26,7 +26,7 @@ class RightSidebarController:
             for completed_interactions in current_scenario.completed_interactions:
                 interaction_container = ComponentContainer()
                 interaction_container.add_component(Label(completed_interactions.description, self.fonts.small_font, config.SIDEBAR_WIDTH-20))
-                interaction_container.add_component(Label(completed_interactions.decision, self.fonts.small_font, config.SIDEBAR_WIDTH-20))
+                interaction_container.add_component(Label(completed_interactions.chosen_action, self.fonts.small_font, config.SIDEBAR_WIDTH-20))
                 interaction_list.add_container(interaction_container)
 
             pending_interaction = current_scenario.pending_interaction
