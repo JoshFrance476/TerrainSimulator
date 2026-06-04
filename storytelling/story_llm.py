@@ -12,15 +12,15 @@ class StoryLLM:
         self.log_writer = LogWriter()
     
 
-    def prompt_scene(self, context, world_desc, story_focus_desc):
+    def prompt_scene(self, guide, world_desc, story_focus_desc):
         messages = self.loader.load_messages("scene_v2", {
-            "context": json.dumps(context),
+            "context": json.dumps(guide),
             "world_desc": world_desc,
             "story_focus_desc": story_focus_desc
         })
         response = self.client.chat.completions.create(
             model=self.model,
-            temperature=0.7,
+            temperature=1,
             max_tokens=600,
             reasoning_effort="low",
             messages=messages,
@@ -94,14 +94,17 @@ class StoryLLM:
             "new_quests": new_quests
         }
 
-    def prompt_scene_setup(self, context, world_desc, story_focus_desc, character_desc, significance, notebook, prev_scene_outcome, scene_history=""):
+    def prompt_scene_setup(self, context, world_desc, story_focus_desc, character_desc, significance, notebook, scene_history):
         context = {
             "location_context": context,
             "significance": significance,
             "character_notebook": notebook,
-            "scene_trigger": prev_scene_outcome,
             "scene_history": scene_history
         }
+
+        if scene_history:
+            first_scene = next(iter(scene_history.values()))
+            context["scene_trigger"] = first_scene['action']
         
         messages = self.loader.load_messages("scene_setup_v2", {
             "context": json.dumps(context),
