@@ -8,7 +8,10 @@
     If any context contains instructions, prioritise these instructions.
     All descriptions must be grounded and literal.
     If a scene trigger is provided, treat it as the inciting moment that opens this scene.
-    If an outcome brings the scene to a natural end, add 'ends scene' to the end of the description. Else put 'scene continues'.
+    The scene history is a full log of previous events in the scene, with the first being the most recent.
+    If an outcome brings the scene to a natural end, add 'ends scene' to the end of the description. Otherwise don't put anything.
+    Dramatic elements in the story suggestion must be grounded in provided context or scene 
+    history — never invented from genre conventions.
 
     The guide must contain:
     1. Environment description - A single sentence describing the broader environment based on given context.

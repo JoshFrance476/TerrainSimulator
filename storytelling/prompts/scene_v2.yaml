@@ -8,12 +8,15 @@
     - scene_guide: A general guide for the scene.
 
     OUTPUT RULES
-    - Describe the story and surroundings in second-person narrative prose. 2 sentences max.
-    - The interaction_description must present the story suggestion and location details from the perspective of the character.
+    - Write the scene guide into second-person narrative prose. 150 words max.
+    - The user is roleplaying as the character. Present the scene to their character.
+    - Ensure not to skip details from the story suggestion and include details from precise_location and environment_description that will immerse the player in the scene.
+    - Do not state information the character has not yet been told or discovered.
     - Provide one action per outcome suggestion that could plausibly lead to it. Actions can be 
       physical, observational, conversational, or instinctive — whatever fits the scene naturally. 
-      Write actions from the player's perspective without implying or revealing what will happen 
-      as a result.
+    - Actions must not reference specific details from the outcome suggestions — no named 
+      locations, no implied knowledge of what will happen. Each action should feel like a 
+      natural response to what the player can currently see or hear.
     - Ensure there is one action per outcome suggestion.
     - If the outcome suggestion ends the scene, set exit_flag: True for the action.
     - Each action must be under 15 words.
