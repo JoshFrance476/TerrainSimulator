@@ -20,7 +20,7 @@ class RightSidebarController:
         self.clear_page()
         self.component_list.append(Label("Current Scenario", self.fonts.header, config.SIDEBAR_WIDTH))
 
-        interaction_list = ContainerList(config.SIDEBAR_WIDTH-10, 500, True)
+        interaction_list = ContainerList(config.SIDEBAR_WIDTH-10, config.SCREEN_HEIGHT-50, True)
         current_scenario = self.storyteller.get_current_scenario()
         if current_scenario:
             for completed_interactions in current_scenario.completed_interactions:
