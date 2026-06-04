@@ -1,7 +1,6 @@
-from storytelling.scene import Scenario
 from storytelling.story_llm import StoryLLM
 from storytelling.story_state import StoryState
-import json
+from storytelling.scene import Scene
 import random
 
 class StoryEngine:
@@ -13,6 +12,27 @@ class StoryEngine:
         #self.story_inspo = self.setup_story(self.state.character_description, self.state.world_description, self.state.story_focus_description)
         self.story_inspo = None
     
+    def generate_scene_interaction(self, selected_cell):
+        if self.state.current_scene:
+            scene_history = self.state.current_scene.get_scene_history()
+        else:
+            scene_history = []
+            self.state.current_scene = Scene()
+        scene_guide = self.setup_scene(self._build_scene_setup_context(selected_cell), scene_history)
+        
+        response = self.llm.prompt_scene(scene_guide, self.state.world_description, self.state.story_focus_description)
+        self.state.current_scene.set_pending_interaction(response["description"], response["actions"], scene_guide["outcome_suggestions"], scene_guide)
+        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
+    
+    def setup_scene(self, context, scene_history):
+        signficance_options = ["Very low", "Low", "Medium", "High"]
+        scene_significance = signficance_options[random.randint(0, len(signficance_options)-1)]
+        if self.state.current_scene:
+            response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description, self.state.character_description, scene_significance, self.state.notebook, scene_history)
+        else:
+            response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description, self.state.character_description, scene_significance, self.state.notebook, scene_history)
+        return response["guide"]
+
     def setup_character(self, character_desc, world_desc, story_desc):
         response = self.llm.prompt_character_setup(character_desc, world_desc, story_desc)
         self.state.notebook = response["notebook"]
@@ -23,35 +43,6 @@ class StoryEngine:
         response = self.llm.prompt_story_setup(character_desc, world_desc, story_desc)
         self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
         return response["story_list"]
-
-    def setup_scene(self, context, prev_scene_outcome):
-        signficance_options = ["Very low", "Low", "Medium", "High"]
-        scene_significance = signficance_options[random.randint(0, len(signficance_options)-1)]
-        if self.state.current_scene:
-            response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description, self.state.character_description, scene_significance, self.state.notebook, prev_scene_outcome, self.state.current_scene.get_outcomes())
-        else:
-            response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description, self.state.character_description, scene_significance, self.state.notebook, prev_scene_outcome)
-        return response["guide"]
-
-
-    
-    def generate_scene_interaction(self, selected_cell):
-        if self.state.current_scene:
-            prev_scene_outcome = self.state.current_scene.get_most_recent_outcome()
-        else:
-            prev_scene_outcome = ""
-        scene_guide = self.setup_scene(self._build_scene_setup_context(selected_cell), prev_scene_outcome)
-
-        if self.state.current_scene:
-            self.state.current_scene.guide = scene_guide
-        else:
-            self.state.current_scene = Scenario(scene_guide)
-        
-        context = self._build_scene_context()
-        
-        response = self.llm.prompt_scene(context, self.state.world_description, self.state.story_focus_description)
-        self.state.current_scene.set_pending_interaction(response["description"], response["actions"], scene_guide["outcome_suggestions"])
-        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
     
 
     def choose_action(self, action, selected_cell):
@@ -110,18 +101,6 @@ class StoryEngine:
             "recent_movement": self.get_most_recent_movement_json(),
             
         }
-        return context
-    
-    def _build_scene_context(self):
-        current_scenario = self.state.current_scene
-
-        context = {
-            "tile_interaction_history": current_scenario.get_interactions_json() if current_scenario else None,
-            "latest_tile_action": current_scenario.get_most_recent_action() if current_scenario else None,
-            "character_notebook": list(self.state.notebook),
-            "scene_guide": self.state.current_scene.guide,
-        }
-
         return context
     
     def update_tokens(self, prompt_tokens, completion_tokens):
