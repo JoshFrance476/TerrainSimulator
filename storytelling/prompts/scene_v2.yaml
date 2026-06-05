@@ -5,18 +5,17 @@
 
     CONTEXT
     You will receive:
-    - scene_guide: A general guide for the scene.
+    - scene_guide: A general guide for the next step in the scene.
+    - scene_history: A chronological account of what has already occured in the scene.
 
     OUTPUT RULES
     - Write the scene guide into second-person narrative prose. 150 words max.
     - The user is roleplaying as the character. Present the scene to their character.
     - Ensure not to skip details from the story suggestion and include details from precise_location and environment_description that will immerse the player in the scene.
-    - Do not state information the character has not yet been told or discovered.
+    - Don't repeat what has already been described in the scene_history.
     - Provide one action per outcome suggestion that could plausibly lead to it. Actions can be 
       physical, observational, conversational, or instinctive — whatever fits the scene naturally. 
-    - Actions must not reference specific details from the outcome suggestions — no named 
-      locations, no implied knowledge of what will happen. Each action should feel like a 
-      natural response to what the player can currently see or hear.
+    - Actions must accurately describe the character's action that would lead to the outcome suggestion.
     - Ensure there is one action per outcome suggestion.
     - If the outcome suggestion ends the scene, set exit_flag: True for the action.
     - Each action must be under 15 words.
