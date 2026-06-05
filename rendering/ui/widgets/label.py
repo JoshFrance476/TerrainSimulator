@@ -2,12 +2,16 @@ from rendering.ui.text_utils import wrap_text
 from config import SIDEBAR_WIDTH
 
 class Label:
-    def __init__(self, text, font, max_width=SIDEBAR_WIDTH, left_padding = 5, top_padding = 0):
+    def __init__(self, text, font, max_width=None, left_padding = 5, top_padding = 0):
         self.text = text
         self.font = font
-        self.max_width = max_width
+
+        if max_width is None:
+            self.max_width = SIDEBAR_WIDTH - left_padding*2
+        else:
+            self.max_width = max_width
         self.width = 0
-        self.wrapped_text = wrap_text(self.text, font, max_width)
+        self.wrapped_text = wrap_text(self.text, font, self.max_width)
         self.height = 25 + (15 * max(0,(len(self.wrapped_text)-1)))
         self.left_padding = left_padding
         self.top_padding = top_padding
