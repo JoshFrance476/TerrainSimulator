@@ -12,9 +12,9 @@ class StoryLLM:
         self.log_writer = LogWriter()
     
 
-    def prompt_scene(self, guide, world_desc, story_focus_desc):
-        messages = self.loader.load_messages("scene_v2", {
-            "context": json.dumps(guide),
+    def prompt_scene(self, guide, previous_interactions, world_desc, story_focus_desc):
+        messages = self.loader.load_messages("scene_v2",
+            {"context": json.dumps({"guide": guide, "previous_interactions": previous_interactions}),
             "world_desc": world_desc,
             "story_focus_desc": story_focus_desc
         })
