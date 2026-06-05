@@ -3,6 +3,7 @@ from world.regions.region_manager import RegionManager
 from world.chunks.chunk_manager import ChunkManager
 from generation.biome_config_manager import BiomeConfigManager
 import config as config
+from utils.grid_utils import find_path_dijkstra, find_path_astar
 
 class World:
     """
@@ -190,3 +191,13 @@ class World:
     def add_new_region_to_chunk(self, chunk_id, title, visible_desc, hidden_desc):
         location = self.chunk_manager.get_random_location_in_chunk(chunk_id)
         self.region_manager.create_region_at_location(location, title, visible_desc, hidden_desc)
+    
+
+    # Pathfinding ############################################################################################
+
+
+    def find_path(self, start, end):
+        traversal_map = self.get_map_data("traversal_cost")
+        path = find_path_dijkstra(start, end, traversal_map)
+        print(path)
+        return path
