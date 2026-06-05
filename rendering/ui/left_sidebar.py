@@ -150,7 +150,7 @@ class LeftSidebarController:
         
         if self.state.selected_cell:
             biome_data = self.world.get_biome_data_at_location(self.state.selected_cell)
-            biome_name_label = Label(biome_data["name"], self.fonts.large_font, top_padding=2)
+            biome_name_label = Label(biome_data["name"].title(), self.fonts.large_font, top_padding=2)
             biome_description_label = Label(biome_data["description"], self.fonts.small_font, top_padding=2)
             self.component_list.append(biome_name_label)
             self.component_list.append(biome_description_label)
@@ -198,7 +198,7 @@ class LeftSidebarController:
             if region.hidden_desc:
                 self.component_list.append(Label(region.hidden_desc, self.fonts.small_font))
             self.component_list.append(Button(100,20, lambda r=region.rid: self.interaction_system.show_region_edit_page(r), "Edit", self.fonts.small_font))
-            self.component_list.append(LineDivider(config.SIDEBAR_WIDTH,2, 20))
+            self.component_list.append(LineDivider(config.SIDEBAR_WIDTH,2, top_padding=2))
 
     
 
