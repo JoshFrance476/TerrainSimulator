@@ -10,7 +10,7 @@ class Scene:
     def end_scene(self):
         self.ended = True
     
-    def get_interactions_json(self):
+    def get_interactions(self):
         interactions = []
         for interaction in self.completed_interactions:
             interactions.append({"Situation": interaction.description,
@@ -36,11 +36,12 @@ class Scene:
     
     def get_scene_history(self):
         return {
-            f"scene{idx}": {
+            f"scene_{idx}": {
                 "environment_description": interaction.guide["environment_description"],
                 "precise_location": interaction.guide["precise_location"],
                 "story": interaction.guide["story_suggestion"],
                 "action": interaction.outcome
             }
-            for idx, interaction in enumerate(reversed(self.completed_interactions))
+            for idx, interaction in enumerate(self.completed_interactions)
         }
+    
