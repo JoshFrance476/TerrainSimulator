@@ -6,6 +6,7 @@ class WorldData:
         self.biome_config = biome_config
         if world_data:
             self.world_data = world_data
+            self.update_stage_3()
         else:
             self.world_data = generate_data_maps(self.rows, self.cols, self.biome_config)
     
