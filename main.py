@@ -6,14 +6,14 @@ pygame.init()
 
 class FontManager:
     def __init__(self):
-        self.header = pygame.font.Font("assets/fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE+3)
-        self.large_font = pygame.font.Font("assets/fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE)
-        self.small_font = pygame.font.Font("assets/fonts/VCR_OSD_MONO_1.001.ttf", config.FONT_SIZE-3)
+        self.header = pygame.font.SysFont("gill-sans", config.FONT_SIZE+3)
+        self.large_font = pygame.font.SysFont("gill-sans", config.FONT_SIZE)
+        self.small_font = pygame.font.SysFont("gill-sans", config.FONT_SIZE-3)
 
 
 # Initialize screen
 screen = pygame.display.set_mode((config.SCREEN_WIDTH + config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), pygame.RESIZABLE)
-pygame.display.set_caption("Terrain Generation")
+pygame.display.set_caption("Procedural Story Platform")
 
 fonts = FontManager()
 
