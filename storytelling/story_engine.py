@@ -20,7 +20,7 @@ class StoryEngine:
             self.state.current_scene = Scene()
         scene_guide = self.setup_scene(self._build_scene_setup_context(selected_cell), scene_history)
         
-        response = self.llm.prompt_scene(scene_guide, self.state.world_description, self.state.story_focus_description)
+        response = self.llm.prompt_scene(scene_guide, self.state.current_scene.get_interactions(), self.state.world_description, self.state.story_focus_description)
         self.state.current_scene.set_pending_interaction(response["description"], response["actions"], scene_guide["outcome_suggestions"], scene_guide)
         self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
     
@@ -55,7 +55,7 @@ class StoryEngine:
             self.generate_scene_interaction(selected_cell)
     
     def end_scene(self, scene, selected_cell):
-        response = self.llm.prompt_scene_summary(scene.get_interactions_json(), self.world.get_chunk_context_json(selected_cell))
+        response = self.llm.prompt_scene_summary(scene.get_interactions(), self.world.get_chunk_context_json(selected_cell))
         self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
         self.state.character_history.append(response["summary"])
         new_quests = response["new_quests"]
