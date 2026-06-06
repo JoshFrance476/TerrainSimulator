@@ -23,9 +23,6 @@ def find_path_astar(start, end, traversal_map):
     return path
 
 def find_path_dijkstra(start, end, traversal_map, max_distance=1000):
-    print(f"Start: {start}, End: {end}")
-    print(f"Cost at start: {traversal_map[start[0]][start[1]]}")
-    print(f"Cost at end: {traversal_map[end[0]][end[1]]}")
     rows = len(traversal_map)
     cols = len(traversal_map[0])
 
