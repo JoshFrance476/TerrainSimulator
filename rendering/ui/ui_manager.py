@@ -11,7 +11,7 @@ from app.app_state import InteractionType, LeftPage, RightPage
 
 
 class UIManager:
-    def __init__(self, state, camera, storyteller, fonts, world, brush, generate_map_func, load_file_func, save_file_func):
+    def __init__(self, state, camera, storyteller, fonts, world, brush, player, generate_map_func, load_file_func, save_file_func):
         self.state = state
         self.camera = camera
         self.interaction_system = None
@@ -19,6 +19,7 @@ class UIManager:
         self.world = world
         self.fonts = fonts
         self.brush = brush
+        self.player = player
 
         self._last_left_page = None
 
@@ -60,7 +61,9 @@ class UIManager:
         
 
         if selected_cell:
-                self.draw_selected_cell_border(selected_cell, screen)
+            self.draw_cell_border(selected_cell, screen, color=(255, 255, 0))
+        
+        self.draw_cell_border(self.player.get_location(), screen)
 
         self.left_sidebar.draw(screen)
         self.right_sidebar.draw(screen)
@@ -87,6 +90,8 @@ class UIManager:
                 self.brush_window.set_attributes(self.brush.get_attributes())
             self.brush_window.draw(screen)
 
+        if self.world.current_path:
+            self.draw_path(self.world.current_path, screen)
 
         
     def get_clicked_component(self, event_pos):
@@ -152,9 +157,7 @@ class UIManager:
         cell_y, cell_x = hovered_cell
         cs = self.camera.cell_size
 
-        # Convert grid cell to screen coordinates
-        screen_x = (cell_x - self.camera.x_pos) * cs + config.SIDEBAR_WIDTH
-        screen_y = (cell_y - self.camera.y_pos) * cs
+        screen_x, screen_y = self.grid_to_screen((cell_x, cell_y))
 
         # Create transparent surface for the highlight
         highlight_surface = pygame.Surface((cs, cs), pygame.SRCALPHA)
@@ -162,6 +165,10 @@ class UIManager:
 
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
+    
+    def draw_path(self, path, screen):
+        for x,y in path:
+            self.draw_hover_highlight((y, x), screen)
 
     def draw_brush_outline(self, screen, color=(255, 255, 255, 180)):
         """Draws a grid-aligned outline around the tiles covered by the brush."""
@@ -185,9 +192,7 @@ class UIManager:
                 if not mask[world_y, world_x]:
                     continue
 
-                # Screen position of this tile's top-left corner
-                sx = (world_x - self.camera.x_pos) * cs + config.SIDEBAR_WIDTH
-                sy = (world_y - self.camera.y_pos) * cs
+                sx, sy = self.grid_to_screen((world_x, world_y))
 
                 # Draw a border edge wherever the neighbour is outside the brush mask
                 if world_y == 0 or not mask[world_y - 1, world_x]:  # top edge
@@ -201,14 +206,11 @@ class UIManager:
 
         screen.blit(overlay, (0, 0))
 
-    def draw_selected_cell_border(self, selected_cell, screen, color=(255, 255, 0)):
-        """Draws a border around the selected cell."""
-        cell_y, cell_x = selected_cell
+    def draw_cell_border(self, cell, screen, color=(255, 255, 255)):
+        cell_y, cell_x = cell
         cs = self.camera.cell_size
 
-        # Convert grid cell to screen coordinates
-        screen_x = (cell_x - self.camera.x_pos) * cs + config.SIDEBAR_WIDTH
-        screen_y = (cell_y - self.camera.y_pos) * cs
+        screen_x, screen_y = self.grid_to_screen((cell_x, cell_y))
 
         # Create transparent surface for the border
         highlight_surface = pygame.Surface((cs, cs), pygame.SRCALPHA)
@@ -223,3 +225,6 @@ class UIManager:
 
         # Blit highlight onto the screen
         screen.blit(highlight_surface, (screen_x, screen_y))
+    
+    def grid_to_screen(self, grid_location):
+        return (grid_location[0] - self.camera.x_pos) * self.camera.cell_size + config.SIDEBAR_WIDTH, (grid_location[1] - self.camera.y_pos) * self.camera.cell_size
