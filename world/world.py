@@ -21,6 +21,8 @@ class World:
         self.chunk_manager = None
         self.biome_config = None
 
+        self.current_path = None
+
 
     # Loading/Saving ############################################################################################
     def load_data(self, biome_config, pickled_world_data = None):
@@ -199,5 +201,10 @@ class World:
     def find_path(self, start, end):
         traversal_map = self.get_map_data("traversal_cost")
         path = find_path_dijkstra(start, end, traversal_map)
-        print(path)
         return path
+
+    def set_path(self, path):
+        self.current_path = path
+    
+    def clear_path(self):
+        self.current_path = None
