@@ -46,7 +46,7 @@ class AppController:
         self.map_renderer = MapRenderer(self.world, self.camera, self.app_state)
         
 
-        self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush, self.generate_map, self.load_file, self.save_file)
+        self.ui_manager = UIManager(self.app_state, self.camera, self.storyteller, fonts, self.world, self.brush, self.player, self.generate_map, self.load_file, self.save_file)
         self.input_system = InputSystem(self.ui_manager)
 
         self.interaction_system = InteractionSystem(self.app_state, self.camera, self.player, self.world_editor, self.storyteller, self.world, self.brush, self.refresh_map_render, self.ui_manager.mouse_on_map)
