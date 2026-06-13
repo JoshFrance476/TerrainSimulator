@@ -172,7 +172,13 @@ class InteractionSystem:
             if self.state.left_mouse_down and self.state.interaction_type is InteractionType.PAINT_TILE:
                 self.world_editor.paint_biome(location, self.state.active_biome_edit_id)
                 self.refresh_render()
-        
+            
+            if self.state.interaction_type is InteractionType.MOVE_PLAYER:
+                path = self.world.find_path(self.player.get_location(), location)
+                self.world.set_path(path)
+            else:
+                self.world.clear_path()
+
         self.set_hovered_cell(location)
     
     def _mouse_down(self, cmd: MouseDown):
@@ -210,6 +216,12 @@ class InteractionSystem:
         elif mode == InteractionType.EDIT_ELEVATION:
             self.world_editor.edit_elevation(location)
             self.refresh_render()
+        
+        elif mode == InteractionType.MOVE_PLAYER:
+            if self.player.get_location != location:
+                self.player.set_location(location)
+                self.world.clear_path()
+                self.select_cell(location)
 
         else:
             self.interact_with_tile(location)
@@ -263,7 +275,10 @@ class InteractionSystem:
         if cmd.key == pygame.K_SPACE:
             self.state.paused = not self.state.paused
         elif cmd.key == pygame.K_m:
-            self.state.interaction_type = InteractionType.MOVE_PLAYER
+            if self.state.interaction_type == InteractionType.MOVE_PLAYER:
+                self.state.interaction_type = InteractionType.VIEW_TILE
+            else:
+                self.state.interaction_type = InteractionType.MOVE_PLAYER
         elif cmd.key == pygame.K_n:
             self.state.interaction_type = InteractionType.PAINT_REGION
         elif cmd.key == pygame.K_b:
