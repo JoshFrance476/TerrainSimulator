@@ -23,3 +23,5 @@ data/
 todo.txt
 
 promptfoo/
+
+node_modules/

@@ -13,7 +13,7 @@ class FontManager:
 
 # Initialize screen
 screen = pygame.display.set_mode((config.SCREEN_WIDTH + config.SIDEBAR_WIDTH, config.SCREEN_HEIGHT), pygame.RESIZABLE)
-pygame.display.set_caption("Procedural Story Platform")
+pygame.display.set_caption("World Studio")
 
 fonts = FontManager()
 
