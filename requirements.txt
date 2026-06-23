@@ -4,3 +4,5 @@ numpy
 opensimplex
 pyyaml
 together
+noise
+pathfinding
