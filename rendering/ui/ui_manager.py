@@ -11,11 +11,11 @@ from app.app_state import InteractionType, LeftPage, RightPage
 
 
 class UIManager:
-    def __init__(self, state, camera, storyteller, fonts, world, brush, player, generate_map_func, load_file_func, save_file_func):
+    def __init__(self, state, camera, story_engine, fonts, world, brush, player, generate_map_func, load_file_func, save_file_func):
         self.state = state
         self.camera = camera
         self.interaction_system = None
-        self.storyteller = storyteller
+        self.story_engine = story_engine
         self.world = world
         self.fonts = fonts
         self.brush = brush
@@ -34,8 +34,8 @@ class UIManager:
 
     def set_interaction_system(self, interaction_system):
         self.interaction_system = interaction_system
-        self.left_sidebar = LeftSidebarController(self.fonts, self.state, self.world, self.interaction_system, self.storyteller)
-        self.right_sidebar = RightSidebarController(self.fonts, self.storyteller, self.interaction_system)
+        self.left_sidebar = LeftSidebarController(self.fonts, self.state, self.world, self.interaction_system, self.story_engine)
+        self.right_sidebar = RightSidebarController(self.fonts, self.story_engine, self.interaction_system)
         self.menu = Menu(self.fonts, self.interaction_system, self.state, self.generate_map_func, self.load_file_func, self.save_file_func)
         self.tooltips = TooltipManager(self.fonts, self.world)
         self.brush_window = BrushWindow(self.fonts, self.interaction_system)
@@ -55,7 +55,7 @@ class UIManager:
             self._last_selected_cell = selected_cell
         
 
-        if self.state.update_right_page:
+        if self.state.update_right_page or self.story_engine.poll():
             self.right_sidebar.show_current_scenario_screen()
             self.state.update_right_page = False
         
