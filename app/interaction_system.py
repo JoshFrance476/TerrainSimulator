@@ -75,7 +75,7 @@ class InteractionSystem:
         self.state.update_right_page = True
     
     def prompt_scenario(self):
-        self.story_engine.generate_scene_interaction(self.state.selected_cell)
+        self.story_engine.generate_scene_interaction(self.player.get_location())
         self.state.update_right_page = True
     
     
