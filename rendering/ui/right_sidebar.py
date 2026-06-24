@@ -16,12 +16,13 @@ class RightSidebarController:
         self.interaction_system = interaction_system
         self.storyteller = storyteller
 
+
     def show_current_scenario_screen(self):
         self.clear_page()
         self.component_list.append(Label("Current Scenario", self.fonts.header, config.SIDEBAR_WIDTH))
 
         interaction_list = ContainerList(config.SIDEBAR_WIDTH-10, config.SCREEN_HEIGHT-50, True)
-        current_scenario = self.storyteller.get_current_scenario()
+        current_scenario = self.storyteller.get_current_scene()
         if current_scenario:
             for completed_interactions in current_scenario.completed_interactions:
                 interaction_container = ComponentContainer()
@@ -29,6 +30,11 @@ class RightSidebarController:
                 interaction_container.add_component(Label(completed_interactions.chosen_action, self.fonts.small_font, config.SIDEBAR_WIDTH-20))
                 interaction_list.add_container(interaction_container)
 
+            if self.storyteller.state.stream_response != "":
+                stream_response_container = ComponentContainer()
+                stream_response_container.add_component(Label(self.storyteller.state.stream_response, self.fonts.small_font, config.SIDEBAR_WIDTH-20))
+                interaction_list.add_container(stream_response_container)
+            
             pending_interaction = current_scenario.pending_interaction
             interaction_container = ComponentContainer()
             if pending_interaction:
