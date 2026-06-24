@@ -1,138 +1,112 @@
-from storytelling.story_llm import StoryLLM
+from storytelling.llm_client import LLMClient
 from storytelling.story_state import StoryState
-from storytelling.scene import Scene
-import random
-
+from storytelling.context_builder import ContextBuilder
+from storytelling.character_manager import CharacterManager
+from storytelling.scene_manager import SceneManager
+from storytelling.stream_handler import StreamHandler
+ 
+ 
 class StoryEngine:
     def __init__(self, world):
         self.world = world
         self.state = StoryState()
-        self.llm = StoryLLM()
-
-        #self.story_inspo = self.setup_story(self.state.character_description, self.state.world_description, self.state.story_focus_description)
-        self.story_inspo = None
-    
+        self.llm = LLMClient(self.state)
+ 
+        self.context_builder = ContextBuilder(self.state, self.world)
+        self.character_manager = CharacterManager(self.state, self.llm)
+        self.scene_manager = SceneManager(self.state, self.llm, self.context_builder)
+        self.stream_handler = StreamHandler(self.state, self.scene_manager)
+ 
+    # ------------------------------------------------------------------
+    # Public interface (called by InteractionSystem)
+    # ------------------------------------------------------------------
+ 
+    def poll(self):
+        """Called every frame by the main loop. Returns True if UI needs a refresh."""
+        return self.stream_handler.poll()
+ 
     def generate_scene_interaction(self, selected_cell):
-        if self.state.current_scene:
-            scene_history = self.state.current_scene.get_scene_history()
-        else:
-            scene_history = []
-            self.state.current_scene = Scene()
-        scene_guide = self.setup_scene(self._build_scene_setup_context(selected_cell), scene_history)
-        
-        response = self.llm.prompt_scene(scene_guide, self.state.current_scene.get_interactions(), self.state.world_description, self.state.story_focus_description)
-        self.state.current_scene.set_pending_interaction(response["description"], response["actions"], scene_guide["outcome_suggestions"], scene_guide)
-        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
-    
-    def setup_scene(self, context, scene_history):
-        signficance_options = ["Very low", "Low", "Medium", "High"]
-        scene_significance = signficance_options[random.randint(0, len(signficance_options)-1)]
-        if self.state.current_scene:
-            response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description, self.state.character_description, scene_significance, self.state.notebook, scene_history)
-        else:
-            response = self.llm.prompt_scene_setup(context, self.state.world_description, self.state.story_focus_description, self.state.character_description, scene_significance, self.state.notebook, scene_history)
-        return response["guide"]
-
-    def setup_character(self, character_desc, world_desc, story_desc):
-        response = self.llm.prompt_character_setup(character_desc, world_desc, story_desc)
-        self.state.notebook = response["notebook"]
-        self.state.stats = response["attributes"]
-        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
-    
-    def setup_story(self, character_desc, world_desc, story_desc):
-        response = self.llm.prompt_story_setup(character_desc, world_desc, story_desc)
-        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
-        return response["story_list"]
-    
-
+        self.scene_manager.generate_scene_interaction(selected_cell)
+ 
     def choose_action(self, action, selected_cell):
         scene = self.state.current_scene
         scene.submit_action(action)
-
         if scene.ended:
-            self.end_scene(scene, selected_cell)
+            new_quest_list, prompt_tokens, completion_tokens = self.scene_manager.end_scene(scene, selected_cell)
+            for quest in new_quest_list:
+                self.world.add_new_region_to_chunk(quest["chunk_id"], quest["title"], quest["visible_context"], quest["hidden_context"])
+            self.update_tokens(prompt_tokens, completion_tokens)
         else:
-            self.generate_scene_interaction(selected_cell)
-    
-    def end_scene(self, scene, selected_cell):
-        response = self.llm.prompt_scene_summary(scene.get_interactions(), self.world.get_chunk_context_json(selected_cell))
-        self.update_tokens(response["prompt_tokens"], response["completion_tokens"])
-        self.state.character_history.append(response["summary"])
-        new_quests = response["new_quests"]
-        for quest in new_quests:
-            print(f"Adding quest: {quest['chunk_id']} {quest['title']} {quest['visible_description']} {quest['hidden_description']}")
-            self.world.add_new_region_to_chunk(quest["chunk_id"], quest["title"], quest["visible_description"], quest["hidden_description"])
-        self.state.current_scene = None
-
-    def get_notebook(self):
-        return self.state.notebook
-
-    def get_character_history(self):
-        return self.state.character_history
-    
-    def get_current_scenario(self):
-        return self.state.current_scene
-
-    def clear_scenario(self):
-        self.state.current_scene = None
-    
+            self.scene_manager.generate_scene_interaction(selected_cell)
+ 
+    def clear_scene(self):
+        self.scene_manager.clear_scene()
+ 
     def add_to_movement_history(self, movement):
         self.state.movement_history.append(movement)
-
-    
-    def get_most_recent_movement_json(self):
-        if len(self.state.movement_history) > 1:
-            current_movement_entry = self.state.movement_history[-1]
-            past_movement_entry = self.state.movement_history[-2]
-            return {
-                "direction": current_movement_entry['direction'],
-                "from_biome": past_movement_entry['biome'],
-                "to_biome": current_movement_entry['biome']
-            }
-        else:
-            return {}
-    
-    def _build_scene_setup_context(self, selected_cell):
-        tile = self.world.get_tile_data_json(selected_cell)
-
-        context = {
-            "nearby_chunks": self.world.get_chunk_context_json(selected_cell),
-            "current_tile": tile,
-            "recent_movement": self.get_most_recent_movement_json(),
-            
-        }
-        return context
-    
-    def update_tokens(self, prompt_tokens, completion_tokens):
-        self.state.prompt_tokens += prompt_tokens
-        self.state.completion_tokens += completion_tokens
-    
+ 
     def get_token_usage(self):
-        return f"Prompt tokens: {self.state.prompt_tokens}. Completion tokens: {self.state.completion_tokens}. Total cost (gpt-oss-120b): {round(self.state.prompt_tokens*0.000015+self.state.completion_tokens*0.00006, 5)} cents"
-
-    def get_current_scenario_debug_info(self):
-        if self.state.current_scene:
-            return {
-                "focus": self.state.current_scene.focus, 
-                "environment": self.state.current_scene.environment,
-                "significance": self.state.current_scene.significance
-            }
-        else:
-            return None
-    
+        return (
+            f"Prompt tokens: {self.state.prompt_tokens}. "
+            f"Completion tokens: {self.state.completion_tokens}. "
+            f"Total cost (gpt-oss-120b): "
+            f"{round(self.state.prompt_tokens * 0.000015 + self.state.completion_tokens * 0.00006, 5)} cents"
+        )
+ 
+    # ------------------------------------------------------------------
+    # Setup
+    # ------------------------------------------------------------------
+ 
     def setup(self, story_setup):
-        self.state.world_description = story_setup['world_description']
-        self.state.character_description = story_setup['character_description']
-        self.state.story_focus_description = story_setup['story_focus_description']
-    
+        self.state.world_description = story_setup["world_description"]
+        self.state.character_description = story_setup["character_description"]
+        self.state.story_focus_description = story_setup["story_focus_description"]
+ 
     def get_setup(self):
         return {
-            "world_description": self.state.world_description, 
-            "character_description": self.state.character_description, 
+            "world_description": self.state.world_description,
+            "character_description": self.state.character_description,
             "story_focus_description": self.state.story_focus_description
         }
-    
+ 
     def clear_setup(self):
         self.state.world_description = ""
         self.state.character_description = ""
         self.state.story_focus_description = ""
+ 
+    def setup_character(self, character_desc, world_desc, story_desc):
+        prompt_tokens, completion_tokens = self.character_manager.setup_character(
+            character_desc, world_desc, story_desc
+        )
+        self.update_tokens(prompt_tokens, completion_tokens)
+ 
+    def setup_story(self, character_desc, world_desc, story_desc):
+        prompt_tokens, completion_tokens, story_list = self.character_manager.setup_story(
+            character_desc, world_desc, story_desc
+        )
+        self.update_tokens(prompt_tokens, completion_tokens)
+        return story_list
+ 
+    # ------------------------------------------------------------------
+    # Accessors delegated to managers
+    # ------------------------------------------------------------------
+ 
+    def get_notebook(self):
+        return self.character_manager.get_notebook()
+ 
+    def get_character_history(self):
+        return self.character_manager.get_character_history()
+ 
+    def get_current_scene(self):
+        return self.scene_manager.get_current_scene()
+ 
+    def get_current_scenario_debug_info(self):
+        return self.scene_manager.get_current_scene_debug_info()
+ 
+    # ------------------------------------------------------------------
+    # Internal
+    # ------------------------------------------------------------------
+ 
+    def update_tokens(self, prompt_tokens, completion_tokens):
+        self.state.prompt_tokens += prompt_tokens
+        self.state.completion_tokens += completion_tokens
