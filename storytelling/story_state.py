@@ -1,3 +1,5 @@
+import queue
+
 class StoryState:
     def __init__(self):
         self.world_description = ""
@@ -12,6 +14,10 @@ class StoryState:
         self.movement_history = [] # Dicts containing "direction" and "biome"
 
         self.current_scene = None
+
+        self.chunk_queue = queue.Queue()
+        self.is_streaming = False
+        self.stream_response = ""
 
         self.completion_tokens = 0
         self.prompt_tokens = 0
