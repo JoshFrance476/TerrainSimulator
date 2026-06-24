@@ -54,7 +54,6 @@ class UIManager:
             self.left_sidebar.show_page(self.state.left_page)
             self._last_selected_cell = selected_cell
         
-
         if self.state.update_right_page or self.story_engine.poll():
             self.right_sidebar.show_current_scenario_screen()
             self.state.update_right_page = False
