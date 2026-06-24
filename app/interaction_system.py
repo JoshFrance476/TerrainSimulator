@@ -71,7 +71,7 @@ class InteractionSystem:
         self.state.update_right_page = True
     
     def exit_scenario(self):
-        self.story_engine.clear_scenario()
+        self.story_engine.clear_scene()
         self.state.update_right_page = True
     
     def prompt_scenario(self):
