@@ -43,7 +43,7 @@ class LLMClient:
             stream_response = self.client.chat.completions.create(
                 model=self.model,
                 temperature=1,
-                max_tokens=600,
+                max_tokens=800,
                 reasoning_effort="low",
                 messages=messages,
                 stream=True,
@@ -51,12 +51,21 @@ class LLMClient:
             )
 
             final_chunk = None
+            finish_reason = None
+
             for chunk in stream_response:
                 if chunk.choices and chunk.choices[0].delta.content is not None:
                     token = chunk.choices[0].delta.content
                     self.state.chunk_queue.put(token)   # main thread drains this each frame
+                if chunk.choices[0].finish_reason:
+                    finish_reason = chunk.choices[0].finish_reason
                 if chunk.usage:
                     final_chunk = chunk
+            
+            if finish_reason == "length":
+                raise ValueError(
+                    f"Max token length exceeded"
+                )
 
             data = json.loads(self.state.stream_response)
             self.log_writer.write_to_log(messages, label="INTERACTION REQUEST")
