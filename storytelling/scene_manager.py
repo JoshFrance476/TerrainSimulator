@@ -9,29 +9,35 @@ class SceneManager:
 
         self._pending_response_scene_guide = None
     
-    def generate_scene_interaction(self, selected_cell):
+    async def generate_scene_interaction(self, selected_cell):
+        # Synchronous setup work first
         if self.story_state.current_scene:
             scene_history = self.story_state.current_scene.get_scene_history()
         else:
             scene_history = []
             self.story_state.current_scene = Scene()
-        scene_guide = self.generate_scene_guide(self.context_builder.build_scene_guide_context(selected_cell), scene_history)
+        
+        scene_guide = await self.generate_scene_guide(
+            self.context_builder.build_scene_guide_context(selected_cell), 
+            scene_history
+        )
 
-        # Store guide so poll() can use it when the stream finishes
-        self._pending_response_scene_guide = scene_guide
-
-        # Returns immediately — stream runs on a background thread
-        self.llm_client.prompt_scene(
+        # Then yield from the LLM stream
+        async for event in self.llm_client.prompt_scene(
             scene_guide,
             self.story_state.current_scene.get_interactions(),
             self.story_state.world_description,
             self.story_state.story_focus_description
-        )
+        ):
+            yield event
+
+        yield {"data": scene_guide, "event":"guide"}
+
     
-    def generate_scene_guide(self, context, scene_history):
+    async def generate_scene_guide(self, context, scene_history):
         significance_options = ["Very low", "Low", "Medium", "High"]
         scene_significance = significance_options[random.randint(0, len(significance_options) - 1)]
-        response = self.llm_client.prompt_scene_setup(
+        response = await self.llm_client.prompt_scene_setup(
             context,
             self.story_state.world_description,
             self.story_state.story_focus_description,
@@ -41,17 +47,7 @@ class SceneManager:
             scene_history
         )
         return response["guide"]
-    
-    def finalise_pending_interaction(self, response):
-        """Called by StreamHandler once the stream output is finished."""
-        self.story_state.current_scene.set_pending_interaction(
-            response["description"],
-            response["actions"],
-            self._pending_response_scene_guide["outcome_suggestions"],
-            self._pending_response_scene_guide
-        )
-        self._pending_response_scene_guide = None
-        return response["prompt_tokens"], response["completion_tokens"]
+
 
     def end_scene(self, scene, selected_cell):
         response = self.llm_client.prompt_scene_summary(

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from sse_starlette.sse import EventSourceResponse
 
 from pathlib import Path
 import yaml
@@ -8,12 +9,13 @@ import numpy as np
 from PIL import Image
 import io
 from pydantic import BaseModel
+import uuid
+from collections.abc import AsyncIterable
 
 from world.world import World
 from world.map_entity import MapEntity
 from storytelling.story_engine import StoryEngine
-from app_state import AppState, PaintMode
-from editor.brush_manager import BrushManager
+from app_state import PaintMode
 from editor.world_editor import WorldEditor
 import config
 
@@ -35,9 +37,7 @@ class Backend:
     def __init__(self):
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
         self.story_engine = StoryEngine(self.world)
-        self.app_state = AppState()  # Most of AppState is redundant, just used to detect lctrl down and current paint mode
-        self.brush = BrushManager()
-        self.editor = WorldEditor(self.world, self.brush, self.app_state)
+        self.editor = WorldEditor(self.world)
 
         self.version = 0
 
@@ -201,7 +201,8 @@ class SetupBody(BaseModel):
 
 
 class CellBody(BaseModel):
-    cell: list[int]
+    x: int = 50
+    y: int = 50
 
 
 class TextBody(BaseModel):
@@ -223,6 +224,106 @@ class MoveBody(BaseModel):
 class PathBody(BaseModel):
     start: list[int]
     end: list[int]
+
+
+active_streams: dict[str, str] = {}
+
+# ---------------------------------------------------------------- story
+
+from fastapi.responses import FileResponse
+
+@app.get("/")
+def get_index():
+    return FileResponse("index.html")
+
+@app.get("/api/scene")
+def get_scene():
+    return {"scene": B.pending_json()}
+
+
+@app.post("/api/scene/prompt")
+def prompt_scene(body: CellBody):
+    stream_id = str(uuid.uuid4())
+
+    active_streams[stream_id] = (body.x, body.y)
+
+    return {"stream_id": stream_id}
+
+
+@app.get("/stream")
+async def stream_response(id: str) -> Response:
+    cell = active_streams.pop(id, None)
+
+    if not cell:
+        raise HTTPException(status_code=404, detail="Stream ID not found")
+
+    async def generate():
+        async for event in B.story_engine.generate_scene_interaction(cell):
+            yield event
+
+    return EventSourceResponse(generate())
+
+@app.post("/api/scene/action")
+def scene_action(body: IndexBody):
+    scene = B.story_engine.get_current_scene()
+    if not scene or not scene.pending_interaction:
+        raise HTTPException(409, "no pending interaction")
+    actions = list(scene.pending_interaction.action_table.keys())
+    if not 0 <= body.index < len(actions):
+        raise HTTPException(400, "action index out of range")
+    # NOTE: choose_action expects the action *string* (Scene.submit_action
+    # keys into action_table) - the old pygame UI passed an index, which
+    # was a latent bug.
+    B.story_engine.choose_action(actions[body.index],
+                                tuple(B.player.get_location()))
+    B.increment_version()  # scene summaries can write new regions into the world
+    return {"scene": B.pending_json(),
+            "history": B.story_engine.get_character_history()}
+
+
+@app.post("/api/scene/exit")
+def scene_exit():
+    B.story_engine.clear_scene()
+    return {"ok": True}
+
+
+@app.get("/api/character")
+def get_character():
+    return {
+        "notebook": B.story_engine.get_notebook(),
+        "stats": B.story_engine.state.stats,
+        "history": B.story_engine.get_character_history(),
+    }
+
+
+@app.get("/api/story/setup")
+def get_setup():
+    return B.story_engine.get_setup()
+
+
+@app.put("/api/story/setup")
+def put_setup(body: SetupBody):
+    B.story_engine.setup({
+        "world_description": body.world_description,
+        "character_description": body.character_description,
+        "story_focus_description": body.story_focus_description,
+    })
+    return {"ok": True}
+
+
+@app.post("/api/story/character-setup")
+def character_setup():
+    s = B.story_engine.state
+    B.story_engine.setup_character(s.character_description,
+                                    s.world_description,
+                                    s.story_focus_description)
+    return {"notebook": s.notebook, "stats": s.stats}
+
+
+@app.get("/api/usage")
+def get_usage():
+    return {"usage": B.story_engine.get_token_usage()}
+
 
 # ---------------------------------------------------------------- world
 @app.get("/api/world")
@@ -279,9 +380,7 @@ def edit_stroke(body: StrokeBody):
         elif body.tool == "elevate":
             B.editor.edit_elevation(loc, negative=body.negative)
         elif body.tool == "smooth":
-            B.app_state.lctrl_down = True
             B.editor.edit_elevation(loc)
-            B.app_state.lctrl_down = False
         elif body.tool == "region":
             if body.negative:
                 B.editor.remove_region(loc, body.region_id)
@@ -345,80 +444,6 @@ def place_player(body: CellBody):
     B.player.set_location(tuple(body.cell))
     biome = B.world.get_biome_data_at_location(B.player.location)["name"]
     return {"player": list(B.player.get_location()), "biome": biome}
-
-
-# ---------------------------------------------------------------- story
-@app.get("/api/scene")
-def get_scene():
-    return {"scene": B.pending_json()}
-
-
-@app.post("/api/scene/prompt")
-def prompt_scene(body: CellBody):
-    B.story_engine.generate_scene_interaction(tuple(body.cell))
-    return {"scene": B.pending_json()}
-
-
-@app.post("/api/scene/action")
-def scene_action(body: IndexBody):
-    scene = B.story_engine.get_current_scene()
-    if not scene or not scene.pending_interaction:
-        raise HTTPException(409, "no pending interaction")
-    actions = list(scene.pending_interaction.action_table.keys())
-    if not 0 <= body.index < len(actions):
-        raise HTTPException(400, "action index out of range")
-    # NOTE: choose_action expects the action *string* (Scene.submit_action
-    # keys into action_table) - the old pygame UI passed an index, which
-    # was a latent bug.
-    B.story_engine.choose_action(actions[body.index],
-                                tuple(B.player.get_location()))
-    B.increment_version()  # scene summaries can write new regions into the world
-    return {"scene": B.pending_json(),
-            "history": B.story_engine.get_character_history()}
-
-
-@app.post("/api/scene/exit")
-def scene_exit():
-    B.story_engine.clear_scene()
-    return {"ok": True}
-
-
-@app.get("/api/character")
-def get_character():
-    return {
-        "notebook": B.story_engine.get_notebook(),
-        "stats": B.story_engine.state.stats,
-        "history": B.story_engine.get_character_history(),
-    }
-
-
-@app.get("/api/story/setup")
-def get_setup():
-    return B.story_engine.get_setup()
-
-
-@app.put("/api/story/setup")
-def put_setup(body: SetupBody):
-    B.story_engine.setup({
-        "world_description": body.world_description,
-        "character_description": body.character_description,
-        "story_focus_description": body.story_focus_description,
-    })
-    return {"ok": True}
-
-
-@app.post("/api/story/character-setup")
-def character_setup():
-    s = B.story_engine.state
-    B.story_engine.setup_character(s.character_description,
-                                    s.world_description,
-                                    s.story_focus_description)
-    return {"notebook": s.notebook, "stats": s.stats}
-
-
-@app.get("/api/usage")
-def get_usage():
-    return {"usage": B.story_engine.get_token_usage()}
 
 
 # ---------------------------------------------------------------- maps

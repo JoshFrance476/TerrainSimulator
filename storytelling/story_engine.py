@@ -4,6 +4,8 @@ from storytelling.context_builder import ContextBuilder
 from storytelling.character_manager import CharacterManager
 from storytelling.scene_manager import SceneManager
 from storytelling.stream_handler import StreamHandler
+
+import json
  
  
 class StoryEngine:
@@ -18,15 +20,23 @@ class StoryEngine:
         self.stream_handler = StreamHandler(self.state, self.scene_manager)
  
     # ------------------------------------------------------------------
-    # Public interface (called by InteractionSystem)
+    # Public interface
     # ------------------------------------------------------------------
  
-    def poll(self):
-        """Called every frame by the main loop. Returns True if UI needs a refresh."""
-        return self.stream_handler.poll()
- 
-    def generate_scene_interaction(self, selected_cell):
-        self.scene_manager.generate_scene_interaction(selected_cell)
+    async def generate_scene_interaction(self, selected_cell):
+        async for event in self.scene_manager.generate_scene_interaction(selected_cell):
+            yield event
+            if event["event"] == "done":
+                data = json.loads(event["data"])
+                description = data["description"]
+                actions = data["actions"]
+            if event["event"] == "guide":
+                self.state.current_scene.set_pending_interaction(description,
+                                                                 actions, 
+                                                                 event["data"]["outcome_suggestions"], 
+                                                                 event["data"])
+                
+
  
     def choose_action(self, action, selected_cell):
         scene = self.state.current_scene
