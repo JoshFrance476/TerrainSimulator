@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from world.world import World
 from world.map_entity import MapEntity
 from storytelling.story_engine import StoryEngine
-from app.app_state import AppState, PaintMode
+from app_state import AppState, PaintMode
 from editor.brush_manager import BrushManager
 from editor.world_editor import WorldEditor
 import config
