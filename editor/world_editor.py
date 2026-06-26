@@ -1,12 +1,11 @@
-import pygame
 from skimage.segmentation import flood_fill
 from app_state import PaintMode
+from editor.brush_manager import BrushManager
 
 class WorldEditor:
-    def __init__(self, world, brush_manager, state):
+    def __init__(self, world):
         self.world = world
-        self.brush = brush_manager
-        self.state = state
+        self.brush = BrushManager()
 
         self.paint_mode = PaintMode.BRUSH
 
@@ -30,12 +29,8 @@ class WorldEditor:
         self.recompute_after_biome_change()
     
     def edit_elevation(self, location, negative=False):
-        if self.state.lctrl_down:
-            brush_mask = self.brush.get_brush_mask(location)
-            self.world.apply_smoothing_elevation_mask(brush_mask)
-        else:
-            brush_mask = self.brush.get_brush_mask(location, boolean = False, negative=negative)
-            self.world.apply_edit_elevation_mask(brush_mask)
+        brush_mask = self.brush.get_brush_mask(location, boolean = False, negative=negative)
+        self.world.apply_edit_elevation_mask(brush_mask)
         self.recompute_after_elevation_change(brush_mask)
     
     def create_region(self):
