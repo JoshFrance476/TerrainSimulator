@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <input id="message" placeholder="Enter message" />
+  <button onclick="chat()">Send</button>
+  <pre id="output" style="white-space: pre-wrap; word-break: break-word; width: 100%; box-sizing: border-box;"></pre>
+
+  <script>
+    async function chat() {
+      const cell = document.getElementById('message').value;
+      const output = document.getElementById('output');
+      output.textContent = '';
+
+      const res = await fetch('/api/scene/prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x: cell[0], y: cell[1] })
+      });
+
+      // Stop here if POST failed
+        if (!res.ok) {
+            console.error('POST failed:', await res.text());
+            return;
+        }
+
+      const { stream_id } = await res.json();
+
+      const source = new EventSource(`/stream?id=${stream_id}`);
+      source.addEventListener('data', (e) => output.textContent += e.data);
+      source.addEventListener('done', () => source.close());
+      source.onerror = () => source.close();
+    }
+  </script>
+</body>
+</html>

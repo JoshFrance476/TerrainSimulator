@@ -234,7 +234,7 @@ from fastapi.responses import FileResponse
 
 @app.get("/")
 def get_index():
-    return FileResponse("index.html")
+    return FileResponse("web_streaming_test.html")
 
 @app.get("/api/scene")
 def get_scene():
