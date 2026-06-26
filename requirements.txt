@@ -6,3 +6,5 @@ pyyaml
 together
 noise
 pathfinding
+fastapi
+uvicorn
