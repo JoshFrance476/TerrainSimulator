@@ -1,6 +1,6 @@
 from skimage.segmentation import flood_fill
 from app_state import PaintMode
-from editor.brush_manager import BrushManager
+from backend.editor.brush_manager import BrushManager
 
 class WorldEditor:
     def __init__(self, world):

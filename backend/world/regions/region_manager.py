@@ -1,4 +1,4 @@
-from world.regions.region import Region
+from backend.world.regions.region import Region
 import numpy as np
 
 class RegionManager:

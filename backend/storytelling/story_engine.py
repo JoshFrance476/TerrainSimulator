@@ -1,9 +1,9 @@
-from storytelling.llm_client import LLMClient
-from storytelling.story_state import StoryState
-from storytelling.context_builder import ContextBuilder
-from storytelling.character_manager import CharacterManager
-from storytelling.scene_manager import SceneManager
-from storytelling.stream_handler import StreamHandler
+from backend.storytelling.llm_client import LLMClient
+from backend.storytelling.story_state import StoryState
+from backend.storytelling.context_builder import ContextBuilder
+from backend.storytelling.character_manager import CharacterManager
+from backend.storytelling.scene_manager import SceneManager
+from backend.storytelling.stream_handler import StreamHandler
 
 import json
  

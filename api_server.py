@@ -12,14 +12,14 @@ from pydantic import BaseModel
 import uuid
 from collections.abc import AsyncIterable
 
-from world.world import World
-from world.map_entity import MapEntity
-from storytelling.story_engine import StoryEngine
+from backend.world.world import World
+from backend.world.map_entity import MapEntity
+from backend.storytelling.story_engine import StoryEngine
 from app_state import PaintMode
-from editor.world_editor import WorldEditor
+from backend.editor.world_editor import WorldEditor
 import config
 
-from utils.colour_utils import hsv_to_rgb_array
+from backend.utils.colour_utils import hsv_to_rgb_array
 
 app = FastAPI()
 
@@ -30,7 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SAVED_MAPS = Path("data/saved_maps")
+SAVED_MAPS = Path("backend/data/saved_maps")
 
 class Backend:
     """A single object that holds all game state - replaces appController"""

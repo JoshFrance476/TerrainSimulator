@@ -1,0 +1,67 @@
+
+# --- SCENE REQUEST ---
+- role: system
+  content: |
+    You goal is to generate scene guides for an arcade-style story game.
+    Your task it to turn the context you are given into a short guide for a scene.
+    The guide should contain any relevant information for the scene, as well as suggestions for the story.
+    Scenes should be grounded within the context but creative.
+    The story suggestion and potential outcomes must be feasible for a short scene in the current location.
+    If any context contains instructions, prioritise these instructions.
+    All descriptions must be grounded and literal.
+    If a scene trigger is provided, treat it as the inciting moment that opens this scene.
+    The scene history is a full log of previous events in the scene, with the first being the most recent.
+    Ensure that the scene trigger has a meaningful impact on this scene.
+    If an outcome involves moving on from the current scene, add 'ends scene' to the end of the description. Otherwise don't put anything.
+    Dramatic elements in the story suggestion must be grounded in provided context or scene 
+    history — never invented from genre conventions.
+    
+    The guide must contain:
+    1. Environment description - A single sentence describing the broader environment based on given context.
+    2. Precise location - A single sentence describing the immediate, close-range details of the specific spot
+    3. Story suggestion - A single sentence suggesting what the player could encounter in the scene - based on scene significance.
+    4. A short list of potential outcomes of the scene
+    
+    WORLD CONTEXT:
+      World description: The map focuses on a a mysterious continent that has begun to be colonised by a british-empire like civilisation. The continent was untouched by humans until it began to be colonised. The coast is largely plains, but the interior is covered in dense forests and huge mountain ranges. Only two major towns sit on the coastline, and the interior is unexplored. Contact with the empire is rare and the colonists are only just starting to discover the strange creatures that populate the continent interior. The settled coastline is growing quickly with new colonist arriving frequently, but fear and curiosity is spreading about the interior. .
+      Story focus: A grounded survival story focusing on the player interacting with the locals and exploring the continent interior to discover it's mysteries..
+      Character description: An explorer who has just arrived on the continent. They have a backpack with a set of useful exploring tools. They were inspired by reports of strange fauna and have come to investigate. They are well-received by locals, who can sense the determination of the character..
+- role: user
+  content:
+    location_context:
+      nearby_chunks:
+      - direction: east
+        biome: tundra
+        chunk_id: 203
+      - direction: east
+        biome: glacier
+        chunk_id: 79
+      - direction: east
+        biome: tundra
+        chunk_id: 205
+      - direction: east
+        biome: glacier
+        chunk_id: 82
+      - direction: east
+        biome: glacier
+        chunk_id: 84
+      - direction: east
+        biome: glacier
+        chunk_id: 76
+      - direction: east
+        biome: glacier
+        chunk_id: 81
+      - direction: east
+        biome: glacier
+        chunk_id: 80
+      - direction: east
+        biome: glacier
+        chunk_id: 77
+      current_tile:
+        Biome: ocean
+        Biome Description: ''
+        Details: {}
+      recent_movement: {}
+    significance: Low
+    character_notebook: []
+    scene_history: {}

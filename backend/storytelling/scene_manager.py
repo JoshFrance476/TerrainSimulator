@@ -1,4 +1,4 @@
-from storytelling.scene import Scene
+from backend.storytelling.scene import Scene
 import random
 
 class SceneManager:

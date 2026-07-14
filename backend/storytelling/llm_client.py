@@ -1,5 +1,5 @@
-from storytelling.prompt_loader import PromptLoader
-from storytelling.log_writer import LogWriter
+from backend.storytelling.prompt_loader import PromptLoader
+from backend.storytelling.log_writer import LogWriter
 from together import AsyncTogether
 import json
 

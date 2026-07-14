@@ -1,4 +1,4 @@
-from generation.generator_main import generate_data_maps, update_stage_3, update_steepness, update_biome
+from backend.generation.generator_main import generate_data_maps, update_stage_3, update_steepness, update_biome
 
 class WorldData:
     def __init__(self, rows, cols, biome_config, world_data=None):
