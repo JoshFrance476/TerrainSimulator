@@ -1,9 +1,9 @@
-from backend.world.world_data import WorldData
-from backend.world.regions.region_manager import RegionManager
-from backend.world.chunks.chunk_manager import ChunkManager
-from backend.generation.biome_config_manager import BiomeConfigManager
+from world.world_data import WorldData
+from world.regions.region_manager import RegionManager
+from world.chunks.chunk_manager import ChunkManager
+from generation.biome_config_manager import BiomeConfigManager
 import config as config
-from backend.utils.grid_utils import find_path_dijkstra, find_path_astar
+from utils.grid_utils import find_path_dijkstra, find_path_astar
 
 class World:
     """

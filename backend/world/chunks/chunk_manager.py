@@ -1,7 +1,7 @@
 import numpy as np
 from skimage.segmentation import quickshift
 from skimage.measure import regionprops, label
-from backend.utils.colour_utils import hsv_to_rgb_array
+from utils.colour_utils import hsv_to_rgb_array
 
 class ChunkManager:
     def __init__(self, rows, cols, colour_map, biome_map, biome_config):

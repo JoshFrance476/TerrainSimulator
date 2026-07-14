@@ -1,4 +1,4 @@
-from backend.storytelling.interaction import Interaction
+from storytelling.interaction import Interaction
 
 class Scene:
     def __init__(self):

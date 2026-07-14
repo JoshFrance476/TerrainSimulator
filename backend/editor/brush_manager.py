@@ -1,5 +1,5 @@
 import numpy as np
-import config
+import config as config
 
 class BrushManager:
     def __init__(self):

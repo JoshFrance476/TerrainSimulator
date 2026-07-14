@@ -1,5 +1,5 @@
-from backend.storytelling.prompt_loader import PromptLoader
-from backend.storytelling.log_writer import LogWriter
+from storytelling.prompt_loader import PromptLoader
+from storytelling.log_writer import LogWriter
 from together import AsyncTogether
 import json
 
@@ -7,7 +7,7 @@ import json
 class LLMClient:
     def __init__(self, state):
         self.client = AsyncTogether()
-        self.model = "Qwen/Qwen3-235B-A22B-Instruct-2507-tput"
+        self.model = "openai/gpt-oss-120b"
         self.loader = PromptLoader()
         self.log_writer = LogWriter()
         self.state = state

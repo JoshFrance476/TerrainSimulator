@@ -1,15 +1,15 @@
-from backend.utils.colour_utils import generate_color_map
+from utils.colour_utils import generate_color_map
 
 import numpy as np
 import time
 import logging
-import config
+import config as config
 import random
 
-from backend.generation.map_utils import generate_perlin_noise_map
-from backend.generation.stage_1_generator import calculate_temperature
-from backend.generation.stage_2_generator import calculate_steepness, generate_sea_map, generate_rivers_map
-from backend.generation.stage_3_generator import calculate_proximity_map, determine_biome, calculate_traversal_cost
+from generation.map_utils import generate_perlin_noise_map
+from generation.stage_1_generator import calculate_temperature
+from generation.stage_2_generator import calculate_steepness, generate_sea_map, generate_rivers_map
+from generation.stage_3_generator import calculate_proximity_map, determine_biome, calculate_traversal_cost
 
 if config.LOGGING:
     logging.basicConfig(level=logging.DEBUG)
