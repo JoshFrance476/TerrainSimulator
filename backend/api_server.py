@@ -230,12 +230,6 @@ active_streams: dict[str, str] = {}
 
 # ---------------------------------------------------------------- story
 
-from fastapi.responses import FileResponse
-
-@app.get("/")
-def get_index():
-    return FileResponse("web_streaming_test.html")
-
 @app.get("/api/scene")
 def get_scene():
     return {"scene": B.pending_json()}
