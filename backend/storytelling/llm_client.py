@@ -92,12 +92,12 @@ class LLMClient:
             "story_list": data["story_list"]
         }
 
-    def prompt_scene_summary(self, scene, chunk_list):
+    async def prompt_scene_summary(self, scene, chunk_list):
         messages = self.loader.load_messages("scene_summary", {
             "scene": scene,
             "chunk_list": str(chunk_list)
         })
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             model=self.model,
             temperature=0.7,
             max_tokens=400,
@@ -154,7 +154,17 @@ class LLMClient:
             messages=messages,
             response_format=self.loader.load_response_format_schema("scene_setup")
         )
-        data = json.loads(response.choices[0].message.content)
+
+        raw_output = response.choices[0].message.content
+        try:
+            data = json.loads(raw_output)
+        except json.JSONDecodeError as e:
+            print(f"JSON parse failed: {e}")
+            print(f"completion_tokens used: {response.usage.completion_tokens}")
+            print(f"finish_reason: {response.choices[0].finish_reason}")
+            print(f"raw content: {raw_output!r}")
+            raise
+        
         self.log_writer.write_to_log(messages, label="SCENE REQUEST")
         return {
             "completion_tokens": response.usage.completion_tokens,
