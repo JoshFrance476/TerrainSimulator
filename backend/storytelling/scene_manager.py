@@ -11,7 +11,7 @@ class SceneManager:
     
     async def generate_scene_interaction(self, selected_cell):
         # Synchronous setup work first
-        if self.story_state.current_scene:
+        if self.story_state.current_scene and not self.story_state.current_scene.ended:
             scene_history = self.story_state.current_scene.get_scene_history()
         else:
             scene_history = []
@@ -49,8 +49,8 @@ class SceneManager:
         return response["guide"]
 
 
-    def end_scene(self, scene, selected_cell):
-        response = self.llm_client.prompt_scene_summary(
+    async def end_scene(self, scene, selected_cell):
+        response = await self.llm_client.prompt_scene_summary(
             scene.get_interactions(),
             self.context_builder.get_chunk_context_json(selected_cell)
         )
@@ -65,7 +65,6 @@ class SceneManager:
                 "hidden_context": quest["hidden_description"]
                 }
             )
-        self.story_state.current_scene = None
         return new_quest_list, response["prompt_tokens"], response["completion_tokens"]
     
     def get_current_scene(self):
