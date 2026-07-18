@@ -5,7 +5,7 @@ import SceneDisplay from './SceneDisplay'
 function ChatWindow() {
 
     return (
-        <div>
+        <div className="chat-window">
             <SceneDisplay />
         </div>
     )
