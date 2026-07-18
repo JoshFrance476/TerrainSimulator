@@ -1,3 +1,14 @@
 .action {
     color: rgb(107, 107, 107);
 }
+
+.chat-window {
+    width: 500px;
+    border: 1px solid black;
+    padding: 5px;
+}
+
+.display {
+    display:flex;
+    gap: 10px;
+}
