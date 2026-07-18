@@ -128,7 +128,7 @@ class Backend:
             })
         return out
 
-    def pending_json(self):
+    def get_current_scene_json(self):
         scene = self.story_engine.get_current_scene()
         if not scene:
             return None
@@ -150,6 +150,7 @@ class Backend:
                 ],
             }
         return out
+    
 
     def world_json(self):
         return {
@@ -209,8 +210,8 @@ class TextBody(BaseModel):
     text: str
 
 
-class IndexBody(BaseModel):
-    index: int
+class ActionBody(BaseModel):
+    action: str
 
 
 class NameBody(BaseModel):
@@ -232,47 +233,43 @@ active_streams: dict[str, str] = {}
 
 @app.get("/api/scene")
 def get_scene():
-    return {"scene": B.pending_json()}
+    return {"scene": B.get_current_scene_json()}
 
 
 @app.post("/api/scene/prompt")
-def prompt_scene(body: CellBody):
+async def prompt_scene(body: CellBody):
     stream_id = str(uuid.uuid4())
 
-    active_streams[stream_id] = (body.x, body.y)
+    active_streams[stream_id] = {
+        "cell": (body.x, body.y),
+    }
+    
 
     return {"stream_id": stream_id}
 
 
 @app.get("/api/stream")
 async def stream_response(id: str) -> Response:
-    cell = active_streams.pop(id, None)
+    data = active_streams.pop(id, None)
 
-    if not cell:
+    if not data:
         raise HTTPException(status_code=404, detail="Stream ID not found")
+    
+    if not data.get("cell") and not B.story_engine.get_current_scene():
+        raise HTTPException(status_code=404, detail="No cell provided and no existing scene")
+
 
     async def generate():
-        async for event in B.story_engine.generate_scene_interaction(cell):
+        async for event in B.story_engine.generate_scene_interaction(data.get("cell")):
             yield event
 
     return EventSourceResponse(generate())
 
 @app.post("/api/scene/action")
-def scene_action(body: IndexBody):
-    scene = B.story_engine.get_current_scene()
-    if not scene or not scene.pending_interaction:
-        raise HTTPException(409, "no pending interaction")
-    actions = list(scene.pending_interaction.action_table.keys())
-    if not 0 <= body.index < len(actions):
-        raise HTTPException(400, "action index out of range")
-    # NOTE: choose_action expects the action *string* (Scene.submit_action
-    # keys into action_table) - the old pygame UI passed an index, which
-    # was a latent bug.
-    B.story_engine.choose_action(actions[body.index],
-                                tuple(B.player.get_location()))
-    B.increment_version()  # scene summaries can write new regions into the world
-    return {"scene": B.pending_json(),
-            "history": B.story_engine.get_character_history()}
+async def scene_action(body: ActionBody):
+    await B.story_engine.choose_action(body.action, tuple(B.player.get_location()))
+    B.increment_version()
+
 
 
 @app.post("/api/scene/exit")
