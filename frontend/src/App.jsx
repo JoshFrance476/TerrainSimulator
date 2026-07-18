@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import './App.css'
-import ChatStream from './ChatStream'
+import ChatWindow from './components/ChatWindow'
 
 function App() {
-  return <ChatStream />
+  return <ChatWindow />
 }
 
 export default App
