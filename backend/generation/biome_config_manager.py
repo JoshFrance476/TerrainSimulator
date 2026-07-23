@@ -14,7 +14,17 @@ class BiomeConfigManager:
             self.colour_lookup = {}
             self.cost_lookup = {}
 
-    
+    def get_biome_lookup(self):
+        biome_lookup = {}
+        for index, biome in enumerate(self.biomes):
+            biome_lookup[index] = {
+                "name": biome["name"],
+                "colour": biome["colour"],
+                "base_traversal_cost": biome["base_traversal_cost"],
+                "description": biome.get("description")
+            }
+        return biome_lookup
+
     def load_biome_config_file(self, biome_config_file):         
         self.constants = biome_config_file.get("constants", {})
         biomes = biome_config_file["biomes"]
