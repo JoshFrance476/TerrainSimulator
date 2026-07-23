@@ -132,6 +132,8 @@ class World:
 
     # Biome Config ############################################################################################
 
+    def get_biome_lookup(self):
+        return self.biome_config.get_biome_lookup()
 
     def get_biome_data_at_location(self, location):
         return self.biome_config.biomes[(self.get_cell_data(location)['biome'])]
@@ -151,8 +153,10 @@ class World:
     
     def edit_biome(self, biome_index, new_name, new_h, new_s, new_v, new_trav_cost, description):
         self.biome_config.edit_biome(biome_index, new_name, new_h, new_s, new_v, new_trav_cost, description)
-    
 
+    def get_biome_map(self):
+        return self.get_map_data("biome")
+    
     # Chunks ############################################################################################
 
 
