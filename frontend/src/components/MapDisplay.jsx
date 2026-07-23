@@ -15,6 +15,8 @@ function MapDisplay({ selectedCell, onCellSelect }) {
 
     const [tooltip, setTooltip] = useState(null) //shape: {x, y, biomeName}
 
+    const SCALE = 4 // Scale factor for rendering map interaction layer
+
     // Fetch biome lookup data from backend
     useEffect(() => {
         async function fetchBiomeLookup() {
@@ -32,7 +34,7 @@ function MapDisplay({ selectedCell, onCellSelect }) {
     // Fetch biome map data from backend
     useEffect(() => {
         async function fetchBiomeMap() {
-            const res = await fetch('/api/world/biome-map')
+            const res = await fetch('/api/world/biome-map?v=${version}')
         
             if (!res.ok) {
                 console.error('Failed to fetch biome map data', await res.text())
@@ -60,10 +62,13 @@ function MapDisplay({ selectedCell, onCellSelect }) {
     // Resize the canvases when the dimensions change
     useEffect(() => {
         if (!dimensions) return
-        for (const ref of [baseMapRef, overlayRef, interactionRef]) {
+        for (const ref of [baseMapRef, overlayRef]) {
             ref.current.width = dimensions.width
             ref.current.height = dimensions.height
         }
+
+        interactionRef.current.width = dimensions.width * SCALE
+        interactionRef.current.height = dimensions.height * SCALE
     }, [dimensions])
 
     //Get the RGB map data from the backend and draw it on the base map canvas
@@ -92,6 +97,34 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         }
         fetchRGBMap()
     }, [version, dimensions])
+
+    // Redraw interaction layer when selected cell changes
+    useEffect(() => {
+        if (!dimensions) return
+        drawInteractionLayer(lastHoveredCell, selectedCell)
+    }, [selectedCell, dimensions])
+
+    // Draw hovered cell and selected cell on interaction layer
+    function drawInteractionLayer(hovered, selected) {
+        const ctx = interactionRef.current.getContext('2d')
+
+        ctx.clearRect(0, 0, dimensions.width * SCALE, dimensions.height * SCALE)
+        
+        ctx.save()
+        ctx.scale(SCALE, SCALE)
+        
+        if (hovered) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
+            ctx.fillRect(hovered.x, hovered.y, 1, 1)
+        }
+
+        if (selected) {
+            ctx.strokeStyle = 'yellow'
+            ctx.lineWidth = 1 / SCALE
+            ctx.strokeRect(selected.x + 0.5 / SCALE, selected.y + 0.5 / SCALE, 1, 1)
+        }
+        ctx.restore()
+    }
 
     // Convert mouse event coordinates to cell coordinates with clamping
     function eventToCell(e) {
@@ -125,6 +158,7 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         if (isNewHoveredCell(cellX, cellY)) {
             biomeData = getBiomeDataAtCell(cellX, cellY)
             setLastHoveredCell({ x: cellX, y: cellY, biomeData: biomeData })
+            drawInteractionLayer({ x: cellX, y: cellY }, selectedCell)
         }
         else {
             biomeData = lastHoveredCell.biomeData
@@ -135,9 +169,12 @@ function MapDisplay({ selectedCell, onCellSelect }) {
 
     function handleMouseLeave() {
         setTooltip(null)
+        drawInteractionLayer(null, selectedCell)
     }
 
     function handleClick(e) {
+        if (!dimensions || !biomeMap || !biomeLookup) return
+
         const { cellX, cellY } = eventToCell(e)
         const biomeData = getBiomeDataAtCell(cellX, cellY)
 
