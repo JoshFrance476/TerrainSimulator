@@ -321,12 +321,22 @@ def get_usage():
 def get_world():
     return B.world_json()
 
+@app.get("/api/world/rgb")
+def get_world_rgb():
+    rgb = hsv_to_rgb_array(B.world.get_map_data("colour"))          # shape (rows, cols, 3)
+    rgb = np.asarray(rgb, dtype=np.uint8)
+    alpha = np.full((*rgb.shape[:2], 1), 255, dtype=np.uint8)       # fully opaque
+    rgba = np.concatenate([rgb, alpha], axis=2)                      # shape (rows, cols, 4)
+    return Response(rgba.tobytes(), media_type="application/octet-stream")
 
-@app.get("/api/map.png")
-def get_map_png(v: int = 0):
-    return Response(B.map_png(), media_type="image/png",
-                    headers={"Cache-Control": "no-store"})
+@app.get("/api/world/biome-map")
+def get_biome_map():
+    biome_map = B.world.get_biome_map().astype(np.uint8)
+    return Response(biome_map.tobytes(), media_type="application/octet-stream")
 
+@app.get("/api/world/biome-lookup")
+def get_biome_lookup():
+    return B.world.get_biome_lookup()
 
 @app.get("/api/regions")
 def get_regions():
@@ -380,10 +390,6 @@ def edit_stroke(body: StrokeBody):
     B.increment_version()
     return {"version": B.version}
 
-
-@app.get("/api/biomes")
-def get_biomes():
-    return B.world.get_biomes()
 
 
 @app.post("/api/biomes")
