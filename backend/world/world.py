@@ -175,7 +175,12 @@ class World:
 
     # Regions ##############################################################################################
 
+    def get_region_map_flattened(self):
+        return self.region_manager.get_region_map_flattened()
 
+    def get_region_lookup(self):
+        return self.region_manager.get_region_lookup()
+    
     def get_region_map(self): 
         return self.region_manager.get_region_map()
     
