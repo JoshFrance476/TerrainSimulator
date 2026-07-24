@@ -2,11 +2,11 @@ import { useState } from 'react'
 import SceneDisplay from './SceneDisplay'
 
 
-function ChatWindow() {
+function ChatWindow({ selectedCell }) {
 
     return (
         <div className="chat-window">
-            <SceneDisplay />
+            <SceneDisplay selectedCell={selectedCell} />
         </div>
     )
 }
