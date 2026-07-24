@@ -2,6 +2,9 @@ from world.regions.region import Region
 import numpy as np
 
 class RegionManager:
+    NO_REGION = 0xFFFF
+    MAX_REGIONS_PER_CELL = 4
+
     def __init__(self, rows, cols, region_map=None, region_list=None, rid_counter=None):
         if region_map:
             self.region_map = region_map
@@ -11,6 +14,28 @@ class RegionManager:
             self.region_map = [[set() for _ in range(cols)] for _ in range(rows)]
             self.region_list = []
             self.rid_counter = 0
+
+    # Get flattened region map with shape (rows, cols, MAX_REGIONS_PER_CELL), dtype uint16
+    # Empty cells are filled with NO_REGION (0xFFFF) 
+    def get_region_map_flattened(self):
+        rows, cols = len(self.region_map), len(self.region_map[0])
+        flat_map = np.full((rows, cols, self.MAX_REGIONS_PER_CELL), self.NO_REGION, dtype=np.uint16)
+        for r in range(rows):
+            for c in range(cols):
+                region_ids = list(self.region_map[r][c])
+                for i in range(min(len(region_ids), self.MAX_REGIONS_PER_CELL)):
+                    flat_map[r, c, i] = region_ids[i]
+        return flat_map
+
+    def get_region_lookup(self):
+        return {
+            r.rid: {
+                "title": getattr(r, "title", "") or f"Region {r.rid}",
+                "visible_desc": getattr(r, "visible_desc", ""),
+                "hidden_desc": getattr(r, "hidden_desc", ""),
+            }
+            for r in self.region_list
+        }
 
     
     def create_region(self, title="", visible_desc="", hidden_desc=""):
