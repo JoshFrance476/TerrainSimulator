@@ -152,7 +152,7 @@ class Backend:
         return out
     
 
-    def world_json(self):
+    def get_world_json(self):
         return {
             "rows": self.world.rows,
             "cols": self.world.cols,
@@ -160,71 +160,20 @@ class Backend:
             "version": self.version,
             "biomes": self.world.get_biomes(),
             "setup": self.story_engine.get_setup(),
+            "max_regions_per_cell": self.world.region_manager.MAX_REGIONS_PER_CELL,
+            "no_region_id": self.world.region_manager.NO_REGION,
         }
 
 B = Backend()
 
-# ---------------------------------------------------------------- models
-class StrokeBody(BaseModel):
-    tool: str                       # paint_biome | elevate | smooth | region
-    cells: list[list[int]]
-    biome_id: int | None = None
-    region_id: int | None = None
-    negative: bool = False
-    fill: bool = False
-
-
-class BrushBody(BaseModel):
-    size: int | None = None
-    strength: float | None = None
-    elevation_updates_biome: bool | None = None
-
-
-class BiomeBody(BaseModel):
-    name: str
-    h: float
-    s: float
-    v: float
-    traversal_cost: float
-    description: str = ""
-
-
-class RegionInfoBody(BaseModel):
-    title: str
-    visible_desc: str = ""
-    hidden_desc: str = ""
-
-
-class SetupBody(BaseModel):
-    world_description: str = ""
-    character_description: str = ""
-    story_focus_description: str = ""
-
-
+# ---------------------------------------------------------------- modela
 class CellBody(BaseModel):
     x: int = 50
     y: int = 50
 
 
-class TextBody(BaseModel):
-    text: str
-
-
 class ActionBody(BaseModel):
     action: str
-
-
-class NameBody(BaseModel):
-    name: str
-
-
-class MoveBody(BaseModel):
-    direction: str  # north | south | east | west
-
-
-class PathBody(BaseModel):
-    start: list[int]
-    end: list[int]
 
 
 active_streams: dict[str, str] = {}
@@ -239,13 +188,13 @@ def get_scene():
 @app.post("/api/scene/prompt")
 async def prompt_scene(body: CellBody):
     stream_id = str(uuid.uuid4())
-
-    active_streams[stream_id] = {
-        "cell": (body.x, body.y),
+ 
+    active_streams[stream_id] = { 
+        "cell": (body.y, body.x),
     }
     
-
-    return {"stream_id": stream_id}
+  
+    return {"stream_id": stream_id} 
 
 
 @app.get("/api/stream")
@@ -271,55 +220,10 @@ async def scene_action(body: ActionBody):
     B.increment_version()
 
 
-
-@app.post("/api/scene/exit")
-def scene_exit():
-    B.story_engine.clear_scene()
-    return {"ok": True}
-
-
-@app.get("/api/character")
-def get_character():
-    return {
-        "notebook": B.story_engine.get_notebook(),
-        "stats": B.story_engine.state.stats,
-        "history": B.story_engine.get_character_history(),
-    }
-
-
-@app.get("/api/story/setup")
-def get_setup():
-    return B.story_engine.get_setup()
-
-
-@app.put("/api/story/setup")
-def put_setup(body: SetupBody):
-    B.story_engine.setup({
-        "world_description": body.world_description,
-        "character_description": body.character_description,
-        "story_focus_description": body.story_focus_description,
-    })
-    return {"ok": True}
-
-
-@app.post("/api/story/character-setup")
-def character_setup():
-    s = B.story_engine.state
-    B.story_engine.setup_character(s.character_description,
-                                    s.world_description,
-                                    s.story_focus_description)
-    return {"notebook": s.notebook, "stats": s.stats}
-
-
-@app.get("/api/usage")
-def get_usage():
-    return {"usage": B.story_engine.get_token_usage()}
-
-
 # ---------------------------------------------------------------- world
 @app.get("/api/world")
 def get_world():
-    return B.world_json()
+    return B.get_world_json()
 
 @app.get("/api/world/rgb")
 def get_world_rgb():
@@ -337,137 +241,12 @@ def get_biome_map():
 @app.get("/api/world/biome-lookup")
 def get_biome_lookup():
     return B.world.get_biome_lookup()
+    
+@app.get("/api/world/region-lookup")
+def get_region_lookup():
+    return B.world.get_region_lookup()
 
-@app.get("/api/regions")
-def get_regions():
-    return B.regions_json()
-
-
-@app.get("/api/cell/{r}/{c}")
-def get_cell(r: int, c: int):
-    tile = B.world.get_tile_data_json((r, c))
-    data = B.world.get_cell_data((r, c))
-    tile["elevation"] = float(data["elevation"])
-    tile["temperature"] = float(data["temperature"])
-    tile["rainfall"] = float(data["rainfall"])
-    tile["traversal_cost"] = float(data["traversal_cost"])
-    return tile
-
-
-@app.post("/api/path")
-def get_path(body: PathBody):
-    path = B.world.find_path(tuple(body.start), tuple(body.end))
-    return {"path": [list(p) for p in (path or [])]}
-
-# ---------------------------------------------------------------- editing
-@app.post("/api/edit/brush")
-def set_brush(body: BrushBody):
-    if body.size is not None:
-        B.brush.size = body.size
-    if body.strength is not None:
-        B.brush.strength = body.strength
-    if body.elevation_updates_biome is not None:
-        B.editor.elevation_updates_biome = body.elevation_updates_biome
-    return {"ok": True}
-
-
-@app.post("/api/edit/stroke")
-def edit_stroke(body: StrokeBody):
-    B.editor.paint_mode = PaintMode.FILL if body.fill else PaintMode.BRUSH
-    for cell in body.cells:
-        loc = tuple(cell)
-        if body.tool == "paint_biome":
-            B.editor.paint_biome(loc, body.biome_id)
-        elif body.tool == "elevate":
-            B.editor.edit_elevation(loc, negative=body.negative)
-        elif body.tool == "smooth":
-            B.editor.edit_elevation(loc)
-        elif body.tool == "region":
-            if body.negative:
-                B.editor.remove_region(loc, body.region_id)
-            else:
-                B.editor.paint_region(loc, body.region_id)
-    B.increment_version()
-    return {"version": B.version}
-
-
-
-@app.post("/api/biomes")
-def add_biome(body: BiomeBody):
-    B.editor.add_biome(body.name, body.h, body.s, body.v,
-                        body.traversal_cost, body.description)
-    B.increment_version()
-    return {"version": B.version}
-
-
-@app.put("/api/biomes/{index}")
-def edit_biome(index: int, body: BiomeBody):
-    B.editor.edit_biome(index, body.name, body.h, body.s, body.v,
-                            body.traversal_cost, body.description)
-    B.increment_version()
-    return {"version": B.version}
-
-
-@app.post("/api/regions")
-def create_region():
-    rid = B.editor.create_region()
-    return {"id": rid}
-
-
-@app.put("/api/regions/{rid}")
-def set_region_info(rid: int, body: RegionInfoBody):
-    B.editor.set_painted_region_info(body.title, body.visible_desc,
-                                     body.hidden_desc, rid)
-    B.increment_version()
-    return {"version": B.version}
-
-
-# ---------------------------------------------------------------- player
-@app.post("/api/player/move")
-def move_player(body: MoveBody):
-    move = {"north": B.player.move_north, "south": B.player.move_south,
-            "east": B.player.move_east, "west": B.player.move_west}
-    if body.direction not in move:
-        raise HTTPException(400, "direction must be north/south/east/west")
-    move[body.direction]()
-    biome = B.world.get_biome_data_at_location(B.player.location)["name"]
-    B.story_engine.add_to_movement_history(
-        {"direction": body.direction, "biome": biome})
-    return {"player": list(B.player.get_location()), "biome": biome}
-
-
-@app.post("/api/player/place")
-def place_player(body: CellBody):
-    B.player.set_location(tuple(body.cell))
-    biome = B.world.get_biome_data_at_location(B.player.location)["name"]
-    return {"player": list(B.player.get_location()), "biome": biome}
-
-
-# ---------------------------------------------------------------- maps
-@app.get("/api/maps")
-def list_maps():
-    if not SAVED_MAPS.exists():
-        return {"maps": []}
-    return {"maps": sorted(p.name for p in SAVED_MAPS.iterdir()
-                           if p.is_dir() and (p / "map_data.npz").exists())}
-
-
-@app.post("/api/maps/generate")
-def maps_generate():
-    B.generate_map()
-    return {"version": B.version, "world": B.world_json()}
-
-
-@app.post("/api/maps/save")
-def maps_save(body: NameBody):
-    B.save_map(body.name)
-    return {"ok": True}
-
-
-@app.post("/api/maps/load")
-def maps_load(body: NameBody):
-    try:
-        B.load_map(body.name)
-    except FileNotFoundError as e:
-        raise HTTPException(404, str(e))
-    return {"version": B.version, "world": B.world_json()}
+@app.get("/api/world/region-map")
+def get_region_map():
+    region_map_flat = B.world.get_region_map_flattened()  # shape (rows, cols, MAX_REGIONS_PER_CELL)
+    return Response(region_map_flat.tobytes(), media_type="application/octet-stream")
