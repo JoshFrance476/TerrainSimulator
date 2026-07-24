@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 
-function SceneDisplay() {
+function SceneDisplay( { selectedCell } ) {
     const [scene, setScene] = useState(null)
-    const [cellX, setCellX] = useState(50)
-    const [cellY, setCellY] = useState(50)
     const [streamedOutput, setStreamedOutput] = useState('')
 
     async function updateScene() {
@@ -21,7 +19,7 @@ function SceneDisplay() {
         const res = await fetch('/api/scene/prompt', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ x: cellX, y: cellY})
+            body: JSON.stringify({ x: selectedCell ? selectedCell.x : null, y: selectedCell ? selectedCell.y : null })
         })
 
         if (!res.ok) {
@@ -79,16 +77,6 @@ function SceneDisplay() {
     return (
         <div>
             <div>
-                <input
-                    type="number"
-                    value={cellX}
-                    onChange={(e) => setCellX(e.target.value)}
-                />
-                <input
-                    type="number"
-                    value={cellY}
-                    onChange={(e) => setCellY(e.target.value)}
-                />
                 <button onClick={startNewScene}>Send</button>
             </div>
 
