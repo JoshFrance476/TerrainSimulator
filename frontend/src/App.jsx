@@ -8,7 +8,9 @@ function App() {
 
   return (
     <div className="display">
-      <ChatWindow />
+      <ChatWindow 
+        selectedCell={selectedCell}
+      />
       <InfoWindow 
         selectedCell={selectedCell} 
       />
