@@ -1,63 +1,30 @@
 import { useState, useRef, useEffect } from 'react'
+import { useWorldData } from '../hooks/useWorldData'
 
 function MapDisplay({ selectedCell, onCellSelect }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
     const imageDataRef = useRef(null) // ImageData object containing Uint8Array RGB map data
-    const [version, setVersion] = useState(0) 
-    const [dimensions, setDimensions] = useState(null) // shape: {width, height}
+
+    const { version, dimensions, maxRegionsPerCell, noRegionId, 
+        biomeMap, biomeLookup, regionMap, regionLookup 
+    } = useWorldData()
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
 
-    const [biomeMap, setBiomeMap] = useState(null)  // Uint8Array of biome IDs
-    const [biomeLookup, setBiomeLookup] = useState(null) // Dict mapping biome IDs to biome data
-
     const [tooltip, setTooltip] = useState(null) //shape: {x, y, biomeName}
 
-    const SCALE = 4 // Scale factor for rendering map interaction layer
+    const SCALE = 10 // Interaction layer scale factor
 
-    // Fetch biome lookup data from backend
-    useEffect(() => {
-        async function fetchBiomeLookup() {
-            const res = await fetch('/api/world/biome-lookup')
-            if (!res.ok) {
-                console.error('Failed to fetch biome lookup data', await res.text())
-                return
-            }
-            const data = await res.json()
-            setBiomeLookup(data)
-        }
-        fetchBiomeLookup()
-    }, [])
+    const [zoom, setZoom] = useState(1)
+    const [pan, setPan] = useState({ x: 0, y: 0 })
 
-    // Fetch biome map data from backend
-    useEffect(() => {
-        async function fetchBiomeMap() {
-            const res = await fetch('/api/world/biome-map?v=${version}')
-        
-            if (!res.ok) {
-                console.error('Failed to fetch biome map data', await res.text())
-                return
-            }
-            const buffer = await res.arrayBuffer()
-            const data = new Uint8Array(buffer)
-            setBiomeMap(data)
-        }
-        fetchBiomeMap()
-    }, [version])
+    const MIN_ZOOM = 0.5
+    const MAX_ZOOM = 8
 
-    // Fetch the world data from the backend on component mount
-    useEffect(() => {
-        async function fetchWorld() {
-            const res = await fetch('/api/world')
-            const data = await res.json()
-            setVersion(data.version)
-            setDimensions({ width: data.cols, height: data.rows })
-        }
-        fetchWorld()
-    }, [])
-
+    const isPanning = useRef(false)
+    const lastPanPos = useRef({ x: 0, y: 0 })   
 
     // Resize the canvases when the dimensions change
     useEffect(() => {
@@ -120,8 +87,14 @@ function MapDisplay({ selectedCell, onCellSelect }) {
 
         if (selected) {
             ctx.strokeStyle = 'yellow'
-            ctx.lineWidth = 1 / SCALE
-            ctx.strokeRect(selected.x + 0.5 / SCALE, selected.y + 0.5 / SCALE, 1, 1)
+            const lw = 1 / SCALE
+            ctx.lineWidth = lw
+            ctx.strokeRect(
+                selected.x + lw / 2,
+                selected.y + lw / 2,
+                1 - lw,
+                1 - lw
+            )
         }
         ctx.restore()
     }
@@ -145,6 +118,23 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         return biomeLookup[biomeMap[index]]
     }
 
+    function getRegionDataAtCell(cellX, cellY) {
+        const base = (cellY * dimensions.width + cellX) * maxRegionsPerCell
+        const regions = []
+        for (let d = 0; d < maxRegionsPerCell; d++) {
+            const rid = regionMap[base + d]
+            if (rid === noRegionId) break   // slots are filled front-to-back, so first NO_REGION means no more follow
+            regions.push(regionLookup[rid])
+        }
+        return regions
+    }
+
+    function getCellData(cellX, cellY) {
+        const biomeData = getBiomeDataAtCell(cellX, cellY)
+        const regionData = getRegionDataAtCell(cellX, cellY)
+        return { x: cellX, y: cellY, biomeData: biomeData, regionData: regionData }
+    }
+
     function isNewHoveredCell(cellX, cellY) {
         return !lastHoveredCell || lastHoveredCell.x !== cellX || lastHoveredCell.y !== cellY
     }
@@ -154,17 +144,38 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         
         const { cellX, cellY } = eventToCell(e)
 
-        let biomeData
+        let cellData
         if (isNewHoveredCell(cellX, cellY)) {
-            biomeData = getBiomeDataAtCell(cellX, cellY)
-            setLastHoveredCell({ x: cellX, y: cellY, biomeData: biomeData })
+            cellData = getCellData(cellX, cellY)
+            setLastHoveredCell(cellData)
             drawInteractionLayer({ x: cellX, y: cellY }, selectedCell)
         }
         else {
-            biomeData = lastHoveredCell.biomeData
+            cellData = lastHoveredCell
         }
         
-        setTooltip({ x: e.clientX, y: e.clientY, biomeName: biomeData.name })
+        setTooltip({ x: e.clientX, y: e.clientY, biomeName: cellData.biomeData.name })
+    }
+
+    function handleWheel(e) {
+        e.preventDefault()
+
+        const rect = e.currentTarget.getBoundingClientRect()
+        const mouseX = e.clientX - rect.left
+        const mouseY = e.clientY - rect.top
+
+        const zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1
+        const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * zoomFactor))
+
+        // keep the point under the cursor fixed on screen while zooming
+        const worldX = (mouseX - pan.x) / zoom
+        const worldY = (mouseY - pan.y) / zoom
+
+        setPan({
+            x: mouseX - worldX * newZoom,
+            y: mouseY - worldY * newZoom
+        })
+        setZoom(newZoom)
     }
 
     function handleMouseLeave() {
@@ -176,27 +187,50 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         if (!dimensions || !biomeMap || !biomeLookup) return
 
         const { cellX, cellY } = eventToCell(e)
-        const biomeData = getBiomeDataAtCell(cellX, cellY)
-
-        onCellSelect({ x: cellX, y: cellY, biomeData: biomeData })
-
-        console.log(`Biome: ${biomeData.name} at (${cellX}, ${cellY})`)
+        onCellSelect(getCellData(cellX, cellY))
     }
 
-    function handleBrushStart() {
-        
+    
+    function handlePanStart(e) {
+        if (e.button !== 1) return 
+        e.preventDefault()
+        isPanning.current = true
+        lastPanPos.current = { x: e.clientX, y: e.clientY }
+    }
+
+    function handlePanMove(e) {
+        if (!isPanning.current) return
+        const dx = e.clientX - lastPanPos.current.x
+        const dy = e.clientY - lastPanPos.current.y
+        setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }))
+        lastPanPos.current = { x: e.clientX, y: e.clientY }
+    }
+
+    function handlePanEnd() {
+        isPanning.current = false
     }
 
     return (
-        <div className="map-stack">
-            <canvas ref={baseMapRef} className="map-layer" />
-            <canvas ref={overlayRef} className="map-layer" />
-            <canvas ref={interactionRef} className="map-layer"
-                onMouseMove={handleHover}
-                onMouseLeave={handleMouseLeave}
-                onClick={handleClick}
-                onMouseDown={handleBrushStart}
-            />
+        <div className="map-viewport" 
+            onWheel={handleWheel}
+            onMouseDown={handlePanStart}
+            onMouseMove={handlePanMove}
+            onMouseUp={handlePanEnd}
+            onMouseLeave={handlePanEnd}
+        >
+            <div
+                className="map-stack"
+                style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
+            >
+                <canvas ref={baseMapRef} className="map-layer" />
+                <canvas ref={overlayRef} className="map-layer" />
+                <canvas ref={interactionRef} className="map-layer"
+                    onMouseMove={handleHover}
+                    onMouseLeave={handleMouseLeave}
+                    onClick={handleClick}
+                />
+            </div>
+
             {tooltip && (
                 <div
                     className="tooltip capitalise"
