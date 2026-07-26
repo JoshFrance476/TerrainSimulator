@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-function SceneDisplay( { selectedCell } ) {
+function SceneWindow( { selectedCell } ) {
     const [scene, setScene] = useState(null)
     const [streamedOutput, setStreamedOutput] = useState('')
 
@@ -75,7 +75,7 @@ function SceneDisplay( { selectedCell } ) {
 
 
     return (
-        <div>
+        <div className="scene-window">
             <div>
                 <button onClick={startNewScene}>Send</button>
             </div>
@@ -110,4 +110,4 @@ function SceneDisplay( { selectedCell } ) {
     )
 }
 
-export default SceneDisplay
+export default SceneWindow
