@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-function SceneWindow( { selectedCell } ) {
+function SceneWindow( { playerLocation } ) {
     const [scene, setScene] = useState(null)
     const [streamedOutput, setStreamedOutput] = useState('')
 
@@ -19,7 +19,7 @@ function SceneWindow( { selectedCell } ) {
         const res = await fetch('/api/scene/prompt', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ x: selectedCell ? selectedCell.x : null, y: selectedCell ? selectedCell.y : null })
+            body: JSON.stringify({ x: playerLocation ? playerLocation.x : null, y: playerLocation ? playerLocation.y : null })
         })
 
         if (!res.ok) {
@@ -76,6 +76,7 @@ function SceneWindow( { selectedCell } ) {
 
     return (
         <div className="scene-window">
+            <p className="position">Position: ({playerLocation ? playerLocation.x : 'N/A'}, {playerLocation ? playerLocation.y : 'N/A'})</p>
             <div>
                 <button onClick={startNewScene}>Send</button>
             </div>
