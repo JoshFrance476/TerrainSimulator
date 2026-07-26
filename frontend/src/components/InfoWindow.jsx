@@ -3,7 +3,7 @@ function InfoWindow({ selectedCell }) {
         <div className="info-window">
             {selectedCell && (
                 <div>
-                    <p className="region-position">Position: ({selectedCell.x}, {selectedCell.y})</p>
+                    <p className="position">Position: ({selectedCell.x}, {selectedCell.y})</p>
                     <h2 className="capitalise biome-name">{selectedCell.biomeData.name}</h2>
                     {selectedCell.regionData.map((region, index) => (
                         <div key={index} className="region-info"> 
