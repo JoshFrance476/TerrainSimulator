@@ -2,14 +2,14 @@ import { useState, useRef, useEffect } from 'react'
 import { useWorldData } from '../hooks/useWorldData'
 import MapToolbar from './MapToolbar'
 
-function MapDisplay({ selectedCell, onCellSelect }) {
+function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocationChange }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
     const imageDataRef = useRef(null) // ImageData object containing Uint8Array RGB map data
 
-    const { version, dimensions, maxRegionsPerCell, noRegionId, 
-        biomeMap, biomeLookup, regionMap, regionLookup 
+    const { version, setVersion, dimensions, maxRegionsPerCell, noRegionId, 
+        biomeMap, biomeLookup, regionMap, regionLookup
     } = useWorldData()
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
@@ -72,11 +72,11 @@ function MapDisplay({ selectedCell, onCellSelect }) {
     // Redraw interaction layer when selected cell changes
     useEffect(() => {
         if (!dimensions) return
-        drawInteractionLayer(lastHoveredCell, selectedCell)
-    }, [selectedCell, dimensions])
+        drawInteractionLayer(lastHoveredCell, selectedCell, playerLocation)
+    }, [selectedCell, dimensions, playerLocation])
 
     // Draw hovered cell and selected cell on interaction layer
-    function drawInteractionLayer(hovered, selected) {
+    function drawInteractionLayer(hovered, selected, player) {
         const ctx = interactionRef.current.getContext('2d')
 
         ctx.clearRect(0, 0, dimensions.width * SCALE, dimensions.height * SCALE)
@@ -99,6 +99,24 @@ function MapDisplay({ selectedCell, onCellSelect }) {
                 1 - lw,
                 1 - lw
             )
+        }
+        
+        if (player) {
+            ctx.strokeStyle = 'white'
+            const lw = 1 / SCALE
+            ctx.lineWidth = lw
+
+            const cx = player.x + 0.5
+            const cy = player.y + 0.5
+            const armLengthPx = Math.round(0.35 * SCALE)   // whole device pixels
+            const armLength = armLengthPx / SCALE           // back into canvas-unit space
+
+            ctx.beginPath()
+            ctx.moveTo(cx - armLength, cy + lw / 2)
+            ctx.lineTo(cx + armLength, cy + lw / 2)
+            ctx.moveTo(cx + lw / 2, cy - armLength)
+            ctx.lineTo(cx + lw / 2, cy + armLength)
+            ctx.stroke()
         }
         ctx.restore()
     }
@@ -176,10 +194,6 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         ctx.restore()
     }
 
-    function toggleInteractionMode() {
-        setInteractionMode((prev) => (prev === 'view' ? 'move' : 'view'))
-    }
-
     // Convert mouse event coordinates to cell coordinates with clamping
     function eventToCell(e) {
         const rect = interactionRef.current.getBoundingClientRect()
@@ -220,6 +234,21 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         return !lastHoveredCell || lastHoveredCell.x !== cellX || lastHoveredCell.y !== cellY
     }
 
+    async function handlePlayerMove(cellX, cellY) {
+        const res = await fetch('/api/player/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ x: cellX, y: cellY })
+        })
+        if (!res.ok) {
+            console.error('Failed to move player:', await res.text())
+            return
+        }
+        const data = await res.json()
+        setVersion(data.version)
+        onPlayerLocationChange({ x: data.player_location[1], y: data.player_location[0] })
+    }
+
     function handleHover(e) {
         if (!biomeMap || !biomeLookup || !dimensions) return
         
@@ -229,7 +258,7 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         if (isNewHoveredCell(cellX, cellY)) {
             cellData = getCellData(cellX, cellY)
             setLastHoveredCell(cellData)
-            drawInteractionLayer({ x: cellX, y: cellY }, selectedCell)
+            drawInteractionLayer({ x: cellX, y: cellY }, selectedCell, playerLocation)
         }
         else {
             cellData = lastHoveredCell
@@ -261,7 +290,7 @@ function MapDisplay({ selectedCell, onCellSelect }) {
 
     function handleMouseLeave() {
         setTooltip(null)
-        drawInteractionLayer(null, selectedCell)
+        drawInteractionLayer(null, selectedCell, playerLocation)
     }
 
     function handleClick(e) {
@@ -270,7 +299,7 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         const { cellX, cellY } = eventToCell(e)
 
         if (interactionMode === 'move') {
-            onPlayerLocationChange({ x: cellX, y: cellY })
+            handlePlayerMove(cellX, cellY)
         }
         else {
             onCellSelect(getCellData(cellX, cellY))
