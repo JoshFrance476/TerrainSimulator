@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useWorldData } from '../hooks/useWorldData'
+import MapToolbar from './MapToolbar'
 
 function MapDisplay({ selectedCell, onCellSelect }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
@@ -26,16 +27,19 @@ function MapDisplay({ selectedCell, onCellSelect }) {
     const isPanning = useRef(false)
     const lastPanPos = useRef({ x: 0, y: 0 })   
 
+    const [interactionMode, setInteractionMode] = useState('view') // 'view' or 'move'
+
     // Resize the canvases when the dimensions change
     useEffect(() => {
         if (!dimensions) return
-        for (const ref of [baseMapRef, overlayRef]) {
-            ref.current.width = dimensions.width
-            ref.current.height = dimensions.height
-        }
 
-        interactionRef.current.width = dimensions.width * SCALE
-        interactionRef.current.height = dimensions.height * SCALE
+        baseMapRef.current.width = dimensions.width
+        baseMapRef.current.height = dimensions.height
+
+        for (const ref of [overlayRef, interactionRef]) {
+            ref.current.width = dimensions.width * SCALE
+            ref.current.height = dimensions.height * SCALE
+        }
     }, [dimensions])
 
     //Get the RGB map data from the backend and draw it on the base map canvas
@@ -97,6 +101,83 @@ function MapDisplay({ selectedCell, onCellSelect }) {
             )
         }
         ctx.restore()
+    }
+
+    function cellHasRegion(cellX, cellY, rid) {
+        if (cellX < 0 || cellX >= dimensions.width || cellY < 0 || cellY >= dimensions.height) {
+            return false   // off-grid counts as "not in the region" — draws a border at the map's edge
+        }
+        const base = (cellY * dimensions.width + cellX) * maxRegionsPerCell
+        for (let d = 0; d < maxRegionsPerCell; d++) {
+            const id = regionMap[base + d]
+            if (id === noRegionId) break
+            if (id === rid) return true
+        }
+        return false
+    }
+
+    useEffect(() => {
+        if (!dimensions || !regionMap || !regionLookup) return
+        drawRegionBorders()
+    }, [dimensions, regionMap, regionLookup])
+
+    function drawRegionBorders() {
+        const ctx = overlayRef.current.getContext('2d')
+        ctx.clearRect(0, 0, dimensions.width * SCALE, dimensions.height * SCALE)
+
+        ctx.save()
+        ctx.scale(SCALE, SCALE)
+
+        const segmentsByColour = new Map()
+
+        for (let y = 0; y < dimensions.height; y++) {
+            for (let x = 0; x < dimensions.width; x++) {
+                const base = (y * dimensions.width + x) * maxRegionsPerCell
+                for (let d = 0; d < maxRegionsPerCell; d++) {
+                    const rid = regionMap[base + d]
+                    if (rid === noRegionId) break
+
+                    const region = regionLookup[rid]
+                    if (!region) continue
+                    const colourKey = `rgb(${255},${255},${255})`
+                    if (!segmentsByColour.has(colourKey)) segmentsByColour.set(colourKey, [])
+                    const segments = segmentsByColour.get(colourKey)
+
+                    if (!cellHasRegion(x, y - 1, rid)) segments.push([x, y, x + 1, y])
+                    if (!cellHasRegion(x, y + 1, rid)) segments.push([x, y + 1, x + 1, y + 1])
+                    if (!cellHasRegion(x - 1, y, rid)) segments.push([x, y, x, y + 1])
+                    if (!cellHasRegion(x + 1, y, rid)) segments.push([x + 1, y, x + 1, y + 1])
+                }
+            }
+        }
+
+        const lw = 1 / SCALE
+        ctx.lineWidth = lw
+
+        for (const [colour, segments] of segmentsByColour) {
+            ctx.strokeStyle = colour
+            ctx.beginPath()
+            for (const [x1, y1, x2, y2] of segments) {
+                if (y1 === y2) {
+                    // horizontal segment — nudge y onto a device-pixel center
+                    const y = y1 + lw / 2
+                    ctx.moveTo(x1, y)
+                    ctx.lineTo(x2, y)
+                } else {
+                    // vertical segment — nudge x onto a device-pixel center
+                    const x = x1 + lw / 2
+                    ctx.moveTo(x, y1)
+                    ctx.lineTo(x, y2)
+                }
+            }
+            ctx.stroke()
+        }
+
+        ctx.restore()
+    }
+
+    function toggleInteractionMode() {
+        setInteractionMode((prev) => (prev === 'view' ? 'move' : 'view'))
     }
 
     // Convert mouse event coordinates to cell coordinates with clamping
@@ -187,7 +268,13 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         if (!dimensions || !biomeMap || !biomeLookup) return
 
         const { cellX, cellY } = eventToCell(e)
-        onCellSelect(getCellData(cellX, cellY))
+
+        if (interactionMode === 'move') {
+            onPlayerLocationChange({ x: cellX, y: cellY })
+        }
+        else {
+            onCellSelect(getCellData(cellX, cellY))
+        }
     }
 
     
@@ -230,6 +317,11 @@ function MapDisplay({ selectedCell, onCellSelect }) {
                     onClick={handleClick}
                 />
             </div>
+
+            <MapToolbar
+                interactionMode={interactionMode}
+                onInteractionModeChange={setInteractionMode}
+            />
 
             {tooltip && (
                 <div
