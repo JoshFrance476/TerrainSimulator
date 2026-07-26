@@ -80,6 +80,7 @@ export function useWorldData() {
 
     return {
         version,
+        setVersion,
         dimensions,
         maxRegionsPerCell,
         noRegionId,
