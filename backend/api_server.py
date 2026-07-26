@@ -53,6 +53,9 @@ class Backend:
         
     def increment_version(self):
         self.version += 1
+
+    def get_version(self):
+        return self.version
     
     def generate_map(self):
         with open(SAVED_MAPS / "default_config.yaml") as f:
@@ -175,6 +178,10 @@ class CellBody(BaseModel):
 class ActionBody(BaseModel):
     action: str
 
+class MoveDestinationBody(BaseModel):
+    x: int
+    y: int
+
 
 active_streams: dict[str, str] = {}
 
@@ -192,8 +199,6 @@ async def prompt_scene(body: CellBody):
     active_streams[stream_id] = { 
         "cell": (body.y, body.x),
     }
-    
-  
     return {"stream_id": stream_id} 
 
 
@@ -207,7 +212,6 @@ async def stream_response(id: str) -> Response:
     if not data.get("cell") and not B.story_engine.get_current_scene():
         raise HTTPException(status_code=404, detail="No cell provided and no existing scene")
 
-
     async def generate():
         async for event in B.story_engine.generate_scene_interaction(data.get("cell")):
             yield event
@@ -217,7 +221,16 @@ async def stream_response(id: str) -> Response:
 @app.post("/api/scene/action")
 async def scene_action(body: ActionBody):
     await B.story_engine.choose_action(body.action, tuple(B.player.get_location()))
+
+
+# ---------------------------------------------------------------- player
+
+@app.post('/api/player/move')
+async def move_player_to(body: MoveDestinationBody):
+    new_location = (body.y, body.x)
+    B.player.set_location(new_location)
     B.increment_version()
+    return {"version": B.get_version(), "player_location": list(B.player.get_location())}
 
 
 # ---------------------------------------------------------------- world
