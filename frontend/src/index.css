@@ -2,7 +2,7 @@
     color: rgb(107, 107, 107);
 }
 
-.chat-window {
+.scene-window {
     grid-column: 1;
     grid-row: 1;
     width: auto;
@@ -90,4 +90,31 @@
 
 .biome-name {
     margin: 10px 0;
+}
+
+.map-toolbar {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    z-index: 10;
+    display: flex;
+    gap: 4px;
+}
+
+
+.mode-btn {
+    padding: 6px 12px;
+    border: 1px solid #333;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.mode-btn.active {
+    background-color: white;
+    color: black;
+}
+
+.mode-btn.inactive {
+    background-color: #ddd;
+    color: #888;
 }
