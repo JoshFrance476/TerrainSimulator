@@ -10,7 +10,6 @@ function App() {
   return (
     <div className="display">
       <SceneWindow 
-        selectedCell={selectedCell}
         playerLocation={playerLocation}
       />
       <InfoWindow 
