@@ -1,19 +1,46 @@
+import { useState } from 'react'
+import LocationTab from './info-tabs/LocationTab'
+import QuestTab from './info-tabs/QuestTab'
 function InfoWindow({ selectedCell }) {
+    const [activeTab, setActiveTab] = useState('location') // 'location', 'character','npcs','quests', "story"
     return (
         <div className="info-window">
-            {selectedCell && (
-                <div>
-                    <p className="position">Position: ({selectedCell.x}, {selectedCell.y})</p>
-                    <h2 className="capitalise biome-name">{selectedCell.biomeData.name}</h2>
-                    {selectedCell.regionData.map((region, index) => (
-                        <div key={index} className="region-info"> 
-                            <h3 className="capitalise region-title">{region.title}</h3>
-                            <p className="region-visible-desc">{region.visible_desc}</p>
-                            <p className="region-hidden-desc"><i>{region.hidden_desc}</i></p>
-                        </div>
-                    ))}
-                </div>
+            <div className="tab-bar">
+                <button 
+                    className={activeTab === 'location' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('location')}
+                >
+                    Location
+                </button>
+                <button
+                    className={activeTab === 'character' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('character')}
+                >
+                    Character
+                </button>
+                <button
+                    className={activeTab === 'npcs' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('npcs')}
+                >
+                    NPCs
+                </button>
+                <button
+                    className={activeTab === 'quests' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('quests')}
+                >
+                    Quests
+                </button>
+            </div>
+            {activeTab === 'location' && <LocationTab selectedCell={selectedCell} />}
+            {activeTab === 'character' && (<div>
+                <p>Character information will go here.</p>
+            </div>
             )}
+            {activeTab === 'npcs' && (<div>
+                <p>NPC information will go here.</p>
+            </div>
+            )}
+            {activeTab === 'quests' && <QuestTab />}
         </div>
     )
 }
