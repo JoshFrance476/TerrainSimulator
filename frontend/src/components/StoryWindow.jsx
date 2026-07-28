@@ -11,6 +11,9 @@ function StoryWindow({ playerLocation }) {
     const { interactionPrompt, setInteractionPrompt, sceneGuidePrompt, setSceneGuidePrompt, 
         saveInteractionPrompt, saveSceneGuidePrompt } = useStoryConfig()
 
+    useEffect(() => {
+        updateScene()
+    }, [])
 
     async function updateScene() {
         const res = await fetch('/api/scene')
