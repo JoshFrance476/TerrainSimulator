@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import SceneWindow from './components/SceneWindow'
+import StoryWindow from './components/StoryWindow'
 import MapDisplay from './components/MapDisplay'
 import InfoWindow from './components/InfoWindow'
 
 function App() {
-  const [selectedCell, setSelectedCell] = useState(null) // shape: {x, y, biomeData}
+  const [selectedCell, setSelectedCell] = useState(null) // shape: {x, y, biomeData, regionData}
   const [playerLocation, setPlayerLocation] = useState(null) // shape: {x, y}
 
   return (
     <div className="display">
-      <SceneWindow 
+      <StoryWindow 
         playerLocation={playerLocation}
       />
       <InfoWindow 
