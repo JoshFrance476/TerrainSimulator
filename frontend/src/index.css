@@ -1,28 +1,35 @@
+
 .action {
     color: rgb(107, 107, 107);
 }
 
-.scene-window {
+.story-window {
     grid-column: 1;
     grid-row: 1;
     width: auto;
     border: 1px solid black;
     padding: 5px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
-
+    
 .info-window {
     grid-column: 1;
     grid-row: 2;
     width: auto;
     border: 1px solid black;
     padding: 5px;
+    overflow-y: auto;
 }
 
 .display {
     display:grid;
     grid-template-columns: 500px 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 60% auto;
     gap: 10px;
+    height: 100vh;
 }
 
 .map-viewport {
@@ -63,16 +70,17 @@
     text-transform: capitalize;
 }
 
-.region-info {
+.info-window-box {
     border: 1px solid black;
     padding: 5px;
 }
 
-.region-title {
+.box-title {
     margin: 0px;
 }
 
-.region-visible-desc {
+.region-visible-desc,
+.quest-description {
     margin: 5px 0;
 }
 
@@ -117,4 +125,99 @@
 .mode-btn.inactive {
     background-color: #ddd;
     color: #888;
+}
+
+.tab-bar {
+    display: flex;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.tab {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #888;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;   /* overlaps the tab-bar's border so the active indicator sits flush */
+}
+
+.tab:hover {
+    color: #333;
+}
+
+.tab.active {
+    color: #111;
+    border-bottom: 2px solid #333;
+}
+
+.quest-objectives li {
+    margin: 5px 0;
+}
+
+.quest-objectives ul {
+    margin: 0;
+    list-style-type: lower-roman;
+}
+
+.interaction-guide {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 5px;
+    border: 1px solid #313131;
+    background-color: #d6d6d6;
+}
+
+.interaction-guide p, .interaction-guide li {
+    font-size: 0.9em;
+    line-height: 0.9em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+.interaction-guide ul {
+    margin-top: 0.4em;
+    margin-bottom: 0.4em;
+    padding-left: 1.2em;
+}
+
+.link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #747474;
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9em;
+}
+
+.link-button:hover {
+    color: #2c2c2c;
+}
+
+.prompt-textbox {
+    width: 100%;
+    height: auto;
+    flex: 1;
+    display: flex;
+    box-sizing: border-box;
+    min-height: 0;
+}
+
+.engine-tab {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.interaction-tab,
+.scene-guide-tab {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
