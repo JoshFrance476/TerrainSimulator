@@ -1,4 +1,5 @@
 from storytelling.prompt_loader import PromptLoader
+from storytelling.prompt_store import PromptStore
 from storytelling.log_writer import LogWriter
 from together import AsyncTogether
 import json
@@ -7,22 +8,30 @@ import json
 class LLMClient:
     def __init__(self, state):
         self.client = AsyncTogether()
-        self.model = "openai/gpt-oss-120b"
+        self.model = "Qwen/Qwen2.5-7B-Instruct-Turbo"
         self.loader = PromptLoader()
+        self.prompts = PromptStore()
         self.log_writer = LogWriter()
         self.state = state
 
+        self.interaction_prompt_filename = "scene_v2"
+        self.scene_guide_prompt_filename = "scene_setup_v2"
+
+
     
 
-    async def prompt_scene(self, guide, previous_interactions, world_desc, story_focus_desc):
-        messages = self.loader.load_messages("scene_v2", {
-            "context": json.dumps({
+    async def prompt_interaction(self, guide, previous_interactions):
+        messages = [
+            {"role": "system", "content": self.prompts.render("interaction",
+                                                              {"world_desc": self.state.world_desc,
+                                                               "story_focus_desc": self.state.story_focus_desc,
+                                                               "character_desc": self.state.character_desc})},
+            {"role": "user", "content": json.dumps({
                 "guide": guide,
                 "previous_interactions": previous_interactions
-            }),
-            "world_desc": world_desc,
-            "story_focus_desc": story_focus_desc
-        })
+            })}
+        ]
+
 
         stream_response = await self.client.chat.completions.create(
             model=self.model,
@@ -69,6 +78,56 @@ class LLMClient:
         except Exception as e:
             yield {"data": json.dumps({"error": "Stream failed", "detail": str(e)}), "event": "error"}
             raise
+
+
+    async def prompt_scene_setup(self, context, significance, notebook, scene_history):
+            context = {
+                "location_context": context,
+                "significance": significance,
+                "character_notebook": notebook,
+                "scene_history": scene_history
+            }
+    
+            if scene_history:
+                first_scene = scene_history[0]
+                context["scene_trigger"] = first_scene['chosen_action']
+
+            messages = [
+                {"role": "system", "content": self.prompts.render("scene-guide",
+                                                                  {"world_desc": self.state.world_desc,
+                                                                    "story_focus_desc": self.state.story_focus_desc,
+                                                                    "character_desc": self.state.character_desc})},
+                {"role": "user", "content": json.dumps({
+                    "context": context,
+                })},
+            ]
+            
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                temperature=0.7,
+                max_tokens=800,
+                reasoning_effort="medium",
+                messages=messages,
+                response_format=self.loader.load_response_format_schema("scene_setup")
+            )
+    
+            raw_output = response.choices[0].message.content
+            try:
+                data = json.loads(raw_output)
+            except json.JSONDecodeError as e:
+                print(f"JSON parse failed: {e}")
+                print(f"completion_tokens used: {response.usage.completion_tokens}")
+                print(f"finish_reason: {response.choices[0].finish_reason}")
+                print(f"raw content: {raw_output!r}")
+                raise
+            
+            self.log_writer.write_to_log(messages, label="SCENE REQUEST")
+            return {
+                "completion_tokens": response.usage.completion_tokens,
+                "prompt_tokens": response.usage.prompt_tokens,
+                "guide": data
+            }
+
 
     def prompt_story_setup(self, character_desc, world_desc, story_focus_desc):
         messages = self.loader.load_messages("story_setup", {
@@ -126,50 +185,6 @@ class LLMClient:
             "prompt_tokens": response.usage.prompt_tokens,
             "summary": summary,
             "new_quests": new_quests
-        }
-
-    async def prompt_scene_setup(self, context, world_desc, story_focus_desc, character_desc, significance, notebook, scene_history):
-        context = {
-            "location_context": context,
-            "significance": significance,
-            "character_notebook": notebook,
-            "scene_history": scene_history
-        }
-
-        if scene_history:
-            first_scene = next(iter(scene_history.values()))
-            context["scene_trigger"] = first_scene['action']
-        
-        messages = self.loader.load_messages("scene_setup_v2", {
-            "context": json.dumps(context),
-            "world_desc": world_desc,
-            "story_focus_desc": story_focus_desc,
-            "character_desc": character_desc
-            })
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            temperature=0.7,
-            max_tokens=800,
-            reasoning_effort="medium",
-            messages=messages,
-            response_format=self.loader.load_response_format_schema("scene_setup")
-        )
-
-        raw_output = response.choices[0].message.content
-        try:
-            data = json.loads(raw_output)
-        except json.JSONDecodeError as e:
-            print(f"JSON parse failed: {e}")
-            print(f"completion_tokens used: {response.usage.completion_tokens}")
-            print(f"finish_reason: {response.choices[0].finish_reason}")
-            print(f"raw content: {raw_output!r}")
-            raise
-        
-        self.log_writer.write_to_log(messages, label="SCENE REQUEST")
-        return {
-            "completion_tokens": response.usage.completion_tokens,
-            "prompt_tokens": response.usage.prompt_tokens,
-            "guide": data
         }
 
     def prompt_character_setup(self, character_desc, world_desc, story_focus_desc):

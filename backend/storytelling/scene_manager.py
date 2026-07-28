@@ -12,7 +12,7 @@ class SceneManager:
     async def generate_scene_interaction(self, selected_cell):
         # Synchronous setup work first
         if self.story_state.current_scene and not self.story_state.current_scene.ended:
-            scene_history = self.story_state.current_scene.get_scene_history()
+            scene_history = self.story_state.current_scene.get_history()
         else:
             scene_history = []
             self.story_state.current_scene = Scene()
@@ -23,11 +23,9 @@ class SceneManager:
         )
 
         # Then yield from the LLM stream
-        async for event in self.llm_client.prompt_scene(
+        async for event in self.llm_client.prompt_interaction(
             scene_guide,
             self.story_state.current_scene.get_interactions(),
-            self.story_state.world_description,
-            self.story_state.story_focus_description
         ):
             yield event
 
@@ -39,9 +37,6 @@ class SceneManager:
         scene_significance = significance_options[random.randint(0, len(significance_options) - 1)]
         response = await self.llm_client.prompt_scene_setup(
             context,
-            self.story_state.world_description,
-            self.story_state.story_focus_description,
-            self.story_state.character_description,
             scene_significance,
             self.story_state.notebook,
             scene_history
