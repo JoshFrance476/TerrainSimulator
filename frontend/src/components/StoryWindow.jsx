@@ -1,8 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useStoryConfig } from '../hooks/useStoryConfig'
+import EngineTab from './scene-tabs/EngineTab'
+import SceneTab from './scene-tabs/SceneTab'
 
-function SceneWindow( { playerLocation } ) {
+function StoryWindow({ playerLocation }) {
+    const [activeTab, setActiveTab] = useState('scene') // 'scene', 'engine'
     const [scene, setScene] = useState(null)
     const [streamedOutput, setStreamedOutput] = useState('')
+
+    const { interactionPrompt, setInteractionPrompt, sceneGuidePrompt, setSceneGuidePrompt, 
+        saveInteractionPrompt, saveSceneGuidePrompt } = useStoryConfig()
+
 
     async function updateScene() {
         const res = await fetch('/api/scene')
@@ -64,51 +72,39 @@ function SceneWindow( { playerLocation } ) {
         
     }
 
-    function startNewScene() {
-        setScene(null)
-        callPrompt()
-    }
-
-    useEffect(() => {console.log(scene)}, [scene])
-
-    useEffect(() => {updateScene()}, [])
-
-
     return (
-        <div className="scene-window">
-            <p className="position">Position: ({playerLocation ? playerLocation.x : 'N/A'}, {playerLocation ? playerLocation.y : 'N/A'})</p>
-            <div>
-                <button onClick={startNewScene}>Send</button>
+        <div className="story-window">
+            <div className="tab-bar">
+                <button
+                    className={activeTab === 'scene' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('scene')}
+                >
+                    Scene
+                </button>
+                <button
+                    className={activeTab === 'engine' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('engine')}
+                >
+                    Engine
+                </button>
             </div>
-
-            {!scene && <p>No active scene.</p>}
-
-            {scene && (
-                <>
-                    {scene.history.map((interaction, index) => (
-                        <div key={index}>
-                            <p>{interaction.situation}</p>
-                            <p className="action">{interaction.action}</p>
-                        </div>
-                    ))}
-
-                    {scene.pending && (
-                        <div>
-                            <p>{scene.pending.description}</p>
-                            {scene.pending.actions.map((a, index) => (
-                                <button key={index} onClick={() => submitAction({ action: a.action })}>
-                                    {a.action} - {a.exit_flag ? 'Exit' : 'Continue'}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </>
-            )}
-            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', width: '100%', boxSizing: 'border-box' }}>
-                {streamedOutput}
-            </pre>
+            {activeTab === 'scene' && <SceneTab 
+                playerLocation={playerLocation}
+                scene={scene}
+                streamedOutput={streamedOutput}
+                onStartNewScene={() => { setScene(null); callPrompt(); }}
+                onSubmitAction={submitAction}
+            />}
+            {activeTab === 'engine' && <EngineTab 
+                interactionPrompt={interactionPrompt}
+                setInteractionPrompt={setInteractionPrompt}
+                onInteractionSave={saveInteractionPrompt}
+                sceneGuidePrompt={sceneGuidePrompt}
+                setSceneGuidePrompt={setSceneGuidePrompt}
+                onSceneGuideSave={saveSceneGuidePrompt}
+            />}
         </div>
     )
 }
 
-export default SceneWindow
+export default StoryWindow
