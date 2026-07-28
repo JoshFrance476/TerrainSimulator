@@ -223,6 +223,21 @@ async def scene_action(body: ActionBody):
     await B.story_engine.choose_action(body.action, tuple(B.player.get_location()))
 
 
+@app.put("/api/scene/templates/{name}")
+async def set_prompt_template(name: str, body: PromptBody):
+    try:
+        B.story_engine.llm.prompts.set(name, body.text)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+
+@app.get("/api/scene/templates/{name}")
+def get_prompt_template(name: str):
+    try:
+        return {"name": name, "text": B.story_engine.llm.prompts.get(name)}
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Template not found")
+
 # ---------------------------------------------------------------- player
 
 @app.post('/api/player/move')
