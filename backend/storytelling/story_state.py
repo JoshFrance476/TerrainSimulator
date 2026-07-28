@@ -2,9 +2,9 @@ import queue
 
 class StoryState:
     def __init__(self):
-        self.world_description = ""
-        self.character_description = ""  
-        self.story_focus_description = ""
+        self.world_desc = ""
+        self.character_desc = ""  
+        self.story_focus_desc = ""
 
         self.notebook = []
         self.character_history = []
