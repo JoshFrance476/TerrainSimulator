@@ -135,24 +135,7 @@ class Backend:
         scene = self.story_engine.get_current_scene()
         if not scene:
             return None
-        out = {
-            "history": [
-                {"situation": i.description, "action": i.chosen_action}
-                for i in scene.completed_interactions
-            ],
-            "ended": scene.ended,
-            "pending": None,
-        }
-        if scene.pending_interaction:
-            p = scene.pending_interaction
-            out["pending"] = {
-                "description": p.description,
-                "actions": [
-                    {"action": a, "exit_flag": v["exit_flag"]}
-                    for a, v in p.action_table.items()
-                ],
-            }
-        return out
+        return scene.to_dict()
     
 
     def get_world_json(self):
@@ -169,7 +152,7 @@ class Backend:
 
 B = Backend()
 
-# ---------------------------------------------------------------- modela
+# ---------------------------------------------------------------- models
 class CellBody(BaseModel):
     x: int = 50
     y: int = 50
@@ -181,6 +164,9 @@ class ActionBody(BaseModel):
 class MoveDestinationBody(BaseModel):
     x: int
     y: int
+
+class PromptBody(BaseModel):
+    text: str
 
 
 active_streams: dict[str, str] = {}
@@ -196,7 +182,7 @@ def get_scene():
 async def prompt_scene(body: CellBody):
     stream_id = str(uuid.uuid4())
  
-    active_streams[stream_id] = { 
+    active_streams[stream_id] = {  
         "cell": (body.y, body.x),
     }
     return {"stream_id": stream_id} 
@@ -215,10 +201,10 @@ async def stream_response(id: str) -> Response:
     async def generate():
         async for event in B.story_engine.generate_scene_interaction(data.get("cell")):
             yield event
-
+ 
     return EventSourceResponse(generate())
 
-@app.post("/api/scene/action")
+@app.post("/api/scene/action") 
 async def scene_action(body: ActionBody):
     await B.story_engine.choose_action(body.action, tuple(B.player.get_location()))
 
@@ -278,3 +264,4 @@ def get_region_lookup():
 def get_region_map():
     region_map_flat = B.world.get_region_map_flattened()  # shape (rows, cols, MAX_REGIONS_PER_CELL)
     return Response(region_map_flat.tobytes(), media_type="application/octet-stream")
+
