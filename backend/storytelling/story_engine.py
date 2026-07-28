@@ -31,10 +31,10 @@ class StoryEngine:
                 description = data["description"]
                 actions = data["actions"]
             if event["event"] == "guide":
-                self.state.current_scene.set_pending_interaction(description,
-                                                                 actions, 
-                                                                 event["data"]["outcome_suggestions"], 
-                                                                 event["data"])
+                self.state.current_scene.add_interaction(description,
+                                                         actions, 
+                                                         event["data"]["outcome_suggestions"], 
+                                                         event["data"])
                 
 
  
