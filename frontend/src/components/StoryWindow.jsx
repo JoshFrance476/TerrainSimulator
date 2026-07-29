@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useStoryConfig } from '../hooks/useStoryConfig'
 import EngineTab from './scene-tabs/EngineTab'
 import SceneTab from './scene-tabs/SceneTab'
+import { useStoryDataContext } from '../contexts/StoryDataContext'
 
 function StoryWindow({ playerLocation }) {
     const [activeTab, setActiveTab] = useState('scene') // 'scene', 'engine'
@@ -10,6 +11,8 @@ function StoryWindow({ playerLocation }) {
 
     const { interactionPrompt, setInteractionPrompt, sceneGuidePrompt, setSceneGuidePrompt, 
         saveInteractionPrompt, saveSceneGuidePrompt } = useStoryConfig()
+
+    const { storyVersion , setStoryVersion } = useStoryDataContext()
 
     useEffect(() => {
         updateScene()
@@ -64,6 +67,9 @@ function StoryWindow({ playerLocation }) {
             console.error('Action submission failed:', await res.text())
             return
         }
+
+        const data = await res.json()
+        setStoryVersion(data.version)
         
         const updatedScene = await updateScene()
 
