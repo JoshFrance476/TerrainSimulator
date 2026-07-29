@@ -9,6 +9,7 @@ export function useWorldData() {
     const [biomeLookup, setBiomeLookup] = useState({})
     const [regionMap, setRegionMap] = useState(null)
     const [regionLookup, setRegionLookup] = useState({})
+    const [playerLocation, setPlayerLocation] = useState(null)
 
     // Fetch the world data from the backend on component mount
     useEffect(() => {
@@ -19,6 +20,7 @@ export function useWorldData() {
             setDimensions({ width: data.cols, height: data.rows })
             setMaxRegionsPerCell(data.max_regions_per_cell)
             setNoRegionId(data.no_region_id)
+            setPlayerLocation(data.player_location)
         }
         fetchWorld()
     }, [])
@@ -87,6 +89,7 @@ export function useWorldData() {
         biomeMap,
         biomeLookup,
         regionMap,
-        regionLookup
+        regionLookup,
+        playerLocation
     }
 }
