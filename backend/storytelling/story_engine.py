@@ -44,8 +44,14 @@ class StoryEngine:
         if scene.ended:
             new_quest_list, prompt_tokens, completion_tokens = await self.scene_manager.end_scene(scene, selected_cell)
             for quest in new_quest_list:
+                self.state.quest_list.append({
+                    "title": quest["title"],
+                    "visible_context": quest["visible_context"],
+                    "hidden_context": quest["hidden_context"]
+                })
                 self.world.add_new_region_to_chunk(quest["chunk_id"], quest["title"], quest["visible_context"], quest["hidden_context"])
             self.update_tokens(prompt_tokens, completion_tokens)
+            self.state.quest_list = self.state.quest_list
  
     def clear_scene(self):
         self.scene_manager.clear_scene()

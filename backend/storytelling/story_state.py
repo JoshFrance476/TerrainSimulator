@@ -13,6 +13,8 @@ class StoryState:
 
         self.movement_history = [] # Dicts containing "direction" and "biome"
 
+        self.quest_list = []
+
         self.current_scene = None
 
         self.chunk_queue = queue.Queue()
