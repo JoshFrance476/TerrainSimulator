@@ -39,7 +39,8 @@ class Backend:
         self.story_engine = StoryEngine(self.world)
         self.editor = WorldEditor(self.world)
 
-        self.version = 0
+        self.world_version = 0
+        self.story_version = 0
 
         if config.MAP_NAME:
             try:
@@ -51,11 +52,17 @@ class Backend:
             self.generate_map()
         
         
-    def increment_version(self):
-        self.version += 1
+    def increment_world_version(self):
+        self.world_version += 1
 
-    def get_version(self):
-        return self.version
+    def get_world_version(self):
+        return self.world_version
+
+    def increment_story_version(self):
+        self.story_version += 1
+
+    def get_story_version(self):
+        return self.story_version
     
     def generate_map(self):
         with open(SAVED_MAPS / "default_config.yaml") as f:
@@ -67,7 +74,7 @@ class Backend:
 
         self.reset_player()
 
-        self.increment_version()
+        self.increment_world_version()
     
     def load_map(self, name):
         path = SAVED_MAPS / name
@@ -81,7 +88,7 @@ class Backend:
         self.world.rows, self.world.cols = rows, cols
         self.world.load_data(biome_config, world_data)
         self.reset_player()
-        self.increment_version()
+        self.increment_world_version()
 
     def save_map(self, name):
         path = SAVED_MAPS / name
@@ -139,15 +146,23 @@ class Backend:
     
 
     def get_world_json(self):
-        return {
+        return { 
             "rows": self.world.rows,
             "cols": self.world.cols,
             "player": list(self.player.get_location()),
-            "version": self.version,
+            "version": self.get_world_version(),
             "biomes": self.world.get_biomes(),
             "setup": self.story_engine.get_setup(),
             "max_regions_per_cell": self.world.region_manager.MAX_REGIONS_PER_CELL,
             "no_region_id": self.world.region_manager.NO_REGION,
+            "player_location": list(self.player.get_location())
+        }
+
+    def get_story_json(self):
+        return {
+            "character_history": self.story_engine.state.character_history,
+            "quests_list": self.story_engine.state.quest_list,
+            "version": self.get_story_version(),
         }
 
 B = Backend()
@@ -172,6 +187,10 @@ class PromptBody(BaseModel):
 active_streams: dict[str, str] = {}
 
 # ---------------------------------------------------------------- story
+
+@app.get("/api/story")
+def get_story():
+    return B.get_story_json()
 
 @app.get("/api/scene")
 def get_scene():
@@ -207,6 +226,8 @@ async def stream_response(id: str) -> Response:
 @app.post("/api/scene/action") 
 async def scene_action(body: ActionBody):
     await B.story_engine.choose_action(body.action, tuple(B.player.get_location()))
+    B.increment_story_version()
+    return {"version": B.get_story_version()}
 
 
 @app.put("/api/scene/templates/{name}")
@@ -230,8 +251,8 @@ def get_prompt_template(name: str):
 async def move_player_to(body: MoveDestinationBody):
     new_location = (body.y, body.x)
     B.player.set_location(new_location)
-    B.increment_version()
-    return {"version": B.get_version(), "player_location": list(B.player.get_location())}
+    B.increment_world_version()
+    return {"version": B.get_world_version(), "player_location": list(B.player.get_location())}
 
 
 # ---------------------------------------------------------------- world
