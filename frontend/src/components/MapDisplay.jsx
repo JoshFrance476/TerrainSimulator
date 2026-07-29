@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useWorldData } from '../hooks/useWorldData'
 import MapToolbar from './MapToolbar'
+import { useWorldDataContext } from '../contexts/WorldDataContext'
 
 function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocationChange }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
@@ -9,8 +10,9 @@ function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocati
     const imageDataRef = useRef(null) // ImageData object containing Uint8Array RGB map data
 
     const { version, setVersion, dimensions, maxRegionsPerCell, noRegionId, 
-        biomeMap, biomeLookup, regionMap, regionLookup
-    } = useWorldData()
+        biomeMap, biomeLookup, regionMap, regionLookup, 
+        playerLocation: fetchedPlayerLocation
+    } = useWorldDataContext()
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
 
@@ -28,6 +30,12 @@ function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocati
     const lastPanPos = useRef({ x: 0, y: 0 })   
 
     const [interactionMode, setInteractionMode] = useState('view') // 'view' or 'move'
+
+    useEffect(() => {
+        if (fetchedPlayerLocation) {
+            onPlayerLocationChange({ x: fetchedPlayerLocation[1], y: fetchedPlayerLocation[0] })
+        }
+    }, [fetchedPlayerLocation])
 
     // Resize the canvases when the dimensions change
     useEffect(() => {
