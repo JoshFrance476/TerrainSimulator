@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import LocationTab from './info-tabs/LocationTab'
 import QuestTab from './info-tabs/QuestTab'
+import CharacterTab from './info-tabs/CharacterTab'
 function InfoWindow({ selectedCell }) {
     const [activeTab, setActiveTab] = useState('location') // 'location', 'character','npcs','quests', "story"
     return (
@@ -32,10 +33,7 @@ function InfoWindow({ selectedCell }) {
                 </button>
             </div>
             {activeTab === 'location' && <LocationTab selectedCell={selectedCell} />}
-            {activeTab === 'character' && (<div>
-                <p>Character information will go here.</p>
-            </div>
-            )}
+            {activeTab === 'character' && <CharacterTab />}
             {activeTab === 'npcs' && (<div>
                 <p>NPC information will go here.</p>
             </div>
