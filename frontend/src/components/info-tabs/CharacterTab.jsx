@@ -1,8 +1,8 @@
 
-import { useStoryDataContext } from '../../contexts/StoryDataContext'
+import { useStory } from '../../hooks/useStory'
 
 function CharacterTab() {
-    const { characterHistory: fetchedCharacterHistory } = useStoryDataContext()
+    const { characterHistory: fetchedCharacterHistory } = useStory()
     return (
         <div>
             {fetchedCharacterHistory && fetchedCharacterHistory.length > 0 ? (
