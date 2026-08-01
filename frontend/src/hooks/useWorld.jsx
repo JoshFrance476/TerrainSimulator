@@ -1,0 +1,43 @@
+import { useMemo } from 'react'
+import {
+    useWorldQuery,
+    useBiomeMapQuery,
+    useBiomeLookupQuery,
+    useRegionMapQuery,
+    useRegionLookupQuery,
+    useRgbQuery,
+} from '../queries/queries'
+
+export function useWorld() {
+    const world = useWorldQuery()
+    const biomeMap = useBiomeMapQuery()
+    const biomeLookup = useBiomeLookupQuery()
+    const regionMap = useRegionMapQuery()
+    const regionLookup = useRegionLookupQuery()
+    const rgbMap = useRgbQuery()
+
+    const queries = [world, biomeMap, biomeLookup, regionMap, regionLookup, rgbMap]
+
+    // stable reference so `dimensions` can safely sit in effect dependency arrays
+    const dimensions = useMemo(
+        () => (world.data ? { width: world.data.cols, height: world.data.rows } : null),
+        [world.data?.cols, world.data?.rows]
+    )
+
+    return {
+        dimensions,
+        maxRegionsPerCell: world.data?.max_regions_per_cell,
+        noRegionId: world.data?.no_region_id,
+
+        biomeMap: biomeMap.data,
+        biomeLookup: biomeLookup.data ?? {},
+        regionMap: regionMap.data,
+        regionLookup: regionLookup.data ?? {},
+        rgbMap: rgbMap.data,
+
+        isLoading: queries.some((q) => q.isLoading),
+        isFetching: queries.some((q) => q.isFetching),
+        isError: queries.some((q) => q.isError),
+        error: queries.find((q) => q.isError)?.error ?? null,
+    }
+}
