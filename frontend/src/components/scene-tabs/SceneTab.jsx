@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-function SceneTab( { playerLocation , scene , streamedOutput , onStartNewScene , onSubmitAction} ) {
+function SceneTab( { playerLocation , scene , streamedOutput , onStartNewScene , onRetryPrompt, onSubmitAction} ) {
     const [expandedGuides, setExpandedGuides] = useState(new Set())
 
 
@@ -60,6 +60,7 @@ function SceneTab( { playerLocation , scene , streamedOutput , onStartNewScene ,
                                             {a.action} - {a.exit_flag ? 'Exit' : 'Continue'}
                                         </button>
                                     ))}
+                                    <button onClick={() => onRetryPrompt()}>Retry Prompt</button>
                                 </>
                             )}
                         </div>
