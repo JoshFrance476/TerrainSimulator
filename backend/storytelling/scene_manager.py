@@ -6,11 +6,8 @@ class SceneManager:
         self.story_state = story_state
         self.llm_client = llm_client
         self.context_builder = context_builder
-
-        self._pending_response_scene_guide = None
     
     async def generate_scene_interaction(self, selected_cell):
-        # Synchronous setup work first
         if self.story_state.current_scene and not self.story_state.current_scene.ended:
             scene_history = self.story_state.current_scene.get_history()
         else:
@@ -22,7 +19,6 @@ class SceneManager:
             scene_history
         )
 
-        # Then yield from the LLM stream
         async for event in self.llm_client.prompt_interaction(
             scene_guide,
             self.story_state.current_scene.get_interactions(),
@@ -60,7 +56,7 @@ class SceneManager:
                 "hidden_context": quest["hidden_description"]
                 }
             )
-        return new_quest_list, response["prompt_tokens"], response["completion_tokens"]
+        return new_quest_list
     
     def get_current_scene(self):
         return self.story_state.current_scene
@@ -68,12 +64,5 @@ class SceneManager:
     def clear_scene(self):
         self.story_state.current_scene = None
     
-    def get_current_scene_debug_info(self):
-        if self.story_state.current_scene:
-            return {
-                "focus": self.story_state.current_scene.focus,
-                "environment": self.story_state.current_scene.environment,
-                "significance": self.story_state.current_scene.significance
-            }
-        return None
+
     
