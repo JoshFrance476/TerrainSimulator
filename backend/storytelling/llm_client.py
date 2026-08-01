@@ -1,14 +1,14 @@
 from storytelling.prompt_loader import PromptLoader
 from storytelling.prompt_store import PromptStore
 from storytelling.log_writer import LogWriter
-from together import AsyncTogether
+from huggingface_hub import AsyncInferenceClient
 import json
 
 
 class LLMClient:
     def __init__(self, state):
-        self.client = AsyncTogether()
-        self.model = "Qwen/Qwen2.5-7B-Instruct-Turbo"
+        self.client = AsyncInferenceClient()
+        self.model = "Qwen/Qwen3-235B-A22B-Instruct-2507:novita"
         self.loader = PromptLoader()
         self.prompts = PromptStore()
         self.log_writer = LogWriter()
@@ -32,41 +32,48 @@ class LLMClient:
             })}
         ]
 
-
         stream_response = await self.client.chat.completions.create(
             model=self.model,
             temperature=1,
             max_tokens=800,
-            reasoning_effort="low",
             messages=messages,
             stream=True,
-            response_format=self.loader.load_response_format_schema("scene")
+            stream_options={"include_usage": True},
+            response_format=self.loader.load_response_format_schema("scene"),
+            extra_body={"reasoning_effort": "low"},
         )
 
         full_response = ""
         try:
             async for chunk in stream_response:
+                if chunk.usage:
+                    final_chunk = chunk
                 if not chunk.choices:
                     continue
 
-                token = chunk.choices[0].delta.content
+                token = chunk.choices[0].delta.content 
                 if token:
                     full_response += token
-                    yield {"data": token, "event":"data"}
+                    yield {"data": token, "event": "data"}
 
             data = json.loads(full_response)
 
             self.log_writer.write_to_log(messages, label="INTERACTION REQUEST")
             self.log_writer.write_to_log(data, label="INTERACTION RESPONSE")
 
-            print(data)
+            print(final_chunk)
 
             result = {
-                "completion_tokens": None,
-                "prompt_tokens": None,
                 "description": data["interaction_description"],
                 "actions": data["actions"],
             }
+
+            if final_chunk.usage:
+                self.state.completion_tokens += final_chunk.usage.completion_tokens
+                self.state.prompt_tokens += final_chunk.usage.prompt_tokens
+            else:
+                print("No usage data returned by provider")
+
             yield {"data": json.dumps(result), "event": "done"}
 
         except json.JSONDecodeError as e:
@@ -106,10 +113,12 @@ class LLMClient:
                 model=self.model,
                 temperature=0.7,
                 max_tokens=800,
-                reasoning_effort="medium",
                 messages=messages,
-                response_format=self.loader.load_response_format_schema("scene_setup")
+                response_format=self.loader.load_response_format_schema("scene_setup"),
+                extra_body={"reasoning_effort": "medium"},
             )
+
+            print(response)
     
             raw_output = response.choices[0].message.content
             try:
@@ -122,6 +131,11 @@ class LLMClient:
                 raise
             
             self.log_writer.write_to_log(messages, label="SCENE REQUEST")
+
+            if response.usage:
+                self.state.completion_tokens += response.usage.completion_tokens
+                self.state.prompt_tokens += response.usage.prompt_tokens
+            
             return {
                 "completion_tokens": response.usage.completion_tokens,
                 "prompt_tokens": response.usage.prompt_tokens,
@@ -146,8 +160,6 @@ class LLMClient:
         data = json.loads(response.choices[0].message.content)
         print(response)
         return {
-            "completion_tokens": response.usage.completion_tokens,
-            "prompt_tokens": response.usage.prompt_tokens,
             "story_list": data["story_list"]
         }
 
@@ -160,9 +172,9 @@ class LLMClient:
             model=self.model,
             temperature=0.7,
             max_tokens=400,
-            reasoning_effort="low",
             messages=messages,
             tools=self.loader.load_tools_schema("quest", "summary"),
+            extra_body={"reasoning_effort": "low"},
         )
         summary = None
         print(response)
@@ -180,9 +192,11 @@ class LLMClient:
                     "hidden_description": args.get("hidden_description")
                 })
 
+        if response.usage:
+            self.state.completion_tokens += response.usage.completion_tokens
+            self.state.prompt_tokens += response.usage.prompt_tokens
+
         return {
-            "completion_tokens": response.usage.completion_tokens,
-            "prompt_tokens": response.usage.prompt_tokens,
             "summary": summary,
             "new_quests": new_quests
         }
