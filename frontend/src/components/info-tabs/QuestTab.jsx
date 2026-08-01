@@ -1,14 +1,16 @@
-import { useState } from "react";
-import { useStoryDataContext } from "../../contexts/StoryDataContext";
+import { useStory } from "../../hooks/useStory";
 
 function QuestTab() {
-    const { questsList } = useStoryDataContext()
-    if (!questsList) {
-        return <p>No quests</p>;
+    const { questsList, isLoading, isError } = useStory()
+    if (isLoading) {
+        return <p>Loading quests...</p>;
+    }
+    if (isError) {
+        return <p>Error loading quests.</p>;
     }
     return (
         <div>
-            {questsList && questsList.length === 0 ? (
+            {questsList.length === 0 ? (
                 <p>No quests available.</p> 
             ) : (    
                 questsList.map((quest, index) => (
