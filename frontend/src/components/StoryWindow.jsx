@@ -1,47 +1,26 @@
-import { useState, useEffect } from 'react'
-import { useStoryConfig } from '../hooks/useStoryConfig'
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { usePlayer } from '../hooks/usePlayer'
+import { useSubmitActionMutation, promptScene, sceneKey, storyKey, tokenUsageKey, useSceneQuery } from '../queries/queries'
 import EngineTab from './scene-tabs/EngineTab'
 import SceneTab from './scene-tabs/SceneTab'
-import { useStoryDataContext } from '../contexts/StoryDataContext'
 
-function StoryWindow({ playerLocation }) {
+function StoryWindow() {
     const [activeTab, setActiveTab] = useState('scene') // 'scene', 'engine'
-    const [scene, setScene] = useState(null)
     const [streamedOutput, setStreamedOutput] = useState('')
 
-    const { interactionPrompt, setInteractionPrompt, sceneGuidePrompt, setSceneGuidePrompt, 
-        saveInteractionPrompt, saveSceneGuidePrompt } = useStoryConfig()
-
-    const { storyVersion , setStoryVersion } = useStoryDataContext()
-
-    useEffect(() => {
-        updateScene()
-    }, [])
-
-    async function updateScene() {
-        const res = await fetch('/api/scene')
-
-        const { scene } = await res.json()
-
-        setScene(scene)
-
-        return scene
-    }
+    const { data: scene, isLoading: sceneLoading } = useSceneQuery()
+    const { playerLocation } = usePlayer()
+    const queryClient = useQueryClient()
+    const submitAction = useSubmitActionMutation()
 
     async function callPrompt() {
-        setStreamedOutput('')
-        const res = await fetch('/api/scene/prompt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ x: playerLocation ? playerLocation.x : null, y: playerLocation ? playerLocation.y : null })
-        })
-
-        if (!res.ok) {
-            console.error('Prompt call failed:', await res.text())
+        if (!playerLocation) {
+            console.error('Player location is not available.')
             return
         }
-
-        const { stream_id } = await res.json()
+        setStreamedOutput('')
+        const { stream_id } = await promptScene({ x: playerLocation.x, y: playerLocation.y })
 
         const source = new EventSource(`/api/stream?id=${stream_id}`)
         
@@ -50,35 +29,19 @@ function StoryWindow({ playerLocation }) {
         })
         source.addEventListener('done', () => {
             source.close()
-            updateScene()
             setStreamedOutput('')
+            queryClient.invalidateQueries({ queryKey: sceneKey })
+            queryClient.invalidateQueries({ queryKey: storyKey })
+            queryClient.invalidateQueries({ queryKey: tokenUsageKey })
         })
         source.onerror = () => source.close()
     }
 
-    async function submitAction({ action }) {
-        const res = await fetch('/api/scene/action', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action })
-        })
-
-        if (!res.ok) {
-            console.error('Action submission failed:', await res.text())
-            return
+    async function handleSubmitAction({ action }) {
+        const { ended } = await submitAction.mutateAsync(action)
+        if (!ended) {
+            callPrompt()
         }
-
-        const data = await res.json()
-        setStoryVersion(data.version)
-        
-        const updatedScene = await updateScene()
-
-        console.log(updatedScene)
-
-        if (!updatedScene.ended) {
-            await callPrompt()
-        }
-        
     }
 
     return (
@@ -101,8 +64,9 @@ function StoryWindow({ playerLocation }) {
                 playerLocation={playerLocation}
                 scene={scene}
                 streamedOutput={streamedOutput}
-                onStartNewScene={() => { setScene(null); callPrompt(); }}
-                onSubmitAction={submitAction}
+                onStartNewScene={() => { callPrompt() }}
+                onRetryPrompt={callPrompt}
+                onSubmitAction={handleSubmitAction}
             />}
             {activeTab === 'engine' && <EngineTab 
                 interactionPrompt={interactionPrompt}
