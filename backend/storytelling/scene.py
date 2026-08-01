@@ -25,6 +25,8 @@ class Scene:
         return interactions
 
     def add_interaction(self, description, actions, outcomes, guide):
+        if self.pending_interaction:
+            self.interactions.remove(self.pending_interaction)
         self.interactions.append(Interaction(description, actions, outcomes, guide))
     
     def submit_action(self, action):
