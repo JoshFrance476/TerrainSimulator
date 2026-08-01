@@ -12,7 +12,7 @@ class StoryEngine:
     def __init__(self, world):
         self.world = world
         self.state = StoryState()
-        self.llm = LLMClient(self.state)
+        self.llm = LLMClient(self.state) 
  
         self.context_builder = ContextBuilder(self.state, self.world)
         self.character_manager = CharacterManager(self.state, self.llm)
@@ -42,7 +42,7 @@ class StoryEngine:
         scene = self.state.current_scene
         scene.submit_action(action)
         if scene.ended:
-            new_quest_list, prompt_tokens, completion_tokens = await self.scene_manager.end_scene(scene, selected_cell)
+            new_quest_list = await self.scene_manager.end_scene(scene, selected_cell)
             for quest in new_quest_list:
                 self.state.quest_list.append({
                     "title": quest["title"],
@@ -50,7 +50,6 @@ class StoryEngine:
                     "hidden_context": quest["hidden_context"]
                 })
                 self.world.add_new_region_to_chunk(quest["chunk_id"], quest["title"], quest["visible_context"], quest["hidden_context"])
-            self.update_tokens(prompt_tokens, completion_tokens)
             self.state.quest_list = self.state.quest_list
  
     def clear_scene(self):
