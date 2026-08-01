@@ -1,18 +1,22 @@
 import { useState, useRef, useEffect } from 'react'
-import { useWorldData } from '../hooks/useWorldData'
+import { useWorld } from '../hooks/useWorld'
+import { usePlayer } from '../hooks/usePlayer'
+import { useMovePlayerMutation } from '../queries/queries'
 import MapToolbar from './MapToolbar'
-import { useWorldDataContext } from '../contexts/WorldDataContext'
 
-function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocationChange }) {
+function MapDisplay({ selectedCell, onCellSelect }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
     const imageDataRef = useRef(null) // ImageData object containing Uint8Array RGB map data
 
-    const { version, setVersion, dimensions, maxRegionsPerCell, noRegionId, 
-        biomeMap, biomeLookup, regionMap, regionLookup, 
-        playerLocation: fetchedPlayerLocation
-    } = useWorldDataContext()
+    const { dimensions, maxRegionsPerCell, noRegionId, 
+        biomeMap, biomeLookup, regionMap, regionLookup, rgbMap
+    } = useWorld()
+
+    const { playerLocation } = usePlayer() 
+
+    const movePlayer = useMovePlayerMutation()
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
 
@@ -31,11 +35,6 @@ function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocati
 
     const [interactionMode, setInteractionMode] = useState('view') // 'view' or 'move'
 
-    useEffect(() => {
-        if (fetchedPlayerLocation) {
-            onPlayerLocationChange({ x: fetchedPlayerLocation[1], y: fetchedPlayerLocation[0] })
-        }
-    }, [fetchedPlayerLocation])
 
     // Resize the canvases when the dimensions change
     useEffect(() => {
@@ -50,32 +49,16 @@ function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocati
         }
     }, [dimensions])
 
-    //Get the RGB map data from the backend and draw it on the base map canvas
+
     useEffect(() => {
-        if (!dimensions) return
+        if (!dimensions || !rgbMap) return
 
-        async function fetchRGBMap() {
-            const res = await fetch(`/api/world/rgb?v=${version}`)
+        const imageData = new ImageData(rgbMap, dimensions.width, dimensions.height)
 
-            if (!res.ok) {
-                console.error('Failed to fetch RGB map data', await res.text())
-                return
-            }
+        imageDataRef.current = imageData
 
-            const buffer = await res.arrayBuffer()
-            const imageData = new ImageData(
-                new Uint8ClampedArray(buffer),
-                dimensions.width,
-                dimensions.height
-            )
-
-            imageDataRef.current = imageData
-
-            const ctx = baseMapRef.current.getContext('2d')
-            ctx.putImageData(imageData, 0, 0)
-        }
-        fetchRGBMap()
-    }, [version, dimensions])
+        baseMapRef.current.getContext('2d').putImageData(imageData, 0, 0)
+    }, [rgbMap, dimensions])
 
     // Redraw interaction layer when selected cell changes
     useEffect(() => {
@@ -242,21 +225,6 @@ function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocati
         return !lastHoveredCell || lastHoveredCell.x !== cellX || lastHoveredCell.y !== cellY
     }
 
-    async function handlePlayerMove(cellX, cellY) {
-        const res = await fetch('/api/player/move', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ x: cellX, y: cellY })
-        })
-        if (!res.ok) {
-            console.error('Failed to move player:', await res.text())
-            return
-        }
-        const data = await res.json()
-        setVersion(data.version)
-        onPlayerLocationChange({ x: data.player_location[1], y: data.player_location[0] })
-    }
-
     function handleHover(e) {
         if (!biomeMap || !biomeLookup || !dimensions) return
         
@@ -307,7 +275,7 @@ function MapDisplay({ selectedCell, onCellSelect, playerLocation, onPlayerLocati
         const { cellX, cellY } = eventToCell(e)
 
         if (interactionMode === 'move') {
-            handlePlayerMove(cellX, cellY)
+            movePlayer.mutate({ x: cellX, y: cellY })
         }
         else {
             onCellSelect(getCellData(cellX, cellY))
