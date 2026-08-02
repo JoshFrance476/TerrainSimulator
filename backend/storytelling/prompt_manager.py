@@ -1,8 +1,10 @@
 from pathlib import Path
 import yaml
 import re
+import json
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
+SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
 
 _DEFAULT_SETTINGS = {
     "interaction": {"file_name": "scene_v2.yaml", "temperature": 1.0, "max_tokens": 800, "reasoning_effort": "low"},
@@ -45,7 +47,7 @@ class Prompt:
         }
 
 
-class PromptStore:
+class PromptManager:
     """Editable system-prompt templates and their model settings, held in memory
     for the session. Loaded from disk once at startup. Edits never write back to file."""
 
@@ -81,4 +83,21 @@ class PromptStore:
     def render(self, name: str, variables: dict = None) -> str:
         return _render(self.get(name).text, variables or {})
 
+    def load_response_format_schema(self, schema_name: str) -> dict:
+        schema = self.load_raw_schema(schema_name)
+        return {"type": "json_schema", "json_schema": {"name": schema_name, "schema": schema}}
 
+    def load_tools_schema(self, *schema_names: str) -> list:
+        tools = []
+        for name in schema_names:
+            schema = self.load_raw_schema(name)
+            function_name = schema.pop("_function_name")
+            tools.append({"type": "function", "function": {"name": function_name, "parameters": schema}})
+        return tools
+
+    def load_raw_schema(self, schema_name: str) -> dict:
+        path = SCHEMAS_DIR / f"{schema_name}.json"
+        if not path.exists():
+            raise FileNotFoundError(f"Schema file not found: {path}")
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
