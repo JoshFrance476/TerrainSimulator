@@ -34,7 +34,7 @@ class SceneManager:
         response = await self.llm_client.prompt_scene_setup(
             context,
             scene_significance,
-            self.story_state.notebook,
+            self.story_state.character_notebook,
             scene_history
         )
         return response["guide"]

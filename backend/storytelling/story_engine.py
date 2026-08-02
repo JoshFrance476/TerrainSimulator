@@ -1,7 +1,6 @@
 from storytelling.llm_client import LLMClient
 from storytelling.story_state import StoryState
 from storytelling.context_builder import ContextBuilder
-from storytelling.character_manager import CharacterManager
 from storytelling.scene_manager import SceneManager
 from storytelling.stream_handler import StreamHandler
 
@@ -15,7 +14,6 @@ class StoryEngine:
         self.llm = LLMClient(self.state) 
  
         self.context_builder = ContextBuilder(self.state, self.world)
-        self.character_manager = CharacterManager(self.state, self.llm)
         self.scene_manager = SceneManager(self.state, self.llm, self.context_builder)
         self.stream_handler = StreamHandler(self.state, self.scene_manager)
  
@@ -92,10 +90,10 @@ class StoryEngine:
     # ------------------------------------------------------------------
  
     def get_notebook(self):
-        return self.character_manager.get_notebook()
+        return self.state.character_notebook
  
     def get_character_history(self):
-        return self.character_manager.get_character_history()
+        return self.state.character_history
  
     def get_current_scene(self):
         return self.scene_manager.get_current_scene()
