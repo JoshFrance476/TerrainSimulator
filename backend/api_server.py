@@ -131,6 +131,9 @@ class MoveDestinationBody(BaseModel):
 
 class PromptBody(BaseModel):
     text: str
+    temperature: float | None
+    max_tokens: int = None
+    reasoning_effort: str = None
 
 
 active_streams: dict[str, str] = {}
@@ -141,7 +144,7 @@ active_streams: dict[str, str] = {}
 def get_story():
     return B.get_story_json()
 
-@app.get("/api/scene")
+@app.get("/api/scene") 
 def get_scene():
     return B.get_current_scene_json()
 
@@ -182,17 +185,14 @@ async def scene_action(body: ActionBody):
 @app.put("/api/scene/templates/{name}")
 async def set_prompt_template(name: str, body: PromptBody):
     try:
-        B.story_engine.llm.prompts.set(name, body.text)
+        B.story_engine.llm.prompts.set(name, body.text, body.temperature, body.max_tokens, body.reasoning_effort)
     except KeyError:
         raise HTTPException(status_code=404, detail="Template not found")
 
 
 @app.get("/api/scene/templates/{name}")
-def get_prompt_template(name: str):
-    try:
-        return {"name": name, "text": B.story_engine.llm.prompts.get(name)}
-    except KeyError:
-        raise HTTPException(status_code=404, detail="Template not found")
+def get_prompt_template(name: str): 
+    return B.story_engine.llm.prompts.get(name).to_dict()
 
 # ---------------------------------------------------------------- player
 
