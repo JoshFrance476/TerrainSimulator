@@ -311,3 +311,10 @@ body {
     text-align: right;
     font-variant-numeric: tabular-nums;
 }
+
+.prompt-settings { 
+    display: grid; 
+    grid-template-columns: auto 1fr; 
+    gap: 0.5rem; 
+    align-items: center; 
+}
