@@ -37,7 +37,7 @@ function PromptEditor({ name }) {
                     id={`${name}-max-tokens`}
                     type="number"
                     step="100"
-                    min="1"
+                    min="100"
                     defaultValue={data?.max_tokens ?? ''}
                     disabled={isLoading || isError}
                     ref={maxTokensRef}
