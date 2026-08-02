@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
+import PromptEditor from './PromptEditor'
 
-function EngineTab({ interactionPrompt, setInteractionPrompt, onInteractionSave, sceneGuidePrompt, setSceneGuidePrompt, onSceneGuideSave }) {
+function EngineTab() {
     const [activeTab, setActiveTab] = useState('interaction') // 'interaction', 'scene-guide', 'model'
     return (
         <div className="engine-tab">
@@ -18,31 +19,26 @@ function EngineTab({ interactionPrompt, setInteractionPrompt, onInteractionSave,
                     Scene Guide
                 </button>
                 <button
+                    className={activeTab === 'scene-summary' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('scene-summary')}
+                >
+                    Scene Summary
+                </button>
+                <button
                     className={activeTab === 'model' ? 'tab active' : 'tab'}
                     onClick={() => setActiveTab('model')}
                 >
                     Model
                 </button>
             </div>
-            {activeTab === 'interaction' ? (
-                <div className="interaction-tab">
-                    <textarea className="prompt-textbox"
-                    value={interactionPrompt}
-                    onChange={(e) => setInteractionPrompt(e.target.value)}/>
-                    <button onClick={onInteractionSave}>Save</button>
-                </div>
-            ) : activeTab === 'scene-guide' ? (
-                <div className="scene-guide-tab">
-                    <textarea className="prompt-textbox" 
-                    value={sceneGuidePrompt}
-                    onChange={(e) => setSceneGuidePrompt(e.target.value)}/>
-                    <button onClick={onSceneGuideSave}>Save</button>
-                </div>
-            ) : activeTab === 'model' ? (
+            {activeTab === 'interaction' && <PromptEditor name="interaction" />}
+            {activeTab === 'scene-guide' && <PromptEditor name="scene-guide" />}
+            {activeTab === 'scene-summary' && <PromptEditor name="scene-summary" />}
+            {activeTab === 'model' && (
                 <div className="model-tab">
                     {/* Model tab content goes here */}
                 </div>
-            ) : null}
+            )}
         </div>
     )
 }
