@@ -13,6 +13,7 @@ export const storyKey = ['story']
 export const sceneKey = ['scene']
 export const playerKey = ['player']
 export const tokenUsageKey = ['token-usage']
+export const modelKey = ['model']
 
 // ---------------------------------------------------------------- fetchers
 
@@ -35,6 +36,17 @@ async function postJson(url, body) {
         body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error(`${url} failed: ${res.status}`)
+    return res.json()
+}
+
+async function putJson(url, body) {
+    const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    })
+    if (!res.ok) throw new Error(`${url} failed: ${res.status}`)
+    if (res.status === 204) return null
     return res.json()
 }
 
@@ -120,6 +132,27 @@ export function useTokenUsageQuery() {
         queryFn: () => getJson('/api/token-usage'),
     })
 }
+
+// ---------------------------------------------------------------- engine
+
+
+export const promptTemplateKey = (name) => ['prompt-template', name]
+
+export function usePromptTemplateQuery(name) {
+    return useQuery({
+        queryKey: promptTemplateKey(name),
+        queryFn: () => getJson(`/api/scene/templates/${name}`),
+    })
+}
+
+export function useSavePromptTemplateMutation(name) {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: ({ text, temperature, max_tokens, reasoning_effort }) => putJson(`/api/scene/templates/${name}`, { text, temperature, max_tokens, reasoning_effort }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: promptTemplateKey(name) }),
+    })
+}
+
 
 // ---------------------------------------------------------------- mutations
 
