@@ -87,19 +87,6 @@ class StoryEngine:
         self.state.character_description = ""
         self.state.story_focus_description = ""
  
-    def setup_character(self, character_desc, world_desc, story_desc):
-        prompt_tokens, completion_tokens = self.character_manager.setup_character(
-            character_desc, world_desc, story_desc
-        )
-        self.update_tokens(prompt_tokens, completion_tokens)
- 
-    def setup_story(self, character_desc, world_desc, story_desc):
-        prompt_tokens, completion_tokens, story_list = self.character_manager.setup_story(
-            character_desc, world_desc, story_desc
-        )
-        self.update_tokens(prompt_tokens, completion_tokens)
-        return story_list
- 
     # ------------------------------------------------------------------
     # Accessors delegated to managers
     # ------------------------------------------------------------------
@@ -112,10 +99,7 @@ class StoryEngine:
  
     def get_current_scene(self):
         return self.scene_manager.get_current_scene()
- 
-    def get_current_scenario_debug_info(self):
-        return self.scene_manager.get_current_scene_debug_info()
- 
+    
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
