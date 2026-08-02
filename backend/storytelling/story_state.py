@@ -6,7 +6,7 @@ class StoryState:
         self.character_description = ""  
         self.story_focus_description = ""
 
-        self.notebook = []
+        self.character_notebook = []
         self.character_history = []
         self.stats = {}
         self.tile_history = {}  #key is location tuple, value is list of 'history' strings
