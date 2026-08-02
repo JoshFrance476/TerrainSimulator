@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePlayer } from '../hooks/usePlayer'
 import { useSubmitActionMutation, promptScene, sceneKey, storyKey, tokenUsageKey, useSceneQuery } from '../queries/queries'
@@ -9,38 +9,65 @@ function StoryWindow() {
     const [activeTab, setActiveTab] = useState('scene') // 'scene', 'engine'
     const [streamedOutput, setStreamedOutput] = useState('')
 
-    const { data: scene, isLoading: sceneLoading } = useSceneQuery()
+    const { data: scene } = useSceneQuery()
     const { playerLocation } = usePlayer()
     const queryClient = useQueryClient()
     const submitAction = useSubmitActionMutation()
+
+    const sourceRef = useRef(null)
+
+    // close any open stream when the component unmounts
+    useEffect(() => () => sourceRef.current?.close(), [])
+
+    function closeStream() {
+        sourceRef.current?.close()
+        sourceRef.current = null
+    }
 
     async function callPrompt() {
         if (!playerLocation) {
             console.error('Player location is not available.')
             return
         }
+
+        closeStream()
         setStreamedOutput('')
-        const { stream_id } = await promptScene({ x: playerLocation.x, y: playerLocation.y })
+
+        let stream_id
+        try {
+            ({ stream_id } = await promptScene({ x: playerLocation.x, y: playerLocation.y }))
+        } catch (err) {
+            console.error('Failed to start scene:', err)
+            return
+        }
 
         const source = new EventSource(`/api/stream?id=${stream_id}`)
+        sourceRef.current = source
         
         source.addEventListener('data', (e) => {
             setStreamedOutput((prev) => prev + e.data)
         })
         source.addEventListener('done', () => {
-            source.close()
+            closeStream()
             setStreamedOutput('')
             queryClient.invalidateQueries({ queryKey: sceneKey })
             queryClient.invalidateQueries({ queryKey: storyKey })
             queryClient.invalidateQueries({ queryKey: tokenUsageKey })
         })
-        source.onerror = () => source.close()
+        source.addEventListener('stream_error', (e) => {
+            const { error, detail } = JSON.parse(e.data)
+            console.error(`${error}: ${detail}`)
+            closeStream()
+        })
+        source.onerror = () => closeStream()
     }
 
     async function handleSubmitAction({ action }) {
-        const { ended } = await submitAction.mutateAsync(action)
-        if (!ended) {
-            callPrompt()
+        try {
+            const { ended } = await submitAction.mutateAsync(action)
+            if (!ended) await callPrompt()
+        } catch (err) {
+            console.error('Action failed:', err)
         }
     }
 
@@ -64,18 +91,11 @@ function StoryWindow() {
                 playerLocation={playerLocation}
                 scene={scene}
                 streamedOutput={streamedOutput}
-                onStartNewScene={() => { callPrompt() }}
+                onStartNewScene={callPrompt}
                 onRetryPrompt={callPrompt}
                 onSubmitAction={handleSubmitAction}
             />}
-            {activeTab === 'engine' && <EngineTab 
-                interactionPrompt={interactionPrompt}
-                setInteractionPrompt={setInteractionPrompt}
-                onInteractionSave={saveInteractionPrompt}
-                sceneGuidePrompt={sceneGuidePrompt}
-                setSceneGuidePrompt={setSceneGuidePrompt}
-                onSceneGuideSave={saveSceneGuidePrompt}
-            />}
+            {activeTab === 'engine' && <EngineTab/>}
         </div>
     )
 }
