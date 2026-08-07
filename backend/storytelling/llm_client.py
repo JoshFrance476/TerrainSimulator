@@ -1,7 +1,7 @@
-from storytelling.prompt_loader import PromptLoader
-from storytelling.prompt_store import PromptStore
+from storytelling.prompt_manager import PromptManager
 from storytelling.log_writer import LogWriter
 from huggingface_hub import AsyncInferenceClient
+
 import json
 
 
@@ -9,13 +9,12 @@ class LLMClient:
     def __init__(self, state):
         self.client = AsyncInferenceClient()
         self.model = "Qwen/Qwen3-235B-A22B-Instruct-2507:novita"
-        self.loader = PromptLoader()
-        self.prompts = PromptStore()
+        self.prompt_manager = PromptManager()
         self.log_writer = LogWriter()
         self.state = state
 
     def _settings_kwargs(self, name):
-        prompt = self.prompts.get(name)
+        prompt = self.prompt_manager.get(name)
         return {
             "model": self.model,
             "temperature": prompt.temperature,
@@ -26,7 +25,7 @@ class LLMClient:
 
     async def prompt_interaction(self, guide, previous_interactions):
         messages = [
-            {"role": "system", "content": self.prompts.render("interaction",
+            {"role": "system", "content": self.prompt_manager.render("interaction",
                                                               {"world_desc": self.state.world_description,
                                                                "story_focus_desc": self.state.story_focus_description,
                                                                "character_desc": self.state.character_description})},
@@ -34,13 +33,13 @@ class LLMClient:
                 "guide": guide,
                 "previous_interactions": previous_interactions
             })}
-        ]
+        ] 
 
         stream_response = await self.client.chat.completions.create(
             messages=messages,
             stream=True,
             stream_options={"include_usage": True},
-            response_format=self.loader.load_response_format_schema("scene"),
+            response_format=self.prompt_manager.load_response_format_schema("scene"),
             **self._settings_kwargs("interaction")
         )
 
@@ -105,7 +104,7 @@ class LLMClient:
                 context["scene_trigger"] = first_scene['chosen_action']
 
             messages = [
-                {"role": "system", "content": self.prompts.render("scene-guide",
+                {"role": "system", "content": self.prompt_manager.render("scene-guide",
                                                                   {"world_desc": self.state.world_description,
                                                                     "story_focus_desc": self.state.story_focus_description,
                                                                     "character_desc": self.state.character_description})},
@@ -116,7 +115,7 @@ class LLMClient:
             
             response = await self.client.chat.completions.create(
                 messages=messages,
-                response_format=self.loader.load_response_format_schema("scene_setup"),
+                response_format=self.prompt_manager.load_response_format_schema("scene_setup"),
                 **self._settings_kwargs("scene-guide")
             )
 
@@ -153,13 +152,13 @@ class LLMClient:
         }
 
         messages = [
-            {"role": "system", "content": self.prompts.render("scene-summary")},
+            {"role": "system", "content": self.prompt_manager.render("scene-summary")},
             {"role": "user", "content": json.dumps(context)}
         ]
         
         response = await self.client.chat.completions.create(
             messages=messages,
-            tools=self.loader.load_tools_schema("quest", "summary"),
+            tools=self.prompt_manager.load_tools_schema("quest", "summary"),
             **self._settings_kwargs("scene-summary")
         )
         summary = None
