@@ -185,14 +185,14 @@ async def scene_action(body: ActionBody):
 @app.put("/api/scene/templates/{name}")
 async def set_prompt_template(name: str, body: PromptBody):
     try:
-        B.story_engine.llm.prompts.set(name, body.text, body.temperature, body.max_tokens, body.reasoning_effort)
+        B.story_engine.llm.prompt_manager.set(name, body.text, body.temperature, body.max_tokens, body.reasoning_effort)
     except KeyError:
         raise HTTPException(status_code=404, detail="Template not found")
 
 
 @app.get("/api/scene/templates/{name}")
 def get_prompt_template(name: str): 
-    return B.story_engine.llm.prompts.get(name).to_dict()
+    return B.story_engine.llm.prompt_manager.get(name).to_dict()
 
 # ---------------------------------------------------------------- player
 
