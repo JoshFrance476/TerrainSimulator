@@ -44,11 +44,12 @@ class Scene:
     def get_history(self):
         history = []
         for interaction in self.interactions:
-            history.append({ 
-                "description": interaction.description,
-                "chosen_action": interaction.chosen_action,
-                "outcome": interaction.outcome
-            })
+            if interaction.is_complete:
+                history.append({ 
+                    "description": interaction.description,
+                    "chosen_action": interaction.chosen_action,
+                    "outcome": interaction.outcome
+                })
         return history
                 
     
