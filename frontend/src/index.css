@@ -318,3 +318,15 @@ body {
     gap: 0.5rem; 
     align-items: center; 
 }
+
+.account-window {
+    position: absolute;
+    top: 42px; 
+    right: 14px;
+    width: 300px;
+    background-color: #e4e4e4;
+    border: 2px solid #1a1d22;
+    border-radius: 4px;
+    padding: 12px;
+    z-index: 1000; /* ensure it appears above other elements */
+}
