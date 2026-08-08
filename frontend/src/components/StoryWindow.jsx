@@ -5,7 +5,7 @@ import { useSubmitActionMutation, promptScene, sceneKey, storyKey, tokenUsageKey
 import EngineTab from './scene-tabs/EngineTab'
 import SceneTab from './scene-tabs/SceneTab'
 
-function StoryWindow() {
+function StoryWindow({ user }) {
     const [activeTab, setActiveTab] = useState('scene') // 'scene', 'engine'
     const [streamedOutput, setStreamedOutput] = useState('')
 
@@ -94,6 +94,7 @@ function StoryWindow() {
                 onStartNewScene={callPrompt}
                 onRetryPrompt={callPrompt}
                 onSubmitAction={handleSubmitAction}
+                user={user}
             />}
             {activeTab === 'engine' && <EngineTab/>}
         </div>
