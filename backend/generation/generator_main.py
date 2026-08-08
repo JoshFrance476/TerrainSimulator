@@ -11,9 +11,6 @@ from generation.stage_1_generator import calculate_temperature
 from generation.stage_2_generator import calculate_steepness, generate_sea_map, generate_rivers_map
 from generation.stage_3_generator import calculate_proximity_map, determine_biome, calculate_traversal_cost
 
-if config.LOGGING:
-    logging.basicConfig(level=logging.DEBUG)
-
 
 def generate_data_maps(rows, cols, biome_config):
 
