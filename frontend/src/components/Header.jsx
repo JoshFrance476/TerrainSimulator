@@ -22,7 +22,7 @@ function Header({ user , setShowAccountWindow }) {
 
             <button className="account-btn" type="button" aria-label="Account" onClick={() => setShowAccountWindow((prev) => !prev)}>
                 {user ? (
-                    <span className="account-avatar">{user.name[0]}{user.name[1]}</span>
+                    <span className="account-avatar">{user.name?.slice(0, 2) ?? '?'}</span>
                 ) : (
                     <span className="account-avatar">?</span>
                 )}
