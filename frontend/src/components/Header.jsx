@@ -1,7 +1,9 @@
 import { useTokenUsageQuery } from '../queries/queries'
+import { useState } from 'react'
 
-function Header() {
+function Header({ user , setShowAccountWindow }) {
     const { data } = useTokenUsageQuery()
+
 
     return (
         <header className="header">
@@ -18,8 +20,12 @@ function Header() {
                 <span>O : {data?.output_tokens ?? 0}</span>
             </div>
 
-            <button className="account-btn" type="button" aria-label="Account">
-                <span className="account-avatar">JF</span>
+            <button className="account-btn" type="button" aria-label="Account" onClick={() => setShowAccountWindow((prev) => !prev)}>
+                {user ? (
+                    <span className="account-avatar">{user.name[0]}{user.name[1]}</span>
+                ) : (
+                    <span className="account-avatar">?</span>
+                )}
             </button>
         </header>
     )
