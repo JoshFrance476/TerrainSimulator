@@ -1,3 +1,12 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SESSION_SECRET = os.environ["SESSION_SECRET"]
+GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
+GOOGLE_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
+
 LOGGING = True
 
 MAP_NAME = "ColonialFantasy2"
