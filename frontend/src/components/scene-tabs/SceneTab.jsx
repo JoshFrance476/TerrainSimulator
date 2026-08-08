@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-function SceneTab( { playerLocation , scene , streamedOutput , onStartNewScene , onRetryPrompt, onSubmitAction} ) {
+function SceneTab( { playerLocation , scene , streamedOutput , onStartNewScene , onRetryPrompt, onSubmitAction, user } ) {
     const [expandedGuides, setExpandedGuides] = useState(new Set())
 
 
@@ -21,7 +21,12 @@ function SceneTab( { playerLocation , scene , streamedOutput , onStartNewScene ,
         <div className="scene-window">
             <p className="position">Position: ({playerLocation ? playerLocation.x : 'N/A'}, {playerLocation ? playerLocation.y : 'N/A'})</p>
             <div>
-                <button onClick={onStartNewScene}>Send</button>
+                {user && (
+                    <button onClick={onStartNewScene}>Send</button>
+                )}
+                {!user && (
+                    <button disabled>Log in to prompt</button>
+                )}
             </div>
 
             {!scene && <p>No active scene.</p>}
