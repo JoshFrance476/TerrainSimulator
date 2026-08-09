@@ -1,4 +1,8 @@
+from database.db import pool
+
+
 from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.responses import RedirectResponse, Response
@@ -19,9 +23,19 @@ from storytelling.story_engine import StoryEngine
 from editor.world_editor import WorldEditor
 import config as config
 
+from database import users
+
 from utils.colour_utils import hsv_to_rgb_array
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    pool.open()
+    yield
+    pool.close()    
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(
@@ -47,6 +61,7 @@ oauth.register(
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"},
 )
+
 
 FRONTEND_URL = "http://localhost:5173"
 
@@ -167,17 +182,27 @@ async def login(request: Request):
 @app.get("/api/auth/callback")
 async def auth_callback(request: Request):
     token = await oauth.google.authorize_access_token(request)
-    user = token["userinfo"]          # already-verified ID token claims
-    request.session["user"] = {
-        "sub": user["sub"],           # Google's stable user id — use this as your key
-        "email": user["email"],
-        "name": user.get("name"),
-    }
+    claims = token["userinfo"]
+
+    user = users.get_user_by_provider("google", claims["sub"])
+    if user is None:
+        user = users.create_user("google", claims["sub"], claims["email"], claims.get("name"))
+
+    guest_backend = backends.pop(session_key(request), None)
+
+    request.session.clear()
+    request.session["user_id"] = user["id"]
+
+    if guest_backend:
+        backends[session_key(request)] = guest_backend
+    
     return RedirectResponse(FRONTEND_URL)
 
 @app.get("/api/auth/me")
 def me(request: Request):
-    return request.session.get("user")
+    session_key(request)    
+    user_id = request.session.get("user_id")
+    return users.get_user(user_id) if user_id else None
 
 
 @app.post("/api/auth/logout")
@@ -185,21 +210,18 @@ def logout(request: Request):
     request.session.clear()
     return {"ok": True}
 
-def get_user(request: Request):
-    """The logged-in user, or None."""
-    return request.session.get("user")
-
 
 def require_user(request: Request):
-    user = request.session.get("user")
-    if not user:
+    user_id = request.session.get("user_id")
+    user = users.get_user(user_id) if user_id else None
+    if user is None or user["provider"] is None:
         raise HTTPException(status_code=401, detail="Login required")
     return user
 
 def session_key(request: Request) -> str:
-    user = request.session.get("user")
-    if user:
-        return f"google:{user['sub']}"
+    user_id = request.session.get("user_id")
+    if user_id is not None:
+        return f"user:{user_id}"
     if "guest_id" not in request.session:
         request.session["guest_id"] = str(uuid.uuid4())
     return f"guest:{request.session['guest_id']}"
