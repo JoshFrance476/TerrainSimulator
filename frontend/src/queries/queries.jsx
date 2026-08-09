@@ -18,13 +18,13 @@ export const modelKey = ['model']
 // ---------------------------------------------------------------- fetchers
 
 async function getJson(url) {
-    const res = await fetch(url)
+    const res = await fetch(url,  { credentials: 'include' })
     if (!res.ok) throw new Error(`${url} failed: ${res.status}`)
     return res.json()
 }
 
 async function getBuffer(url) {
-    const res = await fetch(url)
+    const res = await fetch(url,  { credentials: 'include' })
     if (!res.ok) throw new Error(`${url} failed: ${res.status}`)
     return res.arrayBuffer()
 }
@@ -34,6 +34,7 @@ async function postJson(url, body) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        credentials: 'include',
     })
     if (!res.ok) throw new Error(`${url} failed: ${res.status}`)
     return res.json()
@@ -44,6 +45,7 @@ async function putJson(url, body) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        credentials: 'include',
     })
     if (!res.ok) throw new Error(`${url} failed: ${res.status}`)
     if (res.status === 204) return null
