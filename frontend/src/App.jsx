@@ -12,7 +12,7 @@ function App() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await fetch('/api/auth/me')
+      const res = await fetch('/api/auth/me', { credentials: 'include' })
       if (res.ok) {
         const userData = await res.json()
         setUser(userData)
@@ -25,6 +25,14 @@ function App() {
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
         window.location.reload()
         }
+
+  if (user === undefined) {
+    return (
+      <div className="loading-screen">
+        <p>Loading...</p>
+      </div>
+    )
+  }
 
   return (
     <>
