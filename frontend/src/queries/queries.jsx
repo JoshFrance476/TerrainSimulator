@@ -14,6 +14,8 @@ export const sceneKey = ['scene']
 export const playerKey = ['player']
 export const tokenUsageKey = ['token-usage']
 export const modelKey = ['model']
+export const worldsKey = ['worlds']
+export const sessionKey = ['session']
 
 // ---------------------------------------------------------------- fetchers
 
@@ -55,6 +57,23 @@ async function putJson(url, body) {
 // ---------------------------------------------------------------- world
 
 const binaryOptions = { structuralSharing: false}
+
+
+export function useNewSessionMutation() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: (worldId) => postJson('/api/session', { world_id: worldId }),
+        onSuccess: () => queryClient.resetQueries(),
+    })
+}
+
+export function useWorldsQuery() {
+  return useQuery({
+    queryKey: worldsKey,
+    queryFn: () => getJson('/api/worlds'),
+    staleTime: Infinity,
+  })
+}
 
 export function useWorldQuery() {
     return useQuery({ 
