@@ -25,32 +25,30 @@ class World:
 
 
     # Loading/Saving ############################################################################################
-    def load_data(self, biome_config, pickled_world_data = None):
-        if pickled_world_data:
-            world_data = {
-                k: pickled_world_data[k]
-                for k in pickled_world_data.files
-                if k not in ("region_map", "region_list")
-            }
-
-            region_map = pickled_world_data["region_map"].tolist()
-            region_list = pickled_world_data["region_list"].tolist()
-            rid_counter = len(region_list)
-        else:
-            world_data = None
-            region_map = None
-            region_list = None
-            rid_counter = None
-
+    def load_world(self, biome_config, world_data, region_list):
         self.biome_config = BiomeConfigManager(biome_config)
 
         self.data = WorldData(self.rows, self.cols, self.biome_config, world_data)
 
-        self.region_manager = RegionManager(self.rows, self.cols, region_map, region_list, rid_counter)
+        self.region_manager = RegionManager(self.rows, self.cols, world_data["region_map"], region_list)
 
         self.chunk_manager = ChunkManager(self.rows, self.cols, self.get_map_data("colour").copy(), self.get_map_data("biome").copy(), self.biome_config)
     
+    def get_all_map_data(self):
+        map_data = self.data.get_world_data()
+        map_data["region_map"] = self.region_manager.region_map
+        return map_data
 
+    def get_biome_config(self):
+        biome_config = {
+                "constants": self.biome_config.constants,
+                "biomes": self.biome_config.biomes
+        }
+        return biome_config
+
+    def get_region_list(self):
+        return [r.to_dict() for r in self.region_manager.region_list]
+    
     def get_data(self):
         biome_config = {
                 "constants": self.biome_config.constants,
@@ -59,13 +57,11 @@ class World:
         
         map_data = self.data.world_data
 
-        region_data = {
-            "map": self.region_manager.region_map,
-            "list": self.region_manager.region_list
-        }
+        region_list = self.region_manager.region_list
 
-        
-        return map_data, region_data, biome_config
+        map_data["region_map"] = self.region_manager.region_map
+
+        return map_data, region_list, biome_config
 
 
     # World Data ############################################################################################
@@ -174,9 +170,6 @@ class World:
 
 
     # Regions ##############################################################################################
-
-    def get_region_map_flattened(self):
-        return self.region_manager.get_region_map_flattened()
 
     def get_region_lookup(self):
         return self.region_manager.get_region_lookup()
