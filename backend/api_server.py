@@ -1,3 +1,5 @@
+import traceback
+
 from database.db import pool
 
 
@@ -23,7 +25,7 @@ from storytelling.story_engine import StoryEngine
 from editor.world_editor import WorldEditor
 import config as config
 
-from database import users
+from database import users, worlds
 
 from utils.colour_utils import hsv_to_rgb_array
 
@@ -86,62 +88,80 @@ class PromptBody(BaseModel):
     max_tokens: int = None
     reasoning_effort: str = None
 
+class SaveWorldBody(BaseModel):
+    name: str
+    description: str = ""
+
+class StartSessionBody(BaseModel):
+    world_id: int | None = None
 
 
 class Backend:
     """A single object that holds all game state - replaces appController"""
-    def __init__(self):
+    def __init__(self, world_id: int | None = None):
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
         self.story_engine = StoryEngine(self.world)
         self.editor = WorldEditor(self.world)
 
-        if config.MAP_NAME:
-            try:
-                self.load_map(config.MAP_NAME)
-            except Exception:
-                print("invalid map file name - generating procedural map")
-                self.generate_map()
-        else:
+        if world_id is None:
             self.generate_map()
+        else:
+            self.load_map_from_database(world_id)
         
     def generate_map(self):
         with open(SAVED_MAPS / "default_config.yaml") as f:
             biome_config = yaml.safe_load(f)
         
-        self.world.load_data(biome_config)
+        self.world.load_world(biome_config, None, None)
 
         self.story_engine.clear_setup()
 
         self.reset_player()
 
-    
-    def load_map(self, name):
-        path = SAVED_MAPS / name
-        with open(path / "story_setup.yaml") as f:
-            self.story_engine.setup(yaml.safe_load(f))
-        with open(path / "biome_config.yaml") as f:
-            biome_config = yaml.safe_load(f)
-        world_data = np.load(path / "map_data.npz", allow_pickle=True)
+    def load_map_from_database(self, world_id):
+        row = worlds.get_world(world_id)
+        if row is None:
+            raise ValueError(f"World with ID {world_id} not found in database.")
+
+        self.story_engine.setup(row["story_setup"])
+
+        with np.load(io.BytesIO(row["map_data"])) as npz:
+            world_data = {key: npz[key] for key in npz.files}
+
         rows, cols = world_data["biome"].shape
         config.WORLD_ROWS, config.WORLD_COLS = rows, cols
         self.world.rows, self.world.cols = rows, cols
-        self.world.load_data(biome_config, world_data)
+        self.world.load_world(row["biome_config"], world_data, row["region_list"])
         self.reset_player()
+                
 
-    def save_map(self, name):
-        path = SAVED_MAPS / name
-        path.mkdir(parents=True, exist_ok=True)
-        map_data, region_data, biome_config = self.world.get_data()
-        np.savez(
-            path / "map_data",
-            **map_data,
-            region_map=np.array(region_data["map"], dtype=object),
-            region_list=np.array(region_data["list"], dtype=object),
+    def save_current_map(self, name, description, user_id):
+        worlds.upsert_save(
+            name=name, 
+            description=description,
+            owner_id=user_id,
+            map_data=self.convert_map_data_to_npz(),
+            map_png=self.get_map_thumbnail(),
+            biome_config=self.world.get_biome_config(),
+            story_setup=self.story_engine.get_setup(),
+            region_list=self.world.get_region_list()
         )
-        with open(path / "biome_config.yaml", "w") as f:
-            yaml.dump(biome_config, f, sort_keys=False)
-        with open(path / "story_setup.yaml", "w") as f:
-            yaml.dump(self.story_engine.get_setup(), f, sort_keys=False)
+        
+    def convert_map_data_to_npz(self):
+        map_data = self.world.get_all_map_data()
+        buf = io.BytesIO()
+        np.savez(
+            buf,
+            **{k: v for k, v in map_data.items() if k != "region_list"},
+        )
+        return buf.getvalue()
+
+    def get_map_thumbnail(self):
+        rgb = np.asarray(hsv_to_rgb_array(self.world.get_map_data("colour")), dtype=np.uint8)
+        buf = io.BytesIO()
+        Image.fromarray(rgb).save(buf, format="PNG")
+        return buf.getvalue()
+
 
     def reset_player(self):
         self.player = MapEntity(
@@ -171,6 +191,7 @@ class Backend:
             "character_history": self.story_engine.state.character_history,
             "quests_list": self.story_engine.state.quest_list,
         }
+
 
 backends: dict[str, Backend] = {}
 
@@ -227,13 +248,21 @@ def session_key(request: Request) -> str:
     return f"guest:{request.session['guest_id']}"
 
 def get_backend(request: Request) -> Backend:
-    key = session_key(request)
-    if key not in backends:
-        backends[key] = Backend()
-    return backends[key]
+    backend = backends.get(session_key(request))
+    if backend is None:
+        raise HTTPException(status_code=409, detail="No active session")
+    return backend
+
 
 active_streams: dict[str, str] = {}
 
+@app.post("/api/session")
+def create_session(body: StartSessionBody, request: Request):
+    try:
+        backends[session_key(request)] = Backend(body.world_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {"ok":True}
 # ---------------------------------------------------------------- story
 
 @app.get("/api/story")
@@ -308,6 +337,11 @@ def get_player_location(b: Backend = Depends(get_backend)):
 def get_world(b: Backend = Depends(get_backend)):
     return b.get_world_json()
 
+@app.post("/api/world/save")
+def save_world(body: SaveWorldBody, user=Depends(require_user), b: Backend = Depends(get_backend)):
+    b.save_current_map(body.name, body.description, user["id"])
+    return {"ok": True}
+
 @app.get("/api/world/rgb")
 def get_world_rgb(b: Backend = Depends(get_backend)):
     rgb = hsv_to_rgb_array(b.world.get_map_data("colour"))          # shape (rows, cols, 3)
@@ -325,14 +359,13 @@ def get_biome_map(b: Backend = Depends(get_backend)):
 def get_biome_lookup(b: Backend = Depends(get_backend)):
     return b.world.get_biome_lookup()
     
+@app.get("/api/world/region-map")
+def get_region_map(b: Backend = Depends(get_backend)):
+    return Response(b.world.get_region_map().tobytes(), media_type="application/octet-stream")
+
 @app.get("/api/world/region-lookup")
 def get_region_lookup(b: Backend = Depends(get_backend)):
     return b.world.get_region_lookup()
-
-@app.get("/api/world/region-map")
-def get_region_map(b: Backend = Depends(get_backend)):
-    region_map_flat = b.world.get_region_map_flattened()  # shape (rows, cols, MAX_REGIONS_PER_CELL)
-    return Response(region_map_flat.tobytes(), media_type="application/octet-stream")
 
 @app.get('/api/token-usage')
 def get_token_usage(b: Backend = Depends(get_backend)):
@@ -341,3 +374,15 @@ def get_token_usage(b: Backend = Depends(get_backend)):
         "input_tokens": b.story_engine.state.prompt_tokens
     }
 
+# ---------------------------------------------------------------- worlds
+
+@app.get("/api/worlds")
+def list_worlds():
+    return worlds.list_worlds()
+
+@app.get("/api/worlds/{world_id}/thumbnail")
+def get_world_thumbnail(world_id: int):
+    png = worlds.get_world_png(world_id)
+    if png is None:
+        raise HTTPException(status_code=404, detail="World not found")
+    return Response(png, media_type="image/png")
