@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react'
-import StoryWindow from './components/StoryWindow'
-import MapDisplay from './components/MapDisplay'
-import InfoWindow from './components/InfoWindow'
-import Header from './components/Header'
-import AccountWindow from './components/AccountWindow'
+import Landing from './pages/Landing'
+import Play from './pages/Play'
 
 function App() {
-  const [user, setUser] = useState(undefined) // undefined = loading, null = logged out
-  const [selectedCell, setSelectedCell] = useState(null) // shape: {x, y, biomeData, regionData}
-  const [showAccountWindow, setShowAccountWindow] = useState(false)
+  const [user, setUser] = useState(undefined); // undefined = loading, null = logged out
+  const [page, setPage] = useState("landing");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -22,9 +18,9 @@ function App() {
   }, [])
 
   const handleLogout = async () => {
-        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-        window.location.reload()
-        }
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    window.location.reload()
+  }
 
   if (user === undefined) {
     return (
@@ -36,26 +32,8 @@ function App() {
 
   return (
     <>
-      <Header 
-        user={user} 
-        setShowAccountWindow={setShowAccountWindow} 
-      />
-      {showAccountWindow && (
-        <AccountWindow 
-          user={user}
-          onLogout={handleLogout}
-        />
-      )}
-      <div className="display">
-        <StoryWindow user={user} />
-        <InfoWindow 
-          selectedCell={selectedCell} 
-        />
-        <MapDisplay 
-          selectedCell={selectedCell}
-          onCellSelect={setSelectedCell}
-        />
-      </div>
+      {page === "landing" && <Landing onLogout={handleLogout} user={user} onNavigate={setPage}/>}
+      {page === "play" && <Play user={user} onNavigate={setPage}/>} 
     </>
   )
 }
