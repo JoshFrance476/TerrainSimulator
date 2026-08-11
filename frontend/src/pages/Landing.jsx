@@ -1,6 +1,7 @@
 import './landing.css'
-
-function Landing({ onNavigate}) {
+import { useWorldsQuery } from '../queries/queries'
+function Landing({ onNavigate, onPlay}) {
+    const {data: worlds, isLoading, isError} = useWorldsQuery()
     return (
         <div className="landing-page">
             <div className="main-section">
@@ -13,7 +14,26 @@ function Landing({ onNavigate}) {
                 </div>
             </div>
             <div className="browser">
-                <p>Browser will go here...</p>
+                {isLoading && <p>Loading worlds...</p>}
+                {isError && <p>Error loading worlds</p>}
+                {worlds && worlds.length === 0 && <p>No worlds available</p>}
+                {worlds && worlds.length > 0 && (
+                    <ul className="world-list">
+                    {worlds.map(world => (
+                        <li key={world.id} className="world-list-item">
+                            <img src={`/api/worlds/${world.id}/thumbnail`} />
+                            <div className="world-list-item-body">
+                                <h2 className="world-list-item-title">{world.name}</h2>
+                                <p className="world-list-item-description">{world.description}</p>
+                                <div className="world-list-item-actions">
+                                    <button className="world-list-item-button" onClick={() => onPlay(world.id)}>Play</button>
+                                    <button className="world-list-item-button">Load in Editor</button>
+                                </div>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+                )}
             </div>
         </div>
         
