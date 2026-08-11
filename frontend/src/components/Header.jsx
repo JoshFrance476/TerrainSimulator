@@ -1,13 +1,13 @@
 import { useTokenUsageQuery } from '../queries/queries'
 import { useState } from 'react'
 
-function Header({ user , setShowAccountWindow }) {
+function Header({ user , setShowAccountWindow, onNavigate }) {
     const { data } = useTokenUsageQuery()
 
 
     return (
         <header className="header">
-            <div className="header-brand">Sandbox</div>
+            <button className="header-brand" type="button" onClick={() => onNavigate("landing")}>Sandbox</button>
 
             <nav className="header-nav">
                 <button className="nav-btn nav-btn-active" type="button">Play</button>
