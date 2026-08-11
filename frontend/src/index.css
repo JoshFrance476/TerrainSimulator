@@ -1,3 +1,11 @@
+:root {
+    --colour-background: #401128;
+    --colour-primary: #ffffff;
+    --colour-secondary: #c21c85;
+    --font-body: 'Raleway', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
 *, *::before, *::after {
     box-sizing: border-box;
 }
@@ -246,6 +254,10 @@ body {
     font-weight: 600;
     letter-spacing: 0.02em;
     white-space: nowrap;
+    background: none;
+    border: none;
+    color: #e8eaed;
+    cursor: pointer;
 }
 
 .header-nav {
