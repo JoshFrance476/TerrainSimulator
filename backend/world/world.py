@@ -119,9 +119,9 @@ class World:
             "Details": {}
         }
         for region in self.region_manager.get_regions_at_location(location):
-            info["Details"][region.title] = {
-                "Visible Description": region.visible_desc,
-                "Hidden Description": region.hidden_desc
+            info["Details"][region["title"]] = {
+                "Visible Description": region["visible_desc"],
+                "Hidden Description": region["hidden_desc"]
             }
         return info
 
