@@ -51,6 +51,10 @@
     font-family: inherit;
 }
 
+.main-button:hover {
+    background-color: #333333;
+}
+
 .world-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -82,6 +86,10 @@
     margin-top: auto;
 }
 
+.world-list-item-button:hover {
+    background-color: #333333;
+}
+
 .world-list-item-button {
     padding: 4px 24px;
     border-radius: 4px;
@@ -91,4 +99,31 @@
     font-size: 0.9rem;
     cursor: pointer;
     font-family: inherit;
+}
+
+.play-setup-modal {
+    width: 600px;
+    height: 900px;
+}
+
+.modal::backdrop {
+    backdrop-filter: blur(4px);
+    background: rgb(0 0 0 / 0.3);
+}
+
+.modal-title-caption {
+    margin: 0;
+    padding: 0;
+    font-size: 0.75rem;
+    color: #808080;
+}
+
+.modal-title {
+    margin-top: 0;
+    line-height: 1;
+    font-size: 2.4rem;
+}
+
+.modal-text {
+    margin: 0 0 32px 0;
 }
