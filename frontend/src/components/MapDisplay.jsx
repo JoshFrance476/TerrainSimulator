@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useWorld } from '../hooks/useWorld'
 import { usePlayer } from '../hooks/usePlayer'
 import { useMovePlayerMutation } from '../queries/queries'
@@ -125,17 +125,8 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         return false
     }
 
-    useEffect(() => {
-        if (!dimensions || !regionMap || !regionLookup) return
-        drawRegionBorders()
-    }, [dimensions, regionMap, regionLookup])
-
-    function drawRegionBorders() {
-        const ctx = overlayRef.current.getContext('2d')
-        ctx.clearRect(0, 0, dimensions.width * SCALE, dimensions.height * SCALE)
-
-        ctx.save()
-        ctx.scale(SCALE, SCALE)
+    const borderSegments = useMemo(() => {
+        if (!dimensions || !regionMap || !regionLookup) return null
 
         const segmentsByColour = new Map()
 
@@ -160,7 +151,26 @@ function MapDisplay({ selectedCell, onCellSelect }) {
             }
         }
 
-        const lw = 1 / SCALE
+        return segmentsByColour
+    }, [dimensions, regionMap, regionLookup])
+
+    useEffect(() => {
+        if (!borderSegments) return
+        drawRegionBorders(borderSegments)
+    }, [borderSegments, zoom])
+
+    function drawRegionBorders(segmentsByColour) {
+        const canvas = overlayRef.current
+        const ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        ctx.save()
+        ctx.scale(SCALE, SCALE)
+
+        const screenScale = canvas.getBoundingClientRect().width / canvas.width
+
+        const lw = Math.max(1, 1 / screenScale) / SCALE
         ctx.lineWidth = lw
 
         for (const [colour, segments] of segmentsByColour) {
