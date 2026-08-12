@@ -1,7 +1,20 @@
 import './landing.css'
-import { useWorldsQuery } from '../queries/queries'
-function Landing({ onNavigate, onPlay}) {
-    const {data: worlds, isLoading, isError} = useWorldsQuery()
+import { useWorldsQuery , useNewSessionMutation} from '../queries/queries'
+import PlaySetupModal from '../components/PlaySetupModal'
+import { useState } from 'react';
+
+function Landing({ onNavigate }) {
+    const {data: worlds, isLoading, isError} = useWorldsQuery();
+    const [showPlaySetupModal, setShowPlaySetupModal] = useState(false);
+    const [worldMetadata, setWorldMetadata] = useState(null)
+    const newSession = useNewSessionMutation()
+
+    function handlePlay(world) {
+        setWorldMetadata(world)
+        setShowPlaySetupModal(true);
+        newSession.mutate(world.id)
+    }
+
     return (
         <div className="landing-page">
             <div className="main-section">
@@ -26,7 +39,7 @@ function Landing({ onNavigate, onPlay}) {
                                 <h2 className="world-list-item-title">{world.name}</h2>
                                 <p className="world-list-item-description">{world.description}</p>
                                 <div className="world-list-item-actions">
-                                    <button className="world-list-item-button" onClick={() => onPlay(world.id)}>Play</button>
+                                    <button className="world-list-item-button" onClick={() => handlePlay(world)}>Play</button>
                                     <button className="world-list-item-button">Load in Editor</button>
                                 </div>
                             </div>
@@ -35,6 +48,7 @@ function Landing({ onNavigate, onPlay}) {
                 </ul>
                 )}
             </div>
+            {showPlaySetupModal && <PlaySetupModal onPlay={() => onNavigate("play")} isPending={newSession.isPending} world={worldMetadata} onClose={() => setShowPlaySetupModal(false)}/>}
         </div>
         
     )
