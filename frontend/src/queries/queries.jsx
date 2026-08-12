@@ -63,7 +63,9 @@ export function useNewSessionMutation() {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (worldId) => postJson('/api/session', { world_id: worldId }),
-        onSuccess: () => queryClient.resetQueries(),
+        onSuccess: () => queryClient.resetQueries({
+            predicate: (query) => query.queryKey[0] !== worldsKey[0],
+        }),
     })
 }
 
