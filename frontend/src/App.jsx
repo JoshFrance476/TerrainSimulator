@@ -6,17 +6,7 @@ import { useNewSessionMutation } from './queries/queries'
 function App() {
   const [user, setUser] = useState(undefined); // undefined = loading, null = logged out
   const [page, setPage] = useState("landing");
-  const newSession = useNewSessionMutation()
-  
-  function handlePlay(worldId) {
-    newSession.mutate(worldId, {
-      onSuccess: () => {
-        setPage('play')
-        console.log(worldId)
-      }
-      
-    })
-  }
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -44,7 +34,7 @@ function App() {
 
   return (
     <>
-      {page === "landing" && <Landing onLogout={handleLogout} user={user} onPlay={handlePlay} onNavigate={setPage}/>}
+      {page === "landing" && <Landing onLogout={handleLogout} user={user} onNavigate={setPage}/>}
       {page === "play" && <Play user={user} onNavigate={setPage}/>} 
     </>
   )
