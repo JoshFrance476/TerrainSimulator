@@ -1,26 +1,14 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
-import { useWorld } from '../hooks/useWorld'
-import { usePlayer } from '../hooks/usePlayer'
-import { useMovePlayerMutation } from '../queries/queries'
-import MapToolbar from './MapToolbar'
+import { useState, useRef, useEffect } from 'react'
 
-function MapDisplay({ selectedCell, onCellSelect }) {
+
+function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, handleMouseDownDrag, selectedCell, playerLocation = null, children }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
-    const imageDataRef = useRef(null) // ImageData object containing Uint8Array RGB map data
-
-    const { dimensions, maxRegionsPerCell, noRegionId, 
-        biomeMap, biomeLookup, regionMap, regionLookup, rgbMap
-    } = useWorld()
-
-    const { playerLocation } = usePlayer() 
-
-    const movePlayer = useMovePlayerMutation()
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
 
-    const [tooltip, setTooltip] = useState(null) //shape: {x, y, biomeName}
+    const [tooltip, setTooltip] = useState(null) //shape: {x, y, dict}
 
     const SCALE = 10 // Interaction layer scale factor
 
@@ -33,44 +21,40 @@ function MapDisplay({ selectedCell, onCellSelect }) {
     const isPanning = useRef(false)
     const lastPanPos = useRef({ x: 0, y: 0 })   
 
-    const [interactionMode, setInteractionMode] = useState('view') // 'view' or 'move'
+    const isPainting = useRef(false)
 
-
-    // Resize the canvases when the dimensions change
+    // Load RGB map into base map canvas when it changes
     useEffect(() => {
-        if (!dimensions) return
-
-        baseMapRef.current.width = dimensions.width
-        baseMapRef.current.height = dimensions.height
-
-        for (const ref of [overlayRef, interactionRef]) {
-            ref.current.width = dimensions.width * SCALE
-            ref.current.height = dimensions.height * SCALE
-        }
-    }, [dimensions])
-
-
-    useEffect(() => {
-        if (!dimensions || !rgbMap) return
-
-        const imageData = new ImageData(rgbMap, dimensions.width, dimensions.height)
-
-        imageDataRef.current = imageData
+        if (!imageData) return
 
         baseMapRef.current.getContext('2d').putImageData(imageData, 0, 0)
-    }, [rgbMap, dimensions])
+    }, [imageData])
 
     // Redraw interaction layer when selected cell changes
     useEffect(() => {
-        if (!dimensions) return
         drawInteractionLayer(lastHoveredCell, selectedCell, playerLocation)
-    }, [selectedCell, dimensions, playerLocation])
+    }, [imageData, selectedCell, playerLocation, lastHoveredCell])
+
+    useEffect(() => {
+        if (!imageData) return
+
+        baseMapRef.current.width = imageData.width
+        baseMapRef.current.height = imageData.height
+
+        for (const ref of [overlayRef, interactionRef]) {
+            ref.current.width = imageData.width * SCALE
+            ref.current.height = imageData.height * SCALE
+        }
+
+        baseMapRef.current.getContext('2d').putImageData(imageData, 0, 0)
+    }, [imageData])
 
     // Draw hovered cell and selected cell on interaction layer
-    function drawInteractionLayer(hovered, selected, player) {
+    function drawInteractionLayer(hovered, selected, player = null) {
+        if (!imageData) return
         const ctx = interactionRef.current.getContext('2d')
 
-        ctx.clearRect(0, 0, dimensions.width * SCALE, dimensions.height * SCALE)
+        ctx.clearRect(0, 0, imageData.width * SCALE, imageData.height * SCALE)
         
         ctx.save()
         ctx.scale(SCALE, SCALE)
@@ -112,52 +96,10 @@ function MapDisplay({ selectedCell, onCellSelect }) {
         ctx.restore()
     }
 
-    function cellHasRegion(cellX, cellY, rid) {
-        if (cellX < 0 || cellX >= dimensions.width || cellY < 0 || cellY >= dimensions.height) {
-            return false   // off-grid counts as "not in the region" — draws a border at the map's edge
-        }
-        const base = (cellY * dimensions.width + cellX) * maxRegionsPerCell
-        for (let d = 0; d < maxRegionsPerCell; d++) {
-            const id = regionMap[base + d]
-            if (id === noRegionId) break
-            if (id === rid) return true
-        }
-        return false
-    }
-
-    const borderSegments = useMemo(() => {
-        if (!dimensions || !regionMap || !regionLookup) return null
-
-        const segmentsByColour = new Map()
-
-        for (let y = 0; y < dimensions.height; y++) {
-            for (let x = 0; x < dimensions.width; x++) {
-                const base = (y * dimensions.width + x) * maxRegionsPerCell
-                for (let d = 0; d < maxRegionsPerCell; d++) {
-                    const rid = regionMap[base + d]
-                    if (rid === noRegionId) break
-
-                    const region = regionLookup[rid]
-                    if (!region) continue
-                    const colourKey = `rgb(${255},${255},${255})`
-                    if (!segmentsByColour.has(colourKey)) segmentsByColour.set(colourKey, [])
-                    const segments = segmentsByColour.get(colourKey)
-
-                    if (!cellHasRegion(x, y - 1, rid)) segments.push([x, y, x + 1, y])
-                    if (!cellHasRegion(x, y + 1, rid)) segments.push([x, y + 1, x + 1, y + 1])
-                    if (!cellHasRegion(x - 1, y, rid)) segments.push([x, y, x, y + 1])
-                    if (!cellHasRegion(x + 1, y, rid)) segments.push([x + 1, y, x + 1, y + 1])
-                }
-            }
-        }
-
-        return segmentsByColour
-    }, [dimensions, regionMap, regionLookup])
-
     useEffect(() => {
         if (!borderSegments) return
         drawRegionBorders(borderSegments)
-    }, [borderSegments, zoom])
+    }, [borderSegments, zoom, imageData])
 
     function drawRegionBorders(segmentsByColour) {
         const canvas = overlayRef.current
@@ -199,36 +141,14 @@ function MapDisplay({ selectedCell, onCellSelect }) {
     function eventToCell(e) {
         const rect = interactionRef.current.getBoundingClientRect()
         const cellX = Math.min(
-            dimensions.width - 1,
-            Math.max(0, Math.floor((e.clientX - rect.left) * (dimensions.width / rect.width)))
+            imageData.width - 1,
+            Math.max(0, Math.floor((e.clientX - rect.left) * (imageData.width / rect.width)))
         )
         const cellY = Math.min(
-            dimensions.height - 1,
-            Math.max(0, Math.floor((e.clientY - rect.top) * (dimensions.height / rect.height)))
+            imageData.height - 1,
+            Math.max(0, Math.floor((e.clientY - rect.top) * (imageData.height / rect.height)))
         )
         return { cellX, cellY }
-    }
-
-    function getBiomeDataAtCell(cellX, cellY) {
-        const index = cellY * dimensions.width + cellX
-        return biomeLookup[biomeMap[index]]
-    }
-
-    function getRegionDataAtCell(cellX, cellY) {
-        const base = (cellY * dimensions.width + cellX) * maxRegionsPerCell
-        const regions = []
-        for (let d = 0; d < maxRegionsPerCell; d++) {
-            const rid = regionMap[base + d]
-            if (rid === noRegionId) break   // slots are filled front-to-back, so first NO_REGION means no more follow
-            regions.push(regionLookup[rid])
-        }
-        return regions
-    }
-
-    function getCellData(cellX, cellY) {
-        const biomeData = getBiomeDataAtCell(cellX, cellY)
-        const regionData = getRegionDataAtCell(cellX, cellY)
-        return { x: cellX, y: cellY, biomeData: biomeData, regionData: regionData }
     }
 
     function isNewHoveredCell(cellX, cellY) {
@@ -236,21 +156,23 @@ function MapDisplay({ selectedCell, onCellSelect }) {
     }
 
     function handleHover(e) {
-        if (!biomeMap || !biomeLookup || !dimensions) return
-        
+        if (!imageData) return
+
         const { cellX, cellY } = eventToCell(e)
 
-        let cellData
+        const tooltipLabel = getTooltipLabel({ cellX, cellY })
+        if (!tooltipLabel) {
+            setTooltip(null)
+        } else {
+            setTooltip({ x: e.clientX, y: e.clientY, data: tooltipLabel })
+        }
+
         if (isNewHoveredCell(cellX, cellY)) {
-            cellData = getCellData(cellX, cellY)
-            setLastHoveredCell(cellData)
-            drawInteractionLayer({ x: cellX, y: cellY }, selectedCell, playerLocation)
+            setLastHoveredCell({ x: cellX, y: cellY })
+            if (isPainting.current && handleMouseDownDrag) {
+                handleMouseDownDrag(eventToCell(e))
+            }
         }
-        else {
-            cellData = lastHoveredCell
-        }
-        
-        setTooltip({ x: e.clientX, y: e.clientY, biomeName: cellData.biomeData.name })
     }
 
     function handleWheel(e) {
@@ -276,43 +198,45 @@ function MapDisplay({ selectedCell, onCellSelect }) {
 
     function handleMouseLeave() {
         setTooltip(null)
-        drawInteractionLayer(null, selectedCell, playerLocation)
+        setLastHoveredCell(null)
     }
 
     function handleClick(e) {
-        if (!dimensions || !biomeMap || !biomeLookup) return
+        if (!imageData) return
 
         const { cellX, cellY } = eventToCell(e)
-
-        if (interactionMode === 'move') {
-            movePlayer.mutate({ x: cellX, y: cellY })
-        }
-        else {
-            onCellSelect(getCellData(cellX, cellY))
-        }
+        onCellClick({ x: cellX, y: cellY })
     }
-
     
     function handlePanStart(e) {
-        if (e.button !== 1) return 
-        e.preventDefault()
-        isPanning.current = true
-        lastPanPos.current = { x: e.clientX, y: e.clientY }
+        if (e.button === 1) {
+            e.preventDefault()
+            isPanning.current = true
+            lastPanPos.current = { x: e.clientX, y: e.clientY }
+        }
+        else if (e.button === 0) {
+            isPainting.current = true
+            if (handleMouseDownDrag) {
+                handleMouseDownDrag(eventToCell(e))
+            }
+        }
     }
 
     function handlePanMove(e) {
-        if (!isPanning.current) return
-        const dx = e.clientX - lastPanPos.current.x
-        const dy = e.clientY - lastPanPos.current.y
-        setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }))
-        lastPanPos.current = { x: e.clientX, y: e.clientY }
+        if (isPanning.current) {
+            const dx = e.clientX - lastPanPos.current.x
+            const dy = e.clientY - lastPanPos.current.y
+            setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }))
+            lastPanPos.current = { x: e.clientX, y: e.clientY }
+        }
     }
 
     function handlePanEnd() {
         isPanning.current = false
+        isPainting.current = false
     }
 
-    return (
+     return (
         <div className="map-viewport" 
             onWheel={handleWheel}
             onMouseDown={handlePanStart}
@@ -333,17 +257,14 @@ function MapDisplay({ selectedCell, onCellSelect }) {
                 />
             </div>
 
-            <MapToolbar
-                interactionMode={interactionMode}
-                onInteractionModeChange={setInteractionMode}
-            />
+            {children}
 
             {tooltip && (
                 <div
                     className="tooltip capitalise"
                     style={{ left: tooltip.x + 4, top: tooltip.y - 20 }}
                 >
-                    {tooltip.biomeName}
+                    {tooltip.data}
                 </div>
             )}
         </div>
