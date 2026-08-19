@@ -95,9 +95,13 @@ class SaveWorldBody(BaseModel):
 class StartSessionBody(BaseModel):
     world_id: int | None = None
 
+class SetupStoryBody(BaseModel):
+    world_description: str
+    character_description: str
+    story_focus_description: str
 
 class Backend:
-    """A single object that holds all game state - replaces appController"""
+    """holds all game state"""
     def __init__(self, world_id: int | None = None):
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
         self.story_engine = StoryEngine(self.world)
@@ -106,7 +110,10 @@ class Backend:
         if world_id is None:
             self.generate_map()
         else:
-            self.load_map_from_database(world_id)
+            world_data, world_metadata = load_map_from_database(world_id)
+            self.world.load_world(world_data, world_metadata)
+            self.world.rows, self.world.cols = world_metadata["rows"], world_metadata["cols"]
+            self.reset_player()
         
     def generate_map(self):
         with open(SAVED_MAPS / "default_config.yaml") as f:
@@ -118,21 +125,12 @@ class Backend:
 
         self.reset_player()
 
-    def load_map_from_database(self, world_id):
-        row = worlds.get_world(world_id)
-        if row is None:
-            raise ValueError(f"World with ID {world_id} not found in database.")
-
-        self.story_engine.setup(row["story_setup"])
-
-        with np.load(io.BytesIO(row["map_data"])) as npz:
-            world_data = {key: npz[key] for key in npz.files}
-
-        rows, cols = world_data["biome"].shape
-        config.WORLD_ROWS, config.WORLD_COLS = rows, cols
-        self.world.rows, self.world.cols = rows, cols
-        self.world.load_world(row["biome_config"], world_data, row["region_list"])
-        self.reset_player()
+    def setup_story(self, world_description, character, story_focus):
+        self.story_engine.setup({
+            "world_description": world_description,
+            "character_description": character,
+            "story_focus_description": story_focus
+        })
                 
 
     def save_current_map(self, name, description, user_id):
@@ -192,6 +190,23 @@ class Backend:
             "quests_list": self.story_engine.state.quest_list,
         }
 
+def load_map_from_database(world_id):
+    row = worlds.get_world(world_id)
+    if row is None:
+        raise ValueError(f"World with ID {world_id} not found in database.")
+
+    with np.load(io.BytesIO(row["map_data"])) as npz:
+        world_data = {key: npz[key] for key in npz.files}
+
+    rows, cols = world_data["biome"].shape
+    config.WORLD_ROWS, config.WORLD_COLS = rows, cols
+    world_metadata = {
+        "rows": rows,
+        "cols": cols,
+        "biome_config": row["biome_config"],
+        "region_list": row["region_list"],
+    }
+    return world_data, world_metadata
 
 backends: dict[str, Backend] = {}
 
@@ -263,6 +278,11 @@ def create_session(body: StartSessionBody, request: Request):
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return {"ok":True}
+ 
+@app.post("/api/session/setup")
+def setup_session_story(body: SetupStoryBody, b: Backend = Depends(get_backend)):
+    b.setup_story(body.world_description, body.character_description, body.story_focus_description)
+
 # ---------------------------------------------------------------- story
 
 @app.get("/api/story")
@@ -365,7 +385,7 @@ def get_region_map(b: Backend = Depends(get_backend)):
 
 @app.get("/api/world/region-lookup")
 def get_region_lookup(b: Backend = Depends(get_backend)):
-    return b.world.get_region_lookup()
+    return b.world.get_region_lookup() 
 
 @app.get('/api/token-usage')
 def get_token_usage(b: Backend = Depends(get_backend)):
@@ -386,3 +406,75 @@ def get_world_thumbnail(world_id: int):
     if png is None:
         raise HTTPException(status_code=404, detail="World not found")
     return Response(png, media_type="image/png")
+
+
+# ---------------------------------------------------------------- editor
+
+def load_world_row(world_id: int) -> dict:
+    row = worlds.get_world(world_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="World not found")
+    return row
+
+def load_world_arrays(row: dict) -> dict:
+    with np.load(io.BytesIO(row["map_data"])) as npz:
+        return {key: npz[key] for key in npz.files}
+    
+
+@app.get("/api/editor/worlds/{world_id}/biome-map")
+def get_editor_biome_map(world_id: int):
+    row = load_world_row(world_id)
+    arrays = load_world_arrays(row)
+    return Response(arrays["biome"].astype(np.uint8).tobytes(),
+                    media_type="application/octet-stream")
+
+
+@app.get("/api/editor/worlds/{world_id}/region-map")
+def get_editor_region_map(world_id: int):
+    row = load_world_row(world_id)
+    arrays = load_world_arrays(row)
+    return Response(arrays["region_map"].astype(np.uint16).tobytes(),
+                    media_type="application/octet-stream")
+
+@app.get("/api/editor/worlds/{world_id}/rgb-map")
+def get_editor_rgb_map(world_id: int):
+    row = load_world_row(world_id)
+    arrays = load_world_arrays(row)
+    rgb = np.asarray(hsv_to_rgb_array(arrays["colour"]), dtype=np.uint8)
+    alpha = np.full((*rgb.shape[:2], 1), 255, dtype=np.uint8)
+    rgba = np.concatenate([rgb, alpha], axis=2)
+    return Response(rgba.tobytes(), media_type="application/octet-stream")
+
+@app.get("/api/editor/worlds/{world_id}/elevation-map")
+def get_editor_elevation_map(world_id: int):
+    row = load_world_row(world_id)
+    arrays = load_world_arrays(row)
+    return Response(arrays["elevation"].astype(np.float32).tobytes(),
+                    media_type="application/octet-stream")
+
+@app.get("/api/editor/worlds/{world_id}/steepness-map")
+def get_editor_elevation_map(world_id: int):
+    row = load_world_row(world_id)
+    arrays = load_world_arrays(row)
+    return Response(arrays["steepness"].astype(np.float32).tobytes(),
+                    media_type="application/octet-stream")
+
+@app.get("/api/editor/worlds/{world_id}")
+def get_editor_world(world_id: int):
+    row = worlds.get_world(world_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="World not found")
+
+    with np.load(io.BytesIO(row["map_data"])) as npz:
+        arrays = {key: npz[key] for key in npz.files}
+
+    rows, cols = arrays["biome"].shape
+    return {
+        "rows": rows,
+        "cols": cols,
+        "max_regions_per_cell": arrays["region_map"].shape[2],
+        "no_region_id": 0xFFFF,
+        "biome_config": row["biome_config"],
+        "region_list": row["region_list"],
+    }
+    
