@@ -1,0 +1,22 @@
+.worldbuilder-window {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: auto;
+    border: 1px solid black;
+    padding: 5px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; 
+}
+
+.biome-entry {
+    display: flex;
+    align-items: center;
+}
+
+.colour-preview-small {
+    width: 30px;
+    height: 30px;
+    border: 1px solid black;
+}
