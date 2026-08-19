@@ -7,11 +7,11 @@ function Header({ user , setShowAccountWindow, onNavigate }) {
 
     return (
         <header className="header">
-            <button className="header-brand" type="button" onClick={() => onNavigate("landing")}>Sandbox</button>
+            <button className="header-brand" type="button" onClick={() => onNavigate({ name: "landing" })}>Sandbox</button>
 
             <nav className="header-nav">
                 <button className="nav-btn nav-btn-active" type="button">Play</button>
-                <button className="nav-btn" type="button">Editor</button>
+                <button className="nav-btn" type="button">Worldbuilder</button>
                 <button className="nav-btn" type="button">Browse</button>
             </nav>
 
