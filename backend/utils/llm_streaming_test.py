@@ -1,11 +1,9 @@
 import time
-from together import Together
 import json
+from huggingface_hub import InferenceClient
 
-client = Together()
-
-start = time.time()
-first_token_time = None
+client = InferenceClient()
+model = "openai/gpt-oss-120b"
 
 interaction_message = [
     {
@@ -109,38 +107,50 @@ WORLD CONTEXT:
     }
 ]
 
-stream = client.chat.completions.create(
-    model="Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
-    max_tokens=300,
-    messages=scene_message,
-    stream=True,
-    temperature=1
-)
+scene_structure_message = [
+    {
+        "role": "system",
+        "content": """You are part of a story generation algorithm being used in a text-based open-world adventure game.
+Your task is to turn the scene guide you are given into mermaid syntax representing the different actions the player can take and what outcome they reach within the scene.
+The Each scene should have roughly 10 interactions. Each interaction should have a short sentence describing the situation.
+"""
+    },
+    {
+        "role": "user",
+        "content": json.dumps({
+            "scene_guide": {
+                "environment_description": "The Upper Res Valley is a remote, mountain-ringed forest shrouded in mist, largely unexplored and marked by an eerie silence broken only by distant, unidentifiable sounds.",
+                "precise_location": "A narrow game trail winds through dense undergrowth, flanked by ancient trees with moss-covered trunks, the air damp and still.",
+                "story_suggestion": "The player senses they are being watched as they follow a faint path once used by Fort Suda scouts, now reclaimed by the forest and something else.",
+                "outcome_suggestions": ["Discover strange claw marks on trees leading toward the mountains","Find remnants of Fort Suda’s supplies scattered along an overgrown path","Hear distorted voices on the wind, causing unease and hesitation","Spot glowing eyes watching from the treeline before vanishing"]
+            },
+            "previous_interactions": []
+        })
+    }
+]
 
-for chunk in stream:
-    if chunk.choices:
-        if first_token_time is None:
-            first_token_time = time.time()
-            print(f"Time to first token: {first_token_time - start:.2f}s")
-        print(chunk.choices[0].delta.content, end="", flush=True)
 
-end = time.time()
-print(f"\nTotal time: {end - start:.2f}s")
+def run_stream(messages, max_tokens, temperature):
+    start = time.time()
+    first_token_time = None
 
-stream = client.chat.completions.create(
-    model="Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
-    max_tokens=250,
-    messages=interaction_message,
-    stream=True,
-    temperature=0.7
-)
+    stream = client.chat.completions.create(
+        model=model,
+        max_tokens=max_tokens,
+        messages=messages,
+        stream=True,
+        temperature=temperature,
+    )
 
-for chunk in stream:
-    if chunk.choices:
-        if first_token_time is None:
-            first_token_time = time.time()
-            print(f"Time to first token: {first_token_time - start:.2f}s")
-        print(chunk.choices[0].delta.content, end="", flush=True)
+    for chunk in stream:
+        if chunk.choices:
+            if first_token_time is None:
+                first_token_time = time.time()
+                print(f"Time to first token: {first_token_time - start:.2f}s")
+            print(chunk.choices[0].delta.content or "", end="", flush=True)
 
-end = time.time()
-print(f"\nTotal time: {end - start:.2f}s")
+    print(f"\nTotal time: {time.time() - start:.2f}s")
+
+
+run_stream(scene_structure_message, max_tokens=1000, temperature=0.8)
+#run_stream(interaction_message, max_tokens=250, temperature=0.7)
