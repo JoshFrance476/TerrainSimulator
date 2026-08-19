@@ -25,12 +25,12 @@ class World:
 
 
     # Loading/Saving ############################################################################################
-    def load_world(self, biome_config, world_data, region_list):
-        self.biome_config = BiomeConfigManager(biome_config)
+    def load_world(self, world_data, world_metadata):
+        self.biome_config = BiomeConfigManager(world_metadata["biome_config"])
 
         self.data = WorldData(self.rows, self.cols, self.biome_config, world_data)
 
-        self.region_manager = RegionManager(self.rows, self.cols, world_data["region_map"], region_list)
+        self.region_manager = RegionManager(self.rows, self.cols, world_data["region_map"], world_metadata["region_list"])
 
         self.chunk_manager = ChunkManager(self.rows, self.cols, self.get_map_data("colour").copy(), self.get_map_data("biome").copy(), self.biome_config)
     
