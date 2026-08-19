@@ -1,7 +1,13 @@
 :root {
-    --colour-background: #401128;
+    --colour-backgroundgradient1: #401128;
+    --colour-backgroundgradient2:  #9c17bd;
+    --colour-background: #3d4147;
+    --colour-text: #e8eaed;
     --colour-primary: #ffffff;
     --colour-secondary: #9b2e73;
+    --colour-border: #AAA9A9;
+    --colour-button-hover: #333333;
+    --colour-modal-background: #292929;
     --font-body: 'Raleway', system-ui, sans-serif;
     --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
@@ -12,6 +18,8 @@
 
 body {
     margin: 0;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
 }
 
 #root {
@@ -246,7 +254,6 @@ body {
     background-color: #2b2f36;
     border-bottom: 1px solid #1a1d22;
     color: #e8eaed;
-    font-family: system-ui, sans-serif;
 }
 
 .header-brand {
