@@ -17,6 +17,13 @@ export const modelKey = ['model']
 export const worldsKey = ['worlds']
 export const sessionKey = ['session']
 
+export const editorWorldMetadataKey = (id) => ['editor', 'world', id]
+export const editorRegionMapKey = (id) => ['editor', 'region-map', id]
+export const editorBiomeMapKey = (id) => ['editor', 'biome-map', id]
+export const editorRGBMapKey = (id) => ['editor', 'rgb-map', id]
+export const editorElevationMapKey = (id) => ['editor', 'elevation-map', id]
+export const editorSteepnessMapKey = (id) => ['editor', 'steepness-map', id]
+
 // ---------------------------------------------------------------- fetchers
 
 async function getJson(url) {
@@ -66,6 +73,14 @@ export function useNewSessionMutation() {
         onSuccess: () => queryClient.resetQueries({
             predicate: (query) => query.queryKey[0] !== worldsKey[0],
         }),
+    })
+}
+
+export function useSessionSetupMutation() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: ({ worldDescription, character, storyFocus }) => postJson('/api/session/setup', { world_description: worldDescription, character_description: character, story_focus_description: storyFocus }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: sessionKey }),
     })
 }
 
@@ -176,7 +191,71 @@ export function useSavePromptTemplateMutation(name) {
     })
 }
 
+// ---------------------------------------------------------------- editor
 
+export function useEditorWorldMetadataQuery(worldId) {
+    return useQuery({
+        queryKey: editorWorldMetadataKey(worldId),
+        queryFn: () => getJson(`/api/editor/worlds/${worldId}`),
+        enabled: worldId != null,
+        staleTime: Infinity,
+    })
+}
+
+export function useEditorBiomeMapQuery(worldId) {
+    return useQuery({
+        queryKey: editorBiomeMapKey(worldId),
+        queryFn: async () =>
+            new Uint8Array(await getBuffer(`/api/editor/worlds/${worldId}/biome-map`)),
+        enabled: worldId != null,
+        staleTime: Infinity,
+        ...binaryOptions,
+    })
+}
+
+export function useEditorRegionMapQuery(worldId) {
+    return useQuery({
+        queryKey: editorRegionMapKey(worldId),
+        queryFn: async () => 
+            new Uint16Array(await getBuffer(`/api/editor/worlds/${worldId}/region-map`)),
+        enabled: worldId != null,
+        staleTime: Infinity,
+        ...binaryOptions,
+    })
+}
+
+export function useEditorRGBMapQuery(worldId) {
+    return useQuery({
+        queryKey: editorRGBMapKey(worldId),
+        queryFn: async () =>
+            new Uint8ClampedArray(await getBuffer(`/api/editor/worlds/${worldId}/rgb-map`)),
+        enabled: worldId != null,
+        staleTime: Infinity,
+        ...binaryOptions,
+    })
+}
+
+export function useEditorElevationMapQuery(worldId) {
+    return useQuery({
+        queryKey: editorElevationMapKey(worldId),
+        queryFn: async () =>
+            new Float32Array(await getBuffer(`/api/editor/worlds/${worldId}/elevation-map`)),
+        enabled: worldId != null,
+        staleTime: Infinity,
+        ...binaryOptions,
+    })
+}
+
+export function useEditorSteepnessMapQuery(worldId) {
+    return useQuery({
+        queryKey: editorSteepnessMapKey(worldId),
+        queryFn: async () =>
+            new Float32Array(await getBuffer(`/api/editor/worlds/${worldId}/steepness-map`)),
+        enabled: worldId != null,
+        staleTime: Infinity,
+        ...binaryOptions,
+    })
+}
 // ---------------------------------------------------------------- mutations
 
 export function useMovePlayerMutation() {
