@@ -10,6 +10,16 @@
     min-height: 0; 
 }
 
+.brush-details {
+    background-color: #c7c6c6;
+    border: 1px solid black;
+    padding: 5px;
+}
+
+.biome-legend {
+    display: flex
+}
+
 .biome-entry {
     display: flex;
     align-items: center;
@@ -19,4 +29,11 @@
     width: 30px;
     height: 30px;
     border: 1px solid black;
+}
+
+.checkerboard {
+    background-image:
+        conic-gradient(#ccc 25%, transparent 0 50%, #ccc 0 75%, transparent 0),
+        linear-gradient(#fff 0 0);
+    background-size: 15px 15px, auto;
 }
