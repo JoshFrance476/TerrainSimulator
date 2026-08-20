@@ -1,27 +1,37 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
+import { getBrushOutline } from '../utils/world-editing'
 
 
-function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, handleMouseDownDrag, selectedCell, playerLocation = null, children }) {
+function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
 
+    const lastDrawn = useRef(null)
+
     const [tooltip, setTooltip] = useState(null) //shape: {x, y, dict}
 
-    const SCALE = 10 // Interaction layer scale factor
+    const SCALE = 4 // Interaction layer scale factor
 
-    const [zoom, setZoom] = useState(1)
+    const [zoom, setZoom] = useState(5)
     const [pan, setPan] = useState({ x: 0, y: 0 })
 
     const MIN_ZOOM = 0.5
-    const MAX_ZOOM = 8
+    const MAX_ZOOM = 25
 
     const isPanning = useRef(false)
     const lastPanPos = useRef({ x: 0, y: 0 })   
 
     const isPainting = useRef(false)
+
+    const paintButton = useRef(null)
+
+    const brushOutline = useMemo(
+        () => (brushRadius ? getBrushOutline(brushRadius) : null),
+        [brushRadius]
+    )
 
     // Load RGB map into base map canvas when it changes
     useEffect(() => {
@@ -47,14 +57,22 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
         }
 
         baseMapRef.current.getContext('2d').putImageData(imageData, 0, 0)
-    }, [imageData])
+    }, [imageData?.width, imageData?.height])
 
     // Draw hovered cell and selected cell on interaction layer
     function drawInteractionLayer(hovered, selected, player = null) {
         if (!imageData) return
         const ctx = interactionRef.current.getContext('2d')
 
-        ctx.clearRect(0, 0, imageData.width * SCALE, imageData.height * SCALE)
+        if (lastDrawn.current) {
+            for (const { x, y, r = 0 } of lastDrawn.current) {
+                const pad = r + 1
+                ctx.clearRect(
+                    (x - pad) * SCALE, (y - pad) * SCALE,
+                    (pad * 2 + 1) * SCALE, (pad * 2 + 1) * SCALE
+                )
+            }
+        }
         
         ctx.save()
         ctx.scale(SCALE, SCALE)
@@ -63,7 +81,24 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
             ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
             ctx.fillRect(hovered.x, hovered.y, 1, 1)
         }
-
+        if (hovered && brushOutline) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+            const lw = 1 / SCALE
+            ctx.lineWidth = lw
+            ctx.beginPath()
+            for (const [x1, y1, x2, y2] of brushOutline) {
+                if (y1 === y2) {
+                    const y = hovered.y + y1 + lw / 2
+                    ctx.moveTo(hovered.x + x1, y)
+                    ctx.lineTo(hovered.x + x2, y)
+                } else {
+                    const x = hovered.x + x1 + lw / 2
+                    ctx.moveTo(x, hovered.y + y1)
+                    ctx.lineTo(x, hovered.y + y2)
+                }
+            }
+            ctx.stroke()
+        }
         if (selected) {
             ctx.strokeStyle = 'yellow'
             const lw = 1 / SCALE
@@ -94,6 +129,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
             ctx.stroke()
         }
         ctx.restore()
+        lastDrawn.current = [hovered && {...hovered, r: brushRadius}, selected, player].filter(Boolean)
     }
 
     useEffect(() => {
@@ -167,10 +203,14 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
             setTooltip({ x: e.clientX, y: e.clientY, data: tooltipLabel })
         }
 
+        if (isPainting.current && handleMouseDown) {
+            handleMouseDown(eventToCell(e), paintButton.current)
+        }
+
         if (isNewHoveredCell(cellX, cellY)) {
             setLastHoveredCell({ x: cellX, y: cellY })
             if (isPainting.current && handleMouseDownDrag) {
-                handleMouseDownDrag(eventToCell(e))
+                handleMouseDownDrag(eventToCell(e), paintButton.current)
             }
         }
     }
@@ -214,10 +254,14 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
             isPanning.current = true
             lastPanPos.current = { x: e.clientX, y: e.clientY }
         }
-        else if (e.button === 0) {
+        else if (e.button === 0 || e.button === 2) {
             isPainting.current = true
+            if (onStrokeStart) {
+                onStrokeStart(eventToCell(e))
+                paintButton.current = e.button
+            }
             if (handleMouseDownDrag) {
-                handleMouseDownDrag(eventToCell(e))
+                handleMouseDownDrag(eventToCell(e), paintButton.current)
             }
         }
     }
@@ -243,10 +287,15 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
             onMouseMove={handlePanMove}
             onMouseUp={handlePanEnd}
             onMouseLeave={handlePanEnd}
+            onContextMenu={(e) => e.preventDefault()}
         >
             <div
                 className="map-stack"
-                style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
+                style={{
+                    width: imageData ? imageData.width : 0,
+                    height: imageData ? imageData.height : 0,
+                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                }}
             >
                 <canvas ref={baseMapRef} className="map-layer" />
                 <canvas ref={overlayRef} className="map-layer" />
