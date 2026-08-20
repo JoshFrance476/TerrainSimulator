@@ -12,8 +12,8 @@ export const BIOME_LOOKUP = {
     3: { name: "path", colour: '#a76d03'}
 }
 
-const NO_REGION = 255
-const MAX_REGIONS_PER_CELL = 4
+export const NO_REGION = 255
+export const MAX_REGIONS_PER_CELL = 4
 
 
 export function createWorld({ width, height, biomeLookup = BIOME_LOOKUP }) {
