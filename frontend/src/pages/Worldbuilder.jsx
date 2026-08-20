@@ -3,20 +3,24 @@ import WorldbuilderWindow from '../components/WorldbuilderWindow'
 import MapDisplay from '../components/MapDisplay'
 import './worldbuilder.css'
 import {
-    BIOME_LOOKUP, createWorld, refreshAll, generateTerrain,
-    getBrushIndexes, paintBiome, alterElevation, smoothElevation, flattenElevation
+    BIOME_LOOKUP, createWorld, refreshAll, generateTerrain, getCellRegions, NO_REGION,
+    getBrushIndexes, paintBiome, alterElevation, smoothElevation, flattenElevation, writeRegion, removeRegion, buildRegionBorders
 } from '../utils/world-editing'
 
 function Worldbuilder() {
-    const [dimensions, setDimensions] = useState({ width: 512, height: 512 })
+    const [dimensions, setDimensions] = useState({ width: 768, height: 512 })
     const worldRef = useRef(null)
 
     const [imageData, setImageData] = useState(null)
-    const [biomeBrush, setBiomeBrush] = useState(1)
-    const [elevationEditType, setElevationEditType] = useState('layer')   // 'layer', 'continuous', 'flatten', 'smoothing'
+    const [biomeBrush, setBiomeBrush] = useState(null)
+    const [elevationEditType, setElevationEditType] = useState(null)   // 'layer', 'continuous', 'flatten', 'smoothing'
+    const [regionBrush, setRegionBrush] = useState(255)
     const [brushRadius, setBrushRadius] = useState(4)
 
     const [biomeLookup, setBiomeLookup] = useState(BIOME_LOOKUP)
+    const [regionLookup, setRegionLookup] = useState({})
+
+    const [borderSegments, setBorderSegments] = useState(null)
 
     const strokeCells = useRef(new Set())
 
@@ -28,6 +32,22 @@ function Worldbuilder() {
         worldRef.current = world
         commit()
     }, [dimensions])
+
+    useEffect(() => {
+        if (worldRef.current) {
+            worldRef.current.biomeLookup = biomeLookup
+        }
+    }, [biomeLookup])
+
+    useEffect(() => {
+        if (worldRef.current) {
+            worldRef.current.regionLookup = regionLookup
+        }
+    }, [regionLookup])
+
+    function buildBorders() {
+        setBorderSegments(buildRegionBorders(worldRef.current, regionLookup))
+    }
 
     // hand the mutated buffer back to React as a new ImageData wrapper
     function commit() {
@@ -62,8 +82,19 @@ function Worldbuilder() {
             }
         } else if (biomeBrush !== null) {
             paintBiome(world, indexes, biomeBrush)
+        } else if (regionBrush !== null) {
+            if (button === 0) {
+                for (const index of indexes) {
+                    writeRegion(world, index, regionBrush)
+                }
+            } else if (button === 2) {
+                for (const index of indexes) {
+                    removeRegion(world, index, regionBrush)
+                }
+            }
+            buildBorders()
+            commit()
         }
-        commit()
     }
 
     function handleContinuousCellInteraction({ cellX, cellY }, button) {
@@ -82,7 +113,17 @@ function Worldbuilder() {
     function getTooltipLabel({ cellX, cellY }) {
         const world = worldRef.current
         if (!world) return null
-        return `${world.biomeLookup[world.biome[cellY * world.width + cellX]].name}`
+
+        const index = cellY * world.width + cellX
+
+        const biome = world.biomeLookup[world.biome[index]]?.name ?? 'Unknown'
+        const elevation = world.elevation[index]
+
+        const regions = [...getCellRegions(world, index)]
+            .filter((id) => id !== NO_REGION)
+            .map((id) => regionLookup[id]?.name ?? `region ${id}`)
+
+        return `${biome} | Elevation: ${elevation} | Regions: ${regions.join(', ') || 'None'}`
     }
 
     function startStroke({ cellX, cellY }) {
@@ -92,8 +133,12 @@ function Worldbuilder() {
 
     function addBiome(biome) {
         const next = { ...biomeLookup, [Object.keys(biomeLookup).length]: biome }
-        worldRef.current.biomeLookup = next
         setBiomeLookup(next)
+    }
+
+    function addRegion(region) {
+        const next = { ...regionLookup, [Object.keys(regionLookup).length]: region }
+        setRegionLookup(next)
     }
 
     return (
@@ -107,6 +152,10 @@ function Worldbuilder() {
                 setBrushRadius={setBrushRadius}
                 setElevationEditType={setElevationEditType}
                 elevationEditType={elevationEditType}
+                addRegion={addRegion}
+                regionLookup={regionLookup}
+                regionBrush={regionBrush}
+                setRegionBrush={setRegionBrush}
             />
             <MapDisplay
                 imageData={imageData}
@@ -116,6 +165,7 @@ function Worldbuilder() {
                 onStrokeStart={startStroke}
                 brushRadius={brushRadius}
                 handleMouseDown={handleContinuousCellInteraction}
+                borderSegments={borderSegments}
             />
         </div>
     )
