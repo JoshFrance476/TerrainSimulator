@@ -3,7 +3,7 @@ import { hexToRgb, lighten, darken } from './colour'
 import { generateFractalNoiseMap } from './terrain'
 
 export const SEA_LEVEL = 6
-export const MOUNTAIN_LEVEL = 50
+export const MOUNTAIN_LEVEL = 44
 
 export const BIOME_LOOKUP = {
     0: { name: 'ocean', colour: '#0000ff' },
@@ -11,6 +11,9 @@ export const BIOME_LOOKUP = {
     2: { name: 'mountains', colour: '#888888' },
     3: { name: "path", colour: '#a76d03'}
 }
+
+const NO_REGION = 255
+const MAX_REGIONS_PER_CELL = 4
 
 
 export function createWorld({ width, height, biomeLookup = BIOME_LOOKUP }) {
@@ -22,11 +25,14 @@ export function createWorld({ width, height, biomeLookup = BIOME_LOOKUP }) {
         elevation: new Uint8ClampedArray(cells).fill(SEA_LEVEL),
         highlight: new Uint8Array(cells),
         rgba: new Uint8ClampedArray(cells * 4),
+        region: new Uint8Array(cells * 4).fill(NO_REGION),
         biomeLookup: biomeLookup,
+        regionLookup: {},
     }
 }
 
 // ---------------------------------------------------------------- cells
+
 
 export function updateBiome(world, index) {
     const e = world.elevation[index]
@@ -172,6 +178,89 @@ function refreshElevationEdit(world, indexes) {
         const below = index + world.width
         if (below < cells) refreshCell(world, below)
     }
+}
+// ---------------------------------------------------------------- regions
+
+export function writeRegion(world, index, regionId) {
+    const base = index * MAX_REGIONS_PER_CELL
+    for (let s = 0; s < MAX_REGIONS_PER_CELL; s++) {
+        const id = world.region[base + s]
+        if (id === regionId) return true       // already present
+        if (id === NO_REGION) {
+            world.region[base + s] = regionId
+            return true
+        }
+    }
+    return false                                // cell full
+}
+
+
+export function removeRegion(world, index, regionId) {
+    const base = index * MAX_REGIONS_PER_CELL
+    for (let s = 0; s < MAX_REGIONS_PER_CELL; s++) {
+        if (world.region[base + s] !== regionId) continue
+        // shift the rest down so slots stay contiguous
+        for (let k = s; k < MAX_REGIONS_PER_CELL - 1; k++) {
+            world.region[base + k] = world.region[base + k + 1]
+        }
+        world.region[base + MAX_REGIONS_PER_CELL - 1] = NO_REGION
+        return true
+    }
+    return false
+}
+    
+export function getCellRegions(world, index) {
+    const base = index * MAX_REGIONS_PER_CELL
+    return world.region.subarray(base, base + MAX_REGIONS_PER_CELL)
+}
+
+export function hasRegion(world, index, regionId) {
+    const base = index * MAX_REGIONS_PER_CELL
+    for (let s = 0; s < MAX_REGIONS_PER_CELL; s++) {
+        const id = world.region[base + s]
+        if (id === NO_REGION) return false     // slots fill front-to-back
+        if (id === regionId) return true
+    }
+    return false
+}
+
+export function buildRegionBorders(world, regionLookup) {
+    const { width, height } = world
+    const segmentsByColour = new Map()
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const index = y * width + x
+            const base = index * MAX_REGIONS_PER_CELL
+
+            for (let s = 0; s < MAX_REGIONS_PER_CELL; s++) {
+                const rid = world.region[base + s]
+                if (rid === NO_REGION) break        // slots fill front-to-back
+
+                const region = regionLookup[rid]
+                if (!region) continue
+
+                let segments = segmentsByColour.get(region.colour)
+                if (!segments) {
+                    segments = []
+                    segmentsByColour.set(region.colour, segments)
+                }
+
+                if (!cellHasRegion(world, x, y - 1, rid)) segments.push([x, y, x + 1, y])
+                if (!cellHasRegion(world, x, y + 1, rid)) segments.push([x, y + 1, x + 1, y + 1])
+                if (!cellHasRegion(world, x - 1, y, rid)) segments.push([x, y, x, y + 1])
+                if (!cellHasRegion(world, x + 1, y, rid)) segments.push([x + 1, y, x + 1, y + 1])
+            }
+        }
+    }
+
+    return segmentsByColour
+}
+
+// off-grid counts as "not in the region" — draws a border at the map's edge
+function cellHasRegion(world, x, y, regionId) {
+    if (x < 0 || x >= world.width || y < 0 || y >= world.height) return false
+    return hasRegion(world, y * world.width + x, regionId)
 }
 
 // ---------------------------------------------------------------- generation
