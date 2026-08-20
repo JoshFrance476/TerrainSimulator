@@ -9,4 +9,5 @@ pool = ConnectionPool(
     os.environ["DATABASE_URL"],
     open=False,
     kwargs={"row_factory": dict_row},
+    timeout=10
 )
