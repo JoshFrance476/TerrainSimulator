@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType, setElevationEditType, biomeBrush, generateRandomMap, setBrushRadius, addBiome }) {
+function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType, addRegion, setElevationEditType, biomeBrush, generateRandomMap, setBrushRadius, addBiome, regionLookup, regionBrush, setRegionBrush }) {
     
     const scaleRef = useRef(null);
     const octavesRef = useRef(null);
@@ -9,6 +9,8 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType, set
 
     const newBiomeNameRef = useRef(null);
     const newBiomeColourRef = useRef(null);
+
+    const newRegionNameRef = useRef(null);
 
     const [tooltip, setTooltip] = useState(null); // { biomeId, x, y }
 
@@ -19,7 +21,7 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType, set
             <div className="brush-details">
                 <h4>Biome: {biomeLookup[biomeBrush]?.name ?? 'None'}</h4>
                 <h4>Elevation: {elevationEditType ?? 'None'} </h4>
-                <h4>Region: </h4>
+                <h4>Region: {regionLookup[regionBrush]?.name ?? 'None'}</h4>
                 <div
                     className={`colour-preview ${biomeLookup[biomeBrush] ? '' : 'checkerboard'}`}
                     style={biomeLookup[biomeBrush] ? { backgroundColor: biomeLookup[biomeBrush].colour } : undefined}
@@ -70,6 +72,20 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType, set
             <button onClick={() => setElevationEditType('flatten')}>Flatten</button>
 
             <h3>Region</h3>
+            {Object.entries(regionLookup).map(([regionId, region]) => (
+                <div key={regionId} className="region-entry">
+                    <span>{region.name}</span>
+                    <button onClick={() => setRegionBrush(Number(regionId))}>Select</button>
+                </div>
+            ))}
+            <label>
+                Add region:
+                <input type="text" placeholder="Region name" ref={newRegionNameRef} />
+                <button onClick={() => {
+                    const name = newRegionNameRef.current.value;
+                    addRegion({ name });
+                }}>Add</button>
+            </label>
             <div className="map-generator-section">
                 <h3>Map Generator</h3>
                 <label>
