@@ -33,7 +33,7 @@ function Landing({ onNavigate }) {
                 <div className="main-navigation">
                     <button className="main-button" onClick={() => onNavigate({name: "play"})}>Load existing playthrough</button>
                     <button className="main-button">Start new playthrough</button>
-                    <button className="main-button">Open editor</button>
+                    <button className="main-button" onClick={() => onNavigate({name: "worldbuilder"})}>Open worldbuilder</button>
                 </div>
             </div>
             <div className="browser">
