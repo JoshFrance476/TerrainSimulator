@@ -32,7 +32,7 @@ from utils.colour_utils import hsv_to_rgb_array
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    pool.open()
+    pool.open(wait=True, timeout=10)
     yield
     pool.close()    
 
