@@ -2,171 +2,120 @@ import { useState, useRef, useEffect } from 'react'
 import WorldbuilderWindow from '../components/WorldbuilderWindow'
 import MapDisplay from '../components/MapDisplay'
 import './worldbuilder.css'
-import { hexToRgb, lighten, darken } from '../utils/colour'
-import { generateFractalNoiseMap } from '../utils/terrain'
-
+import {
+    BIOME_LOOKUP, createWorld, refreshAll, generateTerrain,
+    getBrushIndexes, paintBiome, alterElevation, smoothElevation, flattenElevation
+} from '../utils/world-editing'
 
 function Worldbuilder() {
-    const seaLevel = 7
     const [dimensions, setDimensions] = useState({ width: 512, height: 512 })
-    const biomeMapRef = useRef(new Uint8Array(dimensions.width * dimensions.height).fill(0))
-    const elevationMapRef = useRef(new Uint8ClampedArray(dimensions.width * dimensions.height).fill(seaLevel))
-    const rgbMapRef = useRef(new Uint8ClampedArray(dimensions.width * dimensions.height * 4))
-    const highlightMapRef = useRef( new Uint8Array(dimensions.width * dimensions.height).fill(0))
-
-    const biomeLookup = useRef({
-        0: { name: 'ocean', colour: '#0000ff' },
-        1: { name: 'plains', colour: '#019201' },
-        2: { name: 'mountains', colour: '#888888' },
-    })
+    const worldRef = useRef(null)
 
     const [imageData, setImageData] = useState(null)
-
-    const [biomeBrush, setBiomeBrush] = useState(1) 
-
-    const [brushType, setBrushType] = useState('paint') // 'paint' or 'elevation'
-
+    const [biomeBrush, setBiomeBrush] = useState(1)
+    const [elevationEditType, setElevationEditType] = useState('layer')   // 'layer', 'continuous', 'flatten', 'smoothing'
     const [brushRadius, setBrushRadius] = useState(4)
 
-    function generateRandomMap() {
-        const { width, height } = dimensions
-        const noise = generateFractalNoiseMap({width, height, scale: 64, persistence: 0.5, lacunarity: 2, octaves: 4})
-        for (let i = 0; i < width * height; i++) {
-            elevationMapRef.current[i] = (Math.pow(noise[i],2)) * 32
-            if (elevationMapRef.current[i] < seaLevel) {
-                biomeMapRef.current[i] = 0
-            } else if (elevationMapRef.current[i] > 30) {
-                biomeMapRef.current[i] = 2
-            } else {
-                biomeMapRef.current[i] = 1
-            }
-        }
-        for (let i = 0; i < width * height; i++) {
-            refreshCell(i)
-        }
-        setImageData(new ImageData(rgbMapRef.current, width, height))
-    }
+    const [biomeLookup, setBiomeLookup] = useState(BIOME_LOOKUP)
+
+    const strokeCells = useRef(new Set())
+
+    const strokeStartLocation = useRef(null)
 
     useEffect(() => {
-        const { width, height } = dimensions
-        if (biomeMapRef.current.length !== width * height) {
-            biomeMapRef.current = new Uint8Array(width * height)
-        }
-        rgbMapRef.current = new Uint8ClampedArray(width * height * 4)
-        for (let i = 0; i < width * height; i++) {
-            refreshCell(i)
-        }
-        setImageData(new ImageData(rgbMapRef.current, width, height))
+        const world = createWorld({ ...dimensions, biomeLookup })
+        refreshAll(world)
+        worldRef.current = world
+        commit()
     }, [dimensions])
 
-    function updateHighlight(index) {
-        const elevation = elevationMapRef.current[index]
-        const up = getCellTopNeighbour(index, dimensions.width)
-
-        if (up === -1) {
-            highlightMapRef.current[index] = 0
-            return
-        }
-
-        const above = elevationMapRef.current[up]
-        highlightMapRef.current[index] = above < elevation ? 1 : above > elevation ? 2 : 0
+    // hand the mutated buffer back to React as a new ImageData wrapper
+    function commit() {
+        const world = worldRef.current
+        setImageData(new ImageData(world.rgba, world.width, world.height))
     }
 
-    function writeCell(index) {
-        const hex = biomeLookup.current[biomeMapRef.current[index]]?.colour ?? '#000000'
-        let [r, g, b] = hexToRgb(hex);
-
-        if (highlightMapRef.current[index] === 1) {
-            [r, g, b] = lighten(r, g, b, 0.2)
-        } else if (highlightMapRef.current[index] === 2) {
-            [r, g, b] = darken(r, g, b, 0.2)
-        }
-
-        const p = index * 4
-        rgbMapRef.current[p] = r
-        rgbMapRef.current[p + 1] = g
-        rgbMapRef.current[p + 2] = b
-        rgbMapRef.current[p + 3] = 255
+    function handleGenerate(options) {
+        generateTerrain(worldRef.current, options)
+        commit()
     }
 
-    function getCellTopNeighbour(index, cols) {
-        const top = index - cols
-        return top >= 0 ? top : -1
-    }
+    function handleCellInteraction({ cellX, cellY }, button) {
+        const world = worldRef.current
+        const indexes = getBrushIndexes(world, cellX, cellY, brushRadius)
 
-    function refreshCell(index) {
-        updateHighlight(index)
-        writeCell(index)
-    }
-        
-
-
-    function paintCell({x, y}) {
-        if (x < 0 || x >= dimensions.width || y < 0 || y >= dimensions.height) return
-        const indexes = getBrushIndexes({x, y})
-        for (const index of indexes) {
-            biomeMapRef.current[index] = biomeBrush
-            writeCell(index)
-        }
-        setImageData(new ImageData(rgbMapRef.current, dimensions.width, dimensions.height))
-    }
-
-    function getBrushIndexes({x, y}) {
-        const indexes = []
-        for (let dy = -brushRadius; dy <= brushRadius; dy++) {
-            for (let dx = -brushRadius; dx <= brushRadius; dx++) {
-                const bx = x + dx
-                const by = y + dy
-                if (bx < 0 || bx >= dimensions.width || by < 0 || by >= dimensions.height) continue
-                indexes.push(by * dimensions.width + bx)
-            }
-        }
-        return indexes
-    }
-
-    function getTooltipLabel({cellX, cellY}) {
-        return `Elevation: ${elevationMapRef.current[cellY * dimensions.width + cellX]}`
-    }
-
-    function handleCellInteraction({cellX, cellY}) {
-        if (brushType === 'paint') {
-            paintCell({x: cellX, y: cellY})
-        } else if (brushType === 'elevation') {
-            const indexes = getBrushIndexes({x: cellX, y: cellY})
-            for (const index of indexes) {
-                elevationMapRef.current[index]++
-                refreshCell(index)
-                const below = index + dimensions.width
-                if (below < dimensions.width * dimensions.height) refreshCell(below)
-                if (elevationMapRef.current[index] < seaLevel) {
-                    biomeMapRef.current[index] = 0
-                } else if (elevationMapRef.current[index] > 200) {
-                    biomeMapRef.current[index] = 2
-                } else {
-                    biomeMapRef.current[index] = 1
+        if (elevationEditType === 'layer') {
+            const fresh = indexes.filter((i) => !strokeCells.current.has(i))
+            for (const i of fresh) strokeCells.current.add(i)
+            if (fresh.length) {
+                if (button === 0) {
+                    alterElevation(world, fresh, 1)
+                } else if (button === 2) {
+                    alterElevation(world, fresh, -1)
                 }
             }
-            setImageData(new ImageData(rgbMapRef.current, dimensions.width, dimensions.height))
-    }
+        } else if (elevationEditType === 'smoothing') {
+            smoothElevation(world, indexes)
+        } else if (elevationEditType === "flatten") {
+            if (strokeStartLocation.current) {
+                flattenElevation(world, indexes, world.elevation[strokeStartLocation.current.y * world.width + strokeStartLocation.current.x])
+            }
+        } else if (biomeBrush !== null) {
+            paintBiome(world, indexes, biomeBrush)
+        }
+        commit()
     }
 
+    function handleContinuousCellInteraction({ cellX, cellY }, button) {
+        const world = worldRef.current
+        const indexes = getBrushIndexes(world, cellX, cellY, brushRadius)
+        if (elevationEditType === 'continuous') {
+            if (button === 0) {
+                alterElevation(world, indexes, 1)
+            } else if (button === 2) {
+                alterElevation(world, indexes, -1)
+            }
+        }
+        commit()
+    }
 
+    function getTooltipLabel({ cellX, cellY }) {
+        const world = worldRef.current
+        if (!world) return null
+        return `${world.biomeLookup[world.biome[cellY * world.width + cellX]].name}`
+    }
+
+    function startStroke({ cellX, cellY }) {
+        strokeStartLocation.current = { x: cellX, y: cellY }
+        strokeCells.current.clear()
+    }
+
+    function addBiome(biome) {
+        const next = { ...biomeLookup, [Object.keys(biomeLookup).length]: biome }
+        worldRef.current.biomeLookup = next
+        setBiomeLookup(next)
+    }
 
     return (
         <div className="display">
-            <WorldbuilderWindow 
-                biomeLookup={biomeLookup.current}
+            <WorldbuilderWindow
+                biomeLookup={biomeLookup}
                 setBiomeBrush={setBiomeBrush}
-                setBrushType={setBrushType}
-                brushType={brushType}
                 biomeBrush={biomeBrush}
-                generateRandomMap={generateRandomMap}
+                generateRandomMap={handleGenerate}
+                addBiome={addBiome}
+                setBrushRadius={setBrushRadius}
+                setElevationEditType={setElevationEditType}
+                elevationEditType={elevationEditType}
             />
             <MapDisplay
                 imageData={imageData}
                 onCellClick={() => {}}
-                handleMouseDownDrag={({cellX, cellY}) => handleCellInteraction({cellX, cellY})}
+                handleMouseDownDrag={handleCellInteraction}
                 getTooltipLabel={getTooltipLabel}
+                onStrokeStart={startStroke}
+                brushRadius={brushRadius}
+                handleMouseDown={handleContinuousCellInteraction}
             />
         </div>
     )
