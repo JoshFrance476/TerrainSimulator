@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
-
-function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType, addRegion, setElevationEditType, biomeBrush, generateRandomMap, setBrushRadius, addBiome, regionLookup, regionBrush, setRegionBrush }) {
+function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  addRegion, setElevationEditType, biomeBrush, generateRandomMap, setBrushRadius, addBiome, regionLookup, regionBrush, setRegionBrush, saveWorld, saveWorldMutation, loadWorld }) {
+    const loadWorldIdRef = useRef(); 
     
     const scaleRef = useRef(null);
     const octavesRef = useRef(null);
@@ -11,6 +11,9 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType, add
     const newBiomeColourRef = useRef(null);
 
     const newRegionNameRef = useRef(null);
+
+    const newWorldNameRef = useRef(null);
+    const newWorldDescriptionRef = useRef(null);
 
     const [tooltip, setTooltip] = useState(null); // { biomeId, x, y }
 
@@ -112,6 +115,25 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType, add
                 })}>
                     Generate Random Map
                 </button>
+            </div>
+            <div className="settings-section">
+                <h3>Settings</h3>
+                <label>
+                    Save map:
+                    <input type="text" placeholder="Filename" ref={newWorldNameRef} />
+                    <textarea placeholder="description" ref={newWorldDescriptionRef} />
+                    <button onClick={() => {
+                        const name = newWorldNameRef.current.value;
+                        const description = newWorldDescriptionRef.current.value;
+                        saveWorld(name, description);
+                    }}>Save</button>
+                </label>
+                {saveWorldMutation.isError && <p className="error">{saveWorldMutation.error.message}</p>}
+                <label>
+                    Load map:
+                    <input type="text" placeholder="World ID" ref={loadWorldIdRef} />
+                    <button onClick={() => loadWorld(loadWorldIdRef.current.value)}>Load</button>
+                </label>
             </div>
             {tooltip && <div className="tooltip" style={{ left: tooltip.x+2, top: tooltip.y-20 }}>{biomeLookup[tooltip.biomeId]?.name ?? "empty"}</div>}
         </div>
