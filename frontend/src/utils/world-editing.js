@@ -16,18 +16,18 @@ export const NO_REGION = 255
 export const MAX_REGIONS_PER_CELL = 4
 
 
-export function createWorld({ width, height, biomeLookup = BIOME_LOOKUP }) {
+export function createWorld({ width, height, biome, elevation, region, rgba, biomeLookup, regionLookup }) {
     const cells = width * height
     return {
         width,
         height,
-        biome: new Uint8Array(cells),
-        elevation: new Uint8ClampedArray(cells).fill(SEA_LEVEL),
+        biome: biome ?? new Uint8Array(cells),
+        elevation: elevation ? new Uint8ClampedArray(elevation) : new Uint8ClampedArray(cells).fill(SEA_LEVEL),
+        rgba: rgba ? new Uint8ClampedArray(rgba) : new Uint8ClampedArray(cells * 4),
+        region: region ?? new Uint8Array(cells * 4).fill(NO_REGION),
+        biomeLookup: biomeLookup ?? BIOME_LOOKUP,
+        regionLookup: regionLookup ?? {},
         highlight: new Uint8Array(cells),
-        rgba: new Uint8ClampedArray(cells * 4),
-        region: new Uint8Array(cells * 4).fill(NO_REGION),
-        biomeLookup: biomeLookup,
-        regionLookup: {},
     }
 }
 
