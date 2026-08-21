@@ -55,7 +55,7 @@ function App() {
 			)}
 			{page.name === "landing" && <Landing onLogout={handleLogout} user={user} onNavigate={setPage}/>}
 			{page.name === "play" && <Play user={user}/>} 
-			{page.name === "worldbuilder" && <WorldBuilder />}
+			{page.name === "worldbuilder" && <WorldBuilder initialWorldId={page.worldId}/>}
 		</>
 	)
 }
