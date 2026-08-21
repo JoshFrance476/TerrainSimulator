@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import WorldbuilderWindow from '../components/WorldbuilderWindow'
 import MapDisplay from '../components/MapDisplay'
 import './worldbuilder.css'
 import {
-    BIOME_LOOKUP, createWorld, refreshAll, generateTerrain, getCellRegions, NO_REGION,
+    createWorld, refreshAll, generateTerrain, getCellRegions, NO_REGION,
     getBrushIndexes, paintBiome, alterElevation, smoothElevation, flattenElevation, writeRegion, removeRegion, buildRegionBorders
 } from '../utils/world-editing'
+import { useSaveEditorWorldMutation, editorWorldKey, fetchEditorWorld } from '../queries/queries'
 
-function Worldbuilder() {
+function Worldbuilder({ initialWorldId = null }) {
+    const [worldId, setWorldId] = useState(initialWorldId)
     const [dimensions, setDimensions] = useState({ width: 768, height: 512 })
     const worldRef = useRef(null)
 
@@ -17,7 +20,7 @@ function Worldbuilder() {
     const [regionBrush, setRegionBrush] = useState(255)
     const [brushRadius, setBrushRadius] = useState(4)
 
-    const [biomeLookup, setBiomeLookup] = useState(BIOME_LOOKUP)
+    const [biomeLookup, setBiomeLookup] = useState({})
     const [regionLookup, setRegionLookup] = useState({})
 
     const [borderSegments, setBorderSegments] = useState(null)
@@ -26,12 +29,47 @@ function Worldbuilder() {
 
     const strokeStartLocation = useRef(null)
 
+    const saveWorldMutation = useSaveEditorWorldMutation()
+
+    const queryClient = useQueryClient()
+
     useEffect(() => {
-        const world = createWorld({ ...dimensions, biomeLookup })
+        if (initialWorldId != null) {
+            loadWorld(initialWorldId)
+            return
+        }
+        const world = createWorld({ ...dimensions })
         refreshAll(world)
         worldRef.current = world
+        setBiomeLookup(world.biomeLookup)
+        setRegionLookup(world.regionLookup)
         commit()
     }, [dimensions])
+
+    async function loadWorld(id) {
+        const data = await queryClient.fetchQuery({
+            queryKey: editorWorldKey(id),
+            queryFn: () => fetchEditorWorld(id),
+            staleTime: Infinity,
+        })
+
+        const world = createWorld({
+            width: data.width,
+            height: data.height,
+            biomeLookup: data.biome_lookup,
+            regionLookup: data.region_lookup,
+            biome: Uint8Array.fromBase64(data.biome),
+            elevation: Uint8Array.fromBase64(data.elevation),
+            region: Uint8Array.fromBase64(data.region),
+            rgba: Uint8Array.fromBase64(data.colour),
+        })
+
+        worldRef.current = world
+        setWorldId(id)
+        setBiomeLookup(world.biomeLookup)
+        setRegionLookup(world.regionLookup)
+        commit()
+    }
 
     useEffect(() => {
         if (worldRef.current) {
@@ -141,7 +179,13 @@ function Worldbuilder() {
         setRegionLookup(next)
     }
 
+    function saveWorld(name, description) {
+        console.log("Saving world with name:", name, "and description:", description)
+        saveWorldMutation.mutate({ world: worldRef.current, name, description })
+    }
+
     return (
+        
         <div className="display">
             <WorldbuilderWindow
                 biomeLookup={biomeLookup}
@@ -156,6 +200,9 @@ function Worldbuilder() {
                 regionLookup={regionLookup}
                 regionBrush={regionBrush}
                 setRegionBrush={setRegionBrush}
+                saveWorld={saveWorld}
+                saveWorldMutation={saveWorldMutation}
+                loadWorld={loadWorld}
             />
             <MapDisplay
                 imageData={imageData}
