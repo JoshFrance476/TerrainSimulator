@@ -4,8 +4,6 @@ import AccountWindow from './components/AccountWindow'
 import Landing from './pages/Landing'
 import Play from './pages/Play'
 import WorldBuilder from './pages/Worldbuilder'
-import Editor from './pages/Editor'
-import { useNewSessionMutation } from './queries/queries'
 
 function App() {
 	const [user, setUser] = useState(undefined); // undefined = loading, null = logged out
@@ -57,7 +55,6 @@ function App() {
 			)}
 			{page.name === "landing" && <Landing onLogout={handleLogout} user={user} onNavigate={setPage}/>}
 			{page.name === "play" && <Play user={user}/>} 
-			{page.name === "editor" && <Editor worldId={page.worldId}/>}
 			{page.name === "worldbuilder" && <WorldBuilder />}
 		</>
 	)
