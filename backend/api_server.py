@@ -1,3 +1,4 @@
+import base64
 import traceback
 
 from database.db import pool
@@ -477,4 +478,75 @@ def get_editor_world(world_id: int):
         "biome_config": row["biome_config"],
         "region_list": row["region_list"],
     }
+
+
+class WorldPayload(BaseModel):
+    name: str
+    description: str | None = None
+    width: int
+    height: int
+    biome: str
+    elevation: str
+    region: str
+    colour: str
+    biome_lookup: dict
+    story_setup: dict
+    region_lookup: dict
+
+@app.get("/api/load-world/{world_id}")
+def load_world(world_id: int):
+    row = worlds.get_world(world_id)
+    if row is None:
+        raise HTTPException(status_code=403, detail="World not found")
+    loaded_world = WorldPayload(
+        name=row["name"],
+        description=row["description"],
+        width=row["width"],
+        height=row["height"],
+        biome=base64.b64encode(row["biome"]).decode(),
+        elevation=base64.b64encode(row["elevation"]).decode(),
+        region=base64.b64encode(row["region"]).decode(),
+        colour=base64.b64encode(row["colour"]).decode(),
+        biome_lookup=row["biome_lookup"],
+        story_setup=row["story_setup"],
+        region_lookup=row["region_lookup"]
+    )
+    return loaded_world
+
+@app.put("/api/editor/save-world")
+def save_world(request: WorldPayload, user=Depends(require_user)):
+    try:
+        map_png = rgba_to_png(
+            request.colour,
+            request.width,
+            request.height,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     
+    worlds.upsert_save(
+        name=request.name, 
+        description=request.description,
+        owner_id=user["id"],
+        width=request.width,
+        height=request.height,
+        biome=base64.b64decode(request.biome),
+        elevation=base64.b64decode(request.elevation),
+        region=base64.b64decode(request.region),
+        colour=base64.b64decode(request.colour),
+        map_png=map_png,
+        biome_lookup=request.biome_lookup,
+        story_setup=request.story_setup,
+        region_lookup=request.region_lookup
+    )
+
+def rgba_to_png(rgba_b64: str, width: int, height: int) -> bytes:
+    raw = base64.b64decode(rgba_b64)
+    expected = width * height * 4
+    if len(raw) != expected:
+        raise ValueError(f"expected {expected} bytes for {width}x{height}, got {len(raw)}")
+
+    image = Image.frombytes("RGBA", (width, height), raw)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
