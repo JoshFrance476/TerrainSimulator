@@ -17,12 +17,8 @@ export const modelKey = ['model']
 export const worldsKey = ['worlds']
 export const sessionKey = ['session']
 
-export const editorWorldMetadataKey = (id) => ['editor', 'world', id]
-export const editorRegionMapKey = (id) => ['editor', 'region-map', id]
-export const editorBiomeMapKey = (id) => ['editor', 'biome-map', id]
-export const editorRGBMapKey = (id) => ['editor', 'rgb-map', id]
-export const editorElevationMapKey = (id) => ['editor', 'elevation-map', id]
-export const editorSteepnessMapKey = (id) => ['editor', 'steepness-map', id]
+export const editorWorldKey = (worldId) => ['editor-world', worldId]
+
 
 // ---------------------------------------------------------------- fetchers
 
@@ -56,8 +52,10 @@ async function putJson(url, body) {
         body: JSON.stringify(body),
         credentials: 'include',
     })
-    if (!res.ok) throw new Error(`${url} failed: ${res.status}`)
-    if (res.status === 204) return null
+    if (!res.ok) {
+        const detail = await res.json().catch(() => null)
+        throw new Error(detail?.detail ?? `${url} failed: ${res.status}`)
+    }
     return res.json()
 }
 
@@ -193,69 +191,31 @@ export function useSavePromptTemplateMutation(name) {
 
 // ---------------------------------------------------------------- editor
 
-export function useEditorWorldMetadataQuery(worldId) {
-    return useQuery({
-        queryKey: editorWorldMetadataKey(worldId),
-        queryFn: () => getJson(`/api/editor/worlds/${worldId}`),
-        enabled: worldId != null,
-        staleTime: Infinity,
+export function useSaveEditorWorldMutation() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: ({ world, name, description }) => {
+            const worldData = {
+                name: name,
+                description: description,
+                width: world.width,
+                height: world.height,
+                biome: world.biome.toBase64(),
+                elevation: new Uint8Array(world.elevation).toBase64(),
+                region: world.region.toBase64(),
+                colour: new Uint8Array(world.rgba).toBase64(),
+                biome_lookup: world.biomeLookup,
+                region_lookup: world.regionLookup,
+                story_setup: {},
+            }
+            return putJson('/api/editor/save-world',  worldData)
+        },            
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: worldsKey }),
     })
 }
 
-export function useEditorBiomeMapQuery(worldId) {
-    return useQuery({
-        queryKey: editorBiomeMapKey(worldId),
-        queryFn: async () =>
-            new Uint8Array(await getBuffer(`/api/editor/worlds/${worldId}/biome-map`)),
-        enabled: worldId != null,
-        staleTime: Infinity,
-        ...binaryOptions,
-    })
-}
+export const fetchEditorWorld = (worldId) => getJson(`/api/load-world/${worldId}`)
 
-export function useEditorRegionMapQuery(worldId) {
-    return useQuery({
-        queryKey: editorRegionMapKey(worldId),
-        queryFn: async () => 
-            new Uint16Array(await getBuffer(`/api/editor/worlds/${worldId}/region-map`)),
-        enabled: worldId != null,
-        staleTime: Infinity,
-        ...binaryOptions,
-    })
-}
-
-export function useEditorRGBMapQuery(worldId) {
-    return useQuery({
-        queryKey: editorRGBMapKey(worldId),
-        queryFn: async () =>
-            new Uint8ClampedArray(await getBuffer(`/api/editor/worlds/${worldId}/rgb-map`)),
-        enabled: worldId != null,
-        staleTime: Infinity,
-        ...binaryOptions,
-    })
-}
-
-export function useEditorElevationMapQuery(worldId) {
-    return useQuery({
-        queryKey: editorElevationMapKey(worldId),
-        queryFn: async () =>
-            new Float32Array(await getBuffer(`/api/editor/worlds/${worldId}/elevation-map`)),
-        enabled: worldId != null,
-        staleTime: Infinity,
-        ...binaryOptions,
-    })
-}
-
-export function useEditorSteepnessMapQuery(worldId) {
-    return useQuery({
-        queryKey: editorSteepnessMapKey(worldId),
-        queryFn: async () =>
-            new Float32Array(await getBuffer(`/api/editor/worlds/${worldId}/steepness-map`)),
-        enabled: worldId != null,
-        staleTime: Infinity,
-        ...binaryOptions,
-    })
-}
 // ---------------------------------------------------------------- mutations
 
 export function useMovePlayerMutation() {
