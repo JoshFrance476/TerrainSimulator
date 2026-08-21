@@ -21,8 +21,8 @@ function Landing({ onNavigate }) {
         onNavigate({name: "play"})
     }
 
-    function handleEditor(worldId) {
-        onNavigate({name: "editor", worldId: worldId}) 
+    function handleWorldbuilder(worldId) {
+        onNavigate({name: "worldbuilder", worldId: worldId}) 
     }
 
     return (
@@ -50,7 +50,7 @@ function Landing({ onNavigate }) {
                                 <p className="world-list-item-description">{world.description}</p>
                                 <div className="world-list-item-actions">
                                     <button className="world-list-item-button" onClick={() => handleLoadSession(world)}>Play</button>
-                                    <button className="world-list-item-button" onClick={() => handleEditor(world.id)}>Load in Editor</button>
+                                    <button className="world-list-item-button" onClick={() => handleWorldbuilder(world.id)}>Load in Worldbuilder</button>
                                 </div>
                             </div>
                         </li>
