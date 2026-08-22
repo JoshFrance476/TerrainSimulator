@@ -66,6 +66,7 @@ function Worldbuilder({ initialWorldId = null }) {
 
         worldRef.current = world
         setWorldId(id)
+        refreshAll(world)
         setBiomeLookup(world.biomeLookup)
         setRegionLookup(world.regionLookup)
         commit()
