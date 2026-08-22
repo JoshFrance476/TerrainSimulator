@@ -101,7 +101,7 @@ class SetupStoryBody(BaseModel):
     character_description: str
     story_focus_description: str
 
-class Backend:
+class Session:
     """holds all game state"""
     def __init__(self, world_id: int | None = None):
         self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
@@ -209,7 +209,7 @@ def load_map_from_database(world_id):
     }
     return world_data, world_metadata
 
-backends: dict[str, Backend] = {}
+sessions: dict[str, Session] = {}
 
 @app.get("/api/auth/login")
 async def login(request: Request):
@@ -225,13 +225,13 @@ async def auth_callback(request: Request):
     if user is None:
         user = users.create_user("google", claims["sub"], claims["email"], claims.get("name"))
 
-    guest_backend = backends.pop(session_key(request), None)
+    guest_session = sessions.pop(session_key(request), None)
 
     request.session.clear()
     request.session["user_id"] = user["id"]
 
-    if guest_backend:
-        backends[session_key(request)] = guest_backend
+    if guest_session:
+        sessions[session_key(request)] = guest_session
     
     return RedirectResponse(FRONTEND_URL)
 
@@ -263,11 +263,11 @@ def session_key(request: Request) -> str:
         request.session["guest_id"] = str(uuid.uuid4())
     return f"guest:{request.session['guest_id']}"
 
-def get_backend(request: Request) -> Backend:
-    backend = backends.get(session_key(request))
-    if backend is None:
+def get_session(request: Request) -> Session:
+    session = sessions.get(session_key(request))
+    if session is None:
         raise HTTPException(status_code=409, detail="No active session")
-    return backend
+    return session
 
 
 active_streams: dict[str, str] = {}
@@ -275,28 +275,28 @@ active_streams: dict[str, str] = {}
 @app.post("/api/session")
 def create_session(body: StartSessionBody, request: Request):
     try:
-        backends[session_key(request)] = Backend(body.world_id)
+        sessions[session_key(request)] = Session(body.world_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return {"ok":True}
  
 @app.post("/api/session/setup")
-def setup_session_story(body: SetupStoryBody, b: Backend = Depends(get_backend)):
-    b.setup_story(body.world_description, body.character_description, body.story_focus_description)
+def setup_session_story(body: SetupStoryBody, s: Session = Depends(get_session)):
+    s.setup_story(body.world_description, body.character_description, body.story_focus_description)
 
 # ---------------------------------------------------------------- story
 
 @app.get("/api/story")
-def get_story(b: Backend = Depends(get_backend)):
-    return b.get_story_json()
+def get_story(s: Session = Depends(get_session)):
+    return s.get_story_json()
 
 @app.get("/api/scene") 
-def get_scene(b: Backend = Depends(get_backend)):
-    return b.get_current_scene_json()
+def get_scene(s: Session = Depends(get_session)):
+    return s.get_current_scene_json()
 
 
 @app.post("/api/scene/prompt")
-async def prompt_scene(body: CellBody, request: Request, user=Depends(require_user), b: Backend = Depends(get_backend)):
+async def prompt_scene(body: CellBody, request: Request, user=Depends(require_user), s: Session = Depends(get_session)):
     stream_id = str(uuid.uuid4())
  
     active_streams[stream_id] = {  
@@ -307,92 +307,92 @@ async def prompt_scene(body: CellBody, request: Request, user=Depends(require_us
 
 
 @app.get("/api/stream")
-async def stream_response(id: str, request: Request, b: Backend = Depends(get_backend)) -> Response:
+async def stream_response(id: str, request: Request, s: Session = Depends(get_session)) -> Response:
     data = active_streams.get(id)
 
     if not data or data["key"] != session_key(request):
         raise HTTPException(status_code=404, detail="Stream ID not found")
     
-    if not data.get("cell") and not b.story_engine.get_current_scene():
+    if not data.get("cell") and not s.story_engine.get_current_scene():
         raise HTTPException(status_code=404, detail="No cell provided and no existing scene")
 
     async def generate():
-        async for event in b.story_engine.generate_scene_interaction(data.get("cell")):
+        async for event in s.story_engine.generate_scene_interaction(data.get("cell")):
             yield event
  
     return EventSourceResponse(generate())
 
 @app.post("/api/scene/action") 
-async def scene_action(body: ActionBody, b: Backend = Depends(get_backend)):
-    await b.story_engine.choose_action(body.action, tuple(b.player.get_location()))
-    scene = b.story_engine.get_current_scene()
+async def scene_action(body: ActionBody, s: Session = Depends(get_session)):
+    await s.story_engine.choose_action(body.action, tuple(s.player.get_location()))
+    scene = s.story_engine.get_current_scene()
     return {"ended": scene.ended if scene else True}
 
 
 @app.put("/api/scene/templates/{name}")
-async def set_prompt_template(name: str, body: PromptBody, b: Backend = Depends(get_backend)):
+async def set_prompt_template(name: str, body: PromptBody, s: Session = Depends(get_session)):
     try:
-        b.story_engine.llm.prompt_manager.set(name, body.text, body.temperature, body.max_tokens, body.reasoning_effort)
+        s.story_engine.llm.prompt_manager.set(name, body.text, body.temperature, body.max_tokens, body.reasoning_effort)
     except KeyError:
         raise HTTPException(status_code=404, detail="Template not found")
 
 
 @app.get("/api/scene/templates/{name}")
-def get_prompt_template(name: str, b: Backend = Depends(get_backend)): 
-    return b.story_engine.llm.prompt_manager.get(name).to_dict()
+def get_prompt_template(name: str, s: Session = Depends(get_session)): 
+    return s.story_engine.llm.prompt_manager.get(name).to_dict()
 
 # ---------------------------------------------------------------- player
 
 @app.post('/api/player/move')
-async def move_player_to(body: MoveDestinationBody, b: Backend = Depends(get_backend)):
+async def move_player_to(body: MoveDestinationBody, s: Session = Depends(get_session)):
     new_location = (body.y, body.x)
-    b.player.set_location(new_location)
-    return {"player_location": list(b.player.get_location())}
+    s.player.set_location(new_location)
+    return {"player_location": list(s.player.get_location())}
 
 @app.get('/api/player')
-def get_player_location(b: Backend = Depends(get_backend)):
-    return {"player_location": list(b.player.get_location())}
+def get_player_location(s: Session = Depends(get_session)):
+    return {"player_location": list(s.player.get_location())}
 
 # ---------------------------------------------------------------- world
 @app.get("/api/world")
-def get_world(b: Backend = Depends(get_backend)):
-    return b.get_world_json()
+def get_world(s: Session = Depends(get_session)):
+    return s.get_world_json()
 
 @app.post("/api/world/save")
-def save_world(body: SaveWorldBody, user=Depends(require_user), b: Backend = Depends(get_backend)):
-    b.save_current_map(body.name, body.description, user["id"])
+def save_world(body: SaveWorldBody, user=Depends(require_user), s: Session = Depends(get_session)):
+    s.save_current_map(body.name, body.description, user["id"])
     return {"ok": True}
 
 @app.get("/api/world/rgb")
-def get_world_rgb(b: Backend = Depends(get_backend)):
-    rgb = hsv_to_rgb_array(b.world.get_map_data("colour"))          # shape (rows, cols, 3)
+def get_world_rgb(s: Session = Depends(get_session)):
+    rgb = hsv_to_rgb_array(s.world.get_map_data("colour"))          # shape (rows, cols, 3)
     rgb = np.asarray(rgb, dtype=np.uint8)
     alpha = np.full((*rgb.shape[:2], 1), 255, dtype=np.uint8)       # fully opaque
     rgba = np.concatenate([rgb, alpha], axis=2)                      # shape (rows, cols, 4)
     return Response(rgba.tobytes(), media_type="application/octet-stream")
 
 @app.get("/api/world/biome-map")
-def get_biome_map(b: Backend = Depends(get_backend)):
-    biome_map = b.world.get_biome_map().astype(np.uint8)
+def get_biome_map(s: Session = Depends(get_session)):
+    biome_map = s.world.get_biome_map().astype(np.uint8)
     return Response(biome_map.tobytes(), media_type="application/octet-stream")
 
 @app.get("/api/world/biome-lookup")
-def get_biome_lookup(b: Backend = Depends(get_backend)):
-    return b.world.get_biome_lookup()
+def get_biome_lookup(s: Session = Depends(get_session)):
+    return s.world.get_biome_lookup()
     
 @app.get("/api/world/region-map")
-def get_region_map(b: Backend = Depends(get_backend)):
-    return Response(b.world.get_region_map().tobytes(), media_type="application/octet-stream")
+def get_region_map(s: Session = Depends(get_session)):
+    return Response(s.world.get_region_map().tobytes(), media_type="application/octet-stream")
 
 @app.get("/api/world/region-lookup")
-def get_region_lookup(b: Backend = Depends(get_backend)):
-    return b.world.get_region_lookup() 
+def get_region_lookup(s: Session = Depends(get_session)):
+    return s.world.get_region_lookup() 
 
 @app.get('/api/token-usage')
-def get_token_usage(b: Backend = Depends(get_backend)):
+def get_token_usage(s: Session = Depends(get_session)):
     return {
-        "output_tokens": b.story_engine.state.completion_tokens,
-        "input_tokens": b.story_engine.state.prompt_tokens
+        "output_tokens": s.story_engine.state.completion_tokens,
+        "input_tokens": s.story_engine.state.prompt_tokens
     }
 
 # ---------------------------------------------------------------- worlds
@@ -410,75 +410,6 @@ def get_world_thumbnail(world_id: int):
 
 
 # ---------------------------------------------------------------- editor
-
-def load_world_row(world_id: int) -> dict:
-    row = worlds.get_world(world_id)
-    if row is None:
-        raise HTTPException(status_code=404, detail="World not found")
-    return row
-
-def load_world_arrays(row: dict) -> dict:
-    with np.load(io.BytesIO(row["map_data"])) as npz:
-        return {key: npz[key] for key in npz.files}
-    
-
-@app.get("/api/editor/worlds/{world_id}/biome-map")
-def get_editor_biome_map(world_id: int):
-    row = load_world_row(world_id)
-    arrays = load_world_arrays(row)
-    return Response(arrays["biome"].astype(np.uint8).tobytes(),
-                    media_type="application/octet-stream")
-
-
-@app.get("/api/editor/worlds/{world_id}/region-map")
-def get_editor_region_map(world_id: int):
-    row = load_world_row(world_id)
-    arrays = load_world_arrays(row)
-    return Response(arrays["region_map"].astype(np.uint16).tobytes(),
-                    media_type="application/octet-stream")
-
-@app.get("/api/editor/worlds/{world_id}/rgb-map")
-def get_editor_rgb_map(world_id: int):
-    row = load_world_row(world_id)
-    arrays = load_world_arrays(row)
-    rgb = np.asarray(hsv_to_rgb_array(arrays["colour"]), dtype=np.uint8)
-    alpha = np.full((*rgb.shape[:2], 1), 255, dtype=np.uint8)
-    rgba = np.concatenate([rgb, alpha], axis=2)
-    return Response(rgba.tobytes(), media_type="application/octet-stream")
-
-@app.get("/api/editor/worlds/{world_id}/elevation-map")
-def get_editor_elevation_map(world_id: int):
-    row = load_world_row(world_id)
-    arrays = load_world_arrays(row)
-    return Response(arrays["elevation"].astype(np.float32).tobytes(),
-                    media_type="application/octet-stream")
-
-@app.get("/api/editor/worlds/{world_id}/steepness-map")
-def get_editor_elevation_map(world_id: int):
-    row = load_world_row(world_id)
-    arrays = load_world_arrays(row)
-    return Response(arrays["steepness"].astype(np.float32).tobytes(),
-                    media_type="application/octet-stream")
-
-@app.get("/api/editor/worlds/{world_id}")
-def get_editor_world(world_id: int):
-    row = worlds.get_world(world_id)
-    if row is None:
-        raise HTTPException(status_code=404, detail="World not found")
-
-    with np.load(io.BytesIO(row["map_data"])) as npz:
-        arrays = {key: npz[key] for key in npz.files}
-
-    rows, cols = arrays["biome"].shape
-    return {
-        "rows": rows,
-        "cols": cols,
-        "max_regions_per_cell": arrays["region_map"].shape[2],
-        "no_region_id": 0xFFFF,
-        "biome_config": row["biome_config"],
-        "region_list": row["region_list"],
-    }
-
 
 class WorldPayload(BaseModel):
     name: str
