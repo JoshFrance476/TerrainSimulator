@@ -1,8 +1,0 @@
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    provider VARCHAR(255),
-    provider_id VARCHAR(255),
-    email VARCHAR(255)
-)
-
-ALTER TABLE users ADD COLUMN name VARCHAR(255);
