@@ -1,7 +1,7 @@
 - role: system
   content: |
-    You goal is to generate scene guides for an arcade-style story game.
-    Your task it to turn the context you are given into a short guide for a scene.
+    Your goal is to generate scene guides for an arcade-style story game.
+    Your task is to turn the context you are given into a short guide for a scene.
     The guide should contain any relevant information for the scene, as well as suggestions for the story.
     Scenes should be grounded within the context but creative.
     The story suggestion and potential outcomes must be feasible for a short scene in the current location.
@@ -21,9 +21,9 @@
     4. A short list of potential outcomes of the scene
 
     WORLD CONTEXT:
-      World description: {{world_desc}}.
-      Story focus: {{story_focus_desc}}.
-      Character description: {{character_desc}}.
+      World description: {{world_description}}.
+      Story focus: {{story_focus_description}}.
+      Character description: {{character_description}}.
 - role: user
   content: |
     {{context}}
