@@ -2,26 +2,29 @@ from storytelling.llm_client import LLMClient
 from storytelling.story_state import StoryState
 from storytelling.context_builder import ContextBuilder
 from storytelling.scene_manager import SceneManager
-from storytelling.stream_handler import StreamHandler
+
+from world.world import World
+
+from models import Location, StorySetup
 
 import json
  
  
 class StoryEngine:
-    def __init__(self, world):
+    def __init__(self, world: World):
         self.world = world
         self.state = StoryState()
         self.llm = LLMClient(self.state) 
+        self.player_location = Location(0, 0)
  
         self.context_builder = ContextBuilder(self.state, self.world)
         self.scene_manager = SceneManager(self.state, self.llm, self.context_builder)
-        self.stream_handler = StreamHandler(self.state, self.scene_manager)
  
     # ------------------------------------------------------------------
     # Public interface
     # ------------------------------------------------------------------
  
-    async def generate_scene_interaction(self, selected_cell):
+    async def generate_scene_interaction(self, selected_cell: Location):
         async for event in self.scene_manager.generate_scene_interaction(selected_cell):
             yield event
             if event["event"] == "done":
@@ -36,7 +39,7 @@ class StoryEngine:
                 
 
  
-    async def choose_action(self, action, selected_cell):
+    async def choose_action(self, action: str, selected_cell: Location):
         scene = self.state.current_scene
         scene.submit_action(action)
         if scene.ended:
@@ -63,27 +66,29 @@ class StoryEngine:
             f"Total cost (gpt-oss-120b): "
             f"{round(self.state.prompt_tokens * 0.000015 + self.state.completion_tokens * 0.00006, 5)} cents"
         )
+
+    def get_player_location(self) -> Location:
+        return self.player_location
+
+    def set_player_location(self, location: Location):
+        self.player_location = location
  
     # ------------------------------------------------------------------
     # Setup
     # ------------------------------------------------------------------
  
-    def setup(self, story_setup):
-        self.state.world_description = story_setup["world_description"]
-        self.state.character_description = story_setup["character_description"]
-        self.state.story_focus_description = story_setup["story_focus_description"]
+    def setup(self, story_setup: StorySetup):
+        self.state.story_setup = story_setup
  
-    def get_setup(self):
-        return {
-            "world_description": self.state.world_description,
-            "character_description": self.state.character_description,
-            "story_focus_description": self.state.story_focus_description
-        }
+    def get_setup(self) -> StorySetup:
+        return self.state.story_setup
  
     def clear_setup(self):
-        self.state.world_description = ""
-        self.state.character_description = ""
-        self.state.story_focus_description = ""
+        self.state.story_setup = StorySetup(
+            world_description="",
+            character_description="",
+            story_focus_description=""
+        )
  
     # ------------------------------------------------------------------
     # Accessors delegated to managers
@@ -102,6 +107,6 @@ class StoryEngine:
     # Internal
     # ------------------------------------------------------------------
  
-    def update_tokens(self, prompt_tokens, completion_tokens):
+    def update_tokens(self, prompt_tokens: int, completion_tokens: int):
         self.state.prompt_tokens += prompt_tokens
         self.state.completion_tokens += completion_tokens
