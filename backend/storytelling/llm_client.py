@@ -1,6 +1,9 @@
+from models import SceneContext
 from storytelling.prompt_manager import PromptManager
 from storytelling.log_writer import LogWriter
 from huggingface_hub import AsyncInferenceClient
+
+from dataclasses import asdict
 
 import json
 
@@ -25,10 +28,7 @@ class LLMClient:
 
     async def prompt_interaction(self, guide, previous_interactions):
         messages = [
-            {"role": "system", "content": self.prompt_manager.render("interaction",
-                                                              {"world_desc": self.state.world_description,
-                                                               "story_focus_desc": self.state.story_focus_description,
-                                                               "character_desc": self.state.character_description})},
+            {"role": "system", "content": self.prompt_manager.render("interaction", asdict(self.state.story_setup))},
             {"role": "user", "content": json.dumps({
                 "guide": guide,
                 "previous_interactions": previous_interactions
@@ -91,11 +91,11 @@ class LLMClient:
             raise
 
 
-    async def prompt_scene_setup(self, context, significance, notebook, scene_history):
+    async def prompt_scene_setup(self, scene_context: SceneContext, scene_history: list[dict], significance: str):
             context = {
-                "location_context": context,
+                "location_context": asdict(scene_context.tile_data),
                 "significance": significance,
-                "character_notebook": notebook,
+                "character_notebook": scene_context.character_notebook,
                 "scene_history": scene_history
             }
     
@@ -104,10 +104,7 @@ class LLMClient:
                 context["scene_trigger"] = first_scene['chosen_action']
 
             messages = [
-                {"role": "system", "content": self.prompt_manager.render("scene-guide",
-                                                                  {"world_desc": self.state.world_description,
-                                                                    "story_focus_desc": self.state.story_focus_description,
-                                                                    "character_desc": self.state.character_description})},
+                {"role": "system", "content": self.prompt_manager.render("scene-guide", asdict(scene_context.story_setup))},
                 {"role": "user", "content": json.dumps({
                     "context": context,
                 })},
