@@ -1,0 +1,11 @@
+{
+  "name": "terrainsimulator",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n docker,web -c blue,magenta \"docker compose up\" \"cd frontend && npm run dev\"",
+    "dev:api": "cd backend && .venv\\Scripts\\python -m uvicorn api_server:app --port 8000 --reload"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
