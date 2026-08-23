@@ -5,7 +5,7 @@ import {
     useBiomeLookupQuery,
     useRegionMapQuery,
     useRegionLookupQuery,
-    useRgbQuery,
+    useElevationMapQuery,
 } from '../queries/queries'
 
 export function useWorld() {
@@ -14,14 +14,14 @@ export function useWorld() {
     const biomeLookup = useBiomeLookupQuery()
     const regionMap = useRegionMapQuery()
     const regionLookup = useRegionLookupQuery()
-    const rgbMap = useRgbQuery()
+    const elevationMap = useElevationMapQuery()
 
-    const queries = [world, biomeMap, biomeLookup, regionMap, regionLookup, rgbMap]
+    const queries = [world, biomeMap, biomeLookup, regionMap, regionLookup, elevationMap]
 
     // stable reference so `dimensions` can safely sit in effect dependency arrays
     const dimensions = useMemo(
-        () => (world.data ? { width: world.data.cols, height: world.data.rows } : null),
-        [world.data?.cols, world.data?.rows]
+        () => (world.data ? { width: world.data.width, height: world.data.height } : null),
+        [world.data?.width, world.data?.height]
     )
 
     return {
@@ -33,7 +33,7 @@ export function useWorld() {
         biomeLookup: biomeLookup.data ?? {},
         regionMap: regionMap.data,
         regionLookup: regionLookup.data ?? {},
-        rgbMap: rgbMap.data,
+        elevationMap: elevationMap.data,
 
         isLoading: queries.some((q) => q.isLoading),
         isFetching: queries.some((q) => q.isFetching),
