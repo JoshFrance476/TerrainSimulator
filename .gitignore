@@ -62,3 +62,5 @@ Thumbs.db
 *.sw?
 
 notepad.txt
+compose.yaml
+backend/database/schema.sql
