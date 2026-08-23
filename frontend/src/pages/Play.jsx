@@ -9,6 +9,7 @@ import { usePlayer } from '../hooks/usePlayer'
 import MapToolbar from '../components/MapToolbar'
 import { useMovePlayerMutation } from '../queries/queries'
 import { buildBorderSegments } from '../utils/regions'
+import { createWorld, refreshAll } from '../utils/world-editing'
 
 
 function Play({ user }) {
@@ -17,17 +18,26 @@ function Play({ user }) {
     const [interactionMode, setInteractionMode] = useState('view') // 'view' or 'move'
 
     const movePlayer = useMovePlayerMutation()
+    const { playerLocation } = usePlayer()
 
     const { dimensions, maxRegionsPerCell, noRegionId, 
-            biomeMap, biomeLookup, regionMap, regionLookup, rgbMap
+            biomeMap, biomeLookup, regionMap, regionLookup, elevationMap
     } = useWorld()
 
     const imageData = useMemo(() => {
-        if (!rgbMap || !dimensions) return null
-        return new ImageData(rgbMap, dimensions.width, dimensions.height)
-    }, [rgbMap, dimensions])
-
-    const { playerLocation } = usePlayer()
+        if (!dimensions || !biomeMap || !elevationMap || !regionMap) return null
+        const world = createWorld({
+            width: dimensions.width,
+            height: dimensions.height,
+            biomeLookup: biomeLookup,
+            regionLookup: regionLookup,
+            biome: biomeMap,
+            elevation: elevationMap,
+            region: regionMap,
+        })
+        refreshAll(world)
+        return new ImageData(world.rgba, dimensions.width, dimensions.height)
+    }, [dimensions, biomeMap, elevationMap, regionMap, biomeLookup, regionLookup])
 
     function handleCellClick({x, y}) {
         if (interactionMode === 'move') {
