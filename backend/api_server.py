@@ -1,5 +1,4 @@
 import base64
-import traceback
 
 from database.db import pool
 
@@ -13,17 +12,31 @@ from sse_starlette.sse import EventSourceResponse
 from authlib.integrations.starlette_client import OAuth
 
 from pathlib import Path
-import yaml
 import numpy as np
 from PIL import Image
 import io
-from pydantic import BaseModel
 import uuid
+
+from models import (
+    Location,
+    SaveWorldPayload,
+    StartSessionBody,
+    SetupStoryBody,
+    CellBody,
+    ActionBody,
+    PromptBody,
+    MoveDestinationBody,
+    SaveWorldBody,
+    WorldData,
+    WorldPayload,
+    to_payload,
+    to_data,
+    StorySetup
+)
 
 from world.world import World
 from world.map_entity import MapEntity
 from storytelling.story_engine import StoryEngine
-from editor.world_editor import WorldEditor
 import config as config
 
 from database import users, worlds
@@ -71,102 +84,14 @@ FRONTEND_URL = "http://localhost:5173"
 SAVED_MAPS = Path("data/saved_maps")
 
 # ---------------------------------------------------------------- models
-class CellBody(BaseModel):
-    x: int
-    y: int
 
-
-class ActionBody(BaseModel):
-    action: str
-
-class MoveDestinationBody(BaseModel):
-    x: int
-    y: int
-
-class PromptBody(BaseModel):
-    text: str
-    temperature: float | None
-    max_tokens: int = None
-    reasoning_effort: str = None
-
-class SaveWorldBody(BaseModel):
-    name: str
-    description: str = ""
-
-class StartSessionBody(BaseModel):
-    world_id: int | None = None
-
-class SetupStoryBody(BaseModel):
-    world_description: str
-    character_description: str
-    story_focus_description: str
 
 class Session:
-    """holds all game state"""
-    def __init__(self, world_id: int | None = None):
-        self.world = World(config.WORLD_ROWS, config.WORLD_COLS)
+    def __init__(self, world_id: int):
+        world_data = load_world(world_id)
+        self.world = World(world_data)
         self.story_engine = StoryEngine(self.world)
-        self.editor = WorldEditor(self.world)
-
-        if world_id is None:
-            self.generate_map()
-        else:
-            world_data, world_metadata = load_map_from_database(world_id)
-            self.world.load_world(world_data, world_metadata)
-            self.world.rows, self.world.cols = world_metadata["rows"], world_metadata["cols"]
-            self.reset_player()
         
-    def generate_map(self):
-        with open(SAVED_MAPS / "default_config.yaml") as f:
-            biome_config = yaml.safe_load(f)
-        
-        self.world.load_world(biome_config, None, None)
-
-        self.story_engine.clear_setup()
-
-        self.reset_player()
-
-    def setup_story(self, world_description, character, story_focus):
-        self.story_engine.setup({
-            "world_description": world_description,
-            "character_description": character,
-            "story_focus_description": story_focus
-        })
-                
-
-    def save_current_map(self, name, description, user_id):
-        worlds.upsert_save(
-            name=name, 
-            description=description,
-            owner_id=user_id,
-            map_data=self.convert_map_data_to_npz(),
-            map_png=self.get_map_thumbnail(),
-            biome_config=self.world.get_biome_config(),
-            story_setup=self.story_engine.get_setup(),
-            region_list=self.world.get_region_list()
-        )
-        
-    def convert_map_data_to_npz(self):
-        map_data = self.world.get_all_map_data()
-        buf = io.BytesIO()
-        np.savez(
-            buf,
-            **{k: v for k, v in map_data.items() if k != "region_list"},
-        )
-        return buf.getvalue()
-
-    def get_map_thumbnail(self):
-        rgb = np.asarray(hsv_to_rgb_array(self.world.get_map_data("colour")), dtype=np.uint8)
-        buf = io.BytesIO()
-        Image.fromarray(rgb).save(buf, format="PNG")
-        return buf.getvalue()
-
-
-    def reset_player(self):
-        self.player = MapEntity(
-            location=self.world.get_starting_location(),
-            boundary=(config.WORLD_ROWS, config.WORLD_COLS),
-        )
 
     # -- serialisation helpers -------------------------------------------
     def get_current_scene_json(self):
@@ -178,11 +103,11 @@ class Session:
 
     def get_world_json(self):
         return { 
-            "rows": self.world.rows,
-            "cols": self.world.cols,
+            "width": self.world.width,
+            "height": self.world.height,
             "setup": self.story_engine.get_setup(),
-            "max_regions_per_cell": self.world.region_manager.MAX_REGIONS_PER_CELL,
-            "no_region_id": self.world.region_manager.NO_REGION,
+            "max_regions_per_cell": self.world.max_regions_per_cell,
+            "no_region_id": self.world.no_region_sentinel,
         }
 
     def get_story_json(self):
@@ -191,25 +116,8 @@ class Session:
             "quests_list": self.story_engine.state.quest_list,
         }
 
-def load_map_from_database(world_id):
-    row = worlds.get_world(world_id)
-    if row is None:
-        raise ValueError(f"World with ID {world_id} not found in database.")
-
-    with np.load(io.BytesIO(row["map_data"])) as npz:
-        world_data = {key: npz[key] for key in npz.files}
-
-    rows, cols = world_data["biome"].shape
-    config.WORLD_ROWS, config.WORLD_COLS = rows, cols
-    world_metadata = {
-        "rows": rows,
-        "cols": cols,
-        "biome_config": row["biome_config"],
-        "region_list": row["region_list"],
-    }
-    return world_data, world_metadata
-
 sessions: dict[str, Session] = {}
+active_streams: dict[str, str] = {}
 
 @app.get("/api/auth/login")
 async def login(request: Request):
@@ -270,8 +178,6 @@ def get_session(request: Request) -> Session:
     return session
 
 
-active_streams: dict[str, str] = {}
-
 @app.post("/api/session")
 def create_session(body: StartSessionBody, request: Request):
     try:
@@ -280,9 +186,14 @@ def create_session(body: StartSessionBody, request: Request):
         raise HTTPException(status_code=404, detail=str(e))
     return {"ok":True}
  
-@app.post("/api/session/setup")
+@app.post("/api/session/story-setup")
 def setup_session_story(body: SetupStoryBody, s: Session = Depends(get_session)):
-    s.setup_story(body.world_description, body.character_description, body.story_focus_description)
+
+    s.story_engine.setup(StorySetup(
+        world_description=body.world_description,
+        character_description=body.character_description,
+        story_focus_description=body.story_focus_description
+    ))
 
 # ---------------------------------------------------------------- story
 
@@ -301,33 +212,33 @@ async def prompt_scene(body: CellBody, request: Request, user=Depends(require_us
  
     active_streams[stream_id] = {  
         "key": session_key(request),
-        "cell": (body.y, body.x),
+        "cell": Location(body.x, body.y)
     } 
     return {"stream_id": stream_id} 
 
 
 @app.get("/api/stream")
-async def stream_response(id: str, request: Request, s: Session = Depends(get_session)) -> Response:
-    data = active_streams.get(id)
+async def stream_response(id: str, request: Request, s: Session = Depends(get_session)):
+    data = active_streams.pop(id, None)
 
     if not data or data["key"] != session_key(request):
         raise HTTPException(status_code=404, detail="Stream ID not found")
     
-    if not data.get("cell") and not s.story_engine.get_current_scene():
+    if not data["cell"] and not s.story_engine.get_current_scene():
         raise HTTPException(status_code=404, detail="No cell provided and no existing scene")
 
     async def generate():
-        async for event in s.story_engine.generate_scene_interaction(data.get("cell")):
+        async for event in s.story_engine.generate_scene_interaction(data["cell"]):
             yield event
  
     return EventSourceResponse(generate())
 
 @app.post("/api/scene/action") 
 async def scene_action(body: ActionBody, s: Session = Depends(get_session)):
-    await s.story_engine.choose_action(body.action, tuple(s.player.get_location()))
+    await s.story_engine.choose_action(body.action, s.story_engine.get_player_location())
     scene = s.story_engine.get_current_scene()
     return {"ended": scene.ended if scene else True}
-
+    
 
 @app.put("/api/scene/templates/{name}")
 async def set_prompt_template(name: str, body: PromptBody, s: Session = Depends(get_session)):
@@ -345,48 +256,38 @@ def get_prompt_template(name: str, s: Session = Depends(get_session)):
 
 @app.post('/api/player/move')
 async def move_player_to(body: MoveDestinationBody, s: Session = Depends(get_session)):
-    new_location = (body.y, body.x)
-    s.player.set_location(new_location)
-    return {"player_location": list(s.player.get_location())}
+    new_location = Location(body.x, body.y)
+    s.story_engine.set_player_location(new_location)
 
 @app.get('/api/player')
 def get_player_location(s: Session = Depends(get_session)):
-    return {"player_location": list(s.player.get_location())}
+    return s.story_engine.get_player_location()
 
 # ---------------------------------------------------------------- world
 @app.get("/api/world")
 def get_world(s: Session = Depends(get_session)):
     return s.get_world_json()
 
-@app.post("/api/world/save")
-def save_world(body: SaveWorldBody, user=Depends(require_user), s: Session = Depends(get_session)):
-    s.save_current_map(body.name, body.description, user["id"])
-    return {"ok": True}
 
-@app.get("/api/world/rgb")
-def get_world_rgb(s: Session = Depends(get_session)):
-    rgb = hsv_to_rgb_array(s.world.get_map_data("colour"))          # shape (rows, cols, 3)
-    rgb = np.asarray(rgb, dtype=np.uint8)
-    alpha = np.full((*rgb.shape[:2], 1), 255, dtype=np.uint8)       # fully opaque
-    rgba = np.concatenate([rgb, alpha], axis=2)                      # shape (rows, cols, 4)
-    return Response(rgba.tobytes(), media_type="application/octet-stream")
+@app.get("/api/world/elevation-map")
+def get_elevation_map(s: Session = Depends(get_session)):
+    return Response(s.world.elevation.tobytes(), media_type="application/octet-stream")
 
 @app.get("/api/world/biome-map")
 def get_biome_map(s: Session = Depends(get_session)):
-    biome_map = s.world.get_biome_map().astype(np.uint8)
-    return Response(biome_map.tobytes(), media_type="application/octet-stream")
+    return Response(s.world.biome.tobytes(), media_type="application/octet-stream")
 
 @app.get("/api/world/biome-lookup")
 def get_biome_lookup(s: Session = Depends(get_session)):
-    return s.world.get_biome_lookup()
+    return s.world.biome_lookup
     
 @app.get("/api/world/region-map")
 def get_region_map(s: Session = Depends(get_session)):
-    return Response(s.world.get_region_map().tobytes(), media_type="application/octet-stream")
+    return Response(s.world.region.tobytes(), media_type="application/octet-stream")
 
 @app.get("/api/world/region-lookup")
 def get_region_lookup(s: Session = Depends(get_session)):
-    return s.world.get_region_lookup() 
+    return s.world.region_lookup
 
 @app.get('/api/token-usage')
 def get_token_usage(s: Session = Depends(get_session)):
@@ -411,73 +312,64 @@ def get_world_thumbnail(world_id: int):
 
 # ---------------------------------------------------------------- editor
 
-class WorldPayload(BaseModel):
-    name: str
-    description: str | None = None
-    width: int
-    height: int
-    biome: str
-    elevation: str
-    region: str
-    colour: str
-    biome_lookup: dict
-    story_setup: dict
-    region_lookup: dict
-
-@app.get("/api/load-world/{world_id}")
-def load_world(world_id: int):
+def load_world(world_id: int) -> WorldData:
     row = worlds.get_world(world_id)
     if row is None:
-        raise HTTPException(status_code=403, detail="World not found")
-    loaded_world = WorldPayload(
+        raise LookupError(f"World with ID {world_id} not found in database.")
+    return WorldData(
         name=row["name"],
         description=row["description"],
         width=row["width"],
         height=row["height"],
-        biome=base64.b64encode(row["biome"]).decode(),
-        elevation=base64.b64encode(row["elevation"]).decode(),
-        region=base64.b64encode(row["region"]).decode(),
-        colour=base64.b64encode(row["colour"]).decode(),
+        biome=row["biome"],
+        elevation=row["elevation"],
+        region=row["region"],
         biome_lookup=row["biome_lookup"],
         story_setup=row["story_setup"],
         region_lookup=row["region_lookup"]
     )
-    return loaded_world
+
+@app.get("/api/load-world/{world_id}")
+def load_world_endpoint(world_id: int):
+    try:
+        return to_payload(load_world(world_id))
+    except LookupError:
+        raise HTTPException(status_code=403, detail="World not found")
 
 @app.put("/api/editor/save-world")
-def save_world(request: WorldPayload, user=Depends(require_user)):
+def save_world(request: SaveWorldPayload, user=Depends(require_user)):
+    data = to_data(request)
+    colour = base64.b64decode(request.colour)
     try:
         map_png = rgba_to_png(
-            request.colour,
-            request.width,
-            request.height,
+            colour,
+            data.width,
+            data.height,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     
     worlds.upsert_save(
-        name=request.name, 
-        description=request.description,
+        name=data.name, 
+        description=data.description,
         owner_id=user["id"],
-        width=request.width,
-        height=request.height,
-        biome=base64.b64decode(request.biome),
-        elevation=base64.b64decode(request.elevation),
-        region=base64.b64decode(request.region),
-        colour=base64.b64decode(request.colour),
+        width=data.width,
+        height=data.height,
+        biome=data.biome,
+        elevation=data.elevation,
+        region=data.region,
         map_png=map_png,
-        biome_lookup=request.biome_lookup,
-        story_setup=request.story_setup,
-        region_lookup=request.region_lookup
+        biome_lookup=data.biome_lookup,
+        story_setup=data.story_setup,
+        region_lookup=data.region_lookup
     )
 
-def rgba_to_png(rgba_b64: str, width: int, height: int) -> bytes:
-    raw = base64.b64decode(rgba_b64)
+def rgba_to_png(rgba: bytes, width: int, height: int) -> bytes:
     expected = width * height * 4
-    if len(raw) != expected:
-        raise ValueError(f"expected {expected} bytes for {width}x{height}, got {len(raw)}")
+    if len(rgba) != expected:
+        raise ValueError(f"expected {expected} bytes for {width}x{height}, got {len(rgba)}")
 
-    image = Image.frombytes("RGBA", (width, height), raw)
+    image = Image.frombytes("RGBA", (width, height), rgba)
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
