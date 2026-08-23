@@ -11,6 +11,8 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  ad
     const newBiomeColourRef = useRef(null);
 
     const newRegionNameRef = useRef(null);
+    const newRegionVDescRef = useRef(null);
+    const newRegionHDescRef = useRef(null);
 
     const newWorldNameRef = useRef(null);
     const newWorldDescriptionRef = useRef(null);
@@ -68,25 +70,32 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  ad
             </label>
 
             <h3>Elevation</h3>
-            <button onClick={() => setElevationEditType(null)}>No edit</button>
-            <button onClick={() => setElevationEditType('layer')}>Layer</button>
-            <button onClick={() => setElevationEditType('continuous')}>Continuous</button>
-            <button onClick={() => setElevationEditType('smoothing')}>Smoothing</button>
-            <button onClick={() => setElevationEditType('flatten')}>Flatten</button>
+            <div className="elevation-buttons">
+                <button onClick={() => setElevationEditType(null)}>No edit</button>
+                <button onClick={() => setElevationEditType('layer')}>Layer</button>
+                <button onClick={() => setElevationEditType('continuous')}>Continuous</button>
+                <button onClick={() => setElevationEditType('smoothing')}>Smoothing</button>
+                <button onClick={() => setElevationEditType('flatten')}>Flatten</button>
+            </div>
 
             <h3>Region</h3>
             {Object.entries(regionLookup).map(([regionId, region]) => (
                 <div key={regionId} className="region-entry">
-                    <span>{region.name}</span>
+                    <span>{region.title}</span>
                     <button onClick={() => setRegionBrush(Number(regionId))}>Select</button>
                 </div>
             ))}
             <label>
                 Add region:
-                <input type="text" placeholder="Region name" ref={newRegionNameRef} />
+                <input type="text" placeholder="Region title" ref={newRegionNameRef} />
+                <input type="text" placeholder="Region visible-description" ref={newRegionVDescRef} />
+                <input type="text" placeholder="Region hidden-description" ref={newRegionHDescRef} />
                 <button onClick={() => {
-                    const name = newRegionNameRef.current.value;
-                    addRegion({ name });
+                    addRegion({
+                        title: newRegionNameRef.current.value,
+                        visible_description: newRegionVDescRef.current.value,
+                        hidden_description: newRegionHDescRef.current.value,
+                    });
                 }}>Add</button>
             </label>
             <div className="map-generator-section">
