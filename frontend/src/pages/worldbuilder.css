@@ -37,3 +37,21 @@
         linear-gradient(#fff 0 0);
     background-size: 15px 15px, auto;
 }
+
+.elevation-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.region-entry {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
