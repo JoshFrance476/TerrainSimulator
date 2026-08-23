@@ -10,8 +10,8 @@ function LocationTab({ selectedCell }) {
                     {selectedCell.regionData.map((region, index) => (
                         <div key={index} className="info-window-box">
                             <h3 className="capitalise box-title">{region.title}</h3>
-                            <p className="region-visible-desc">{region.visible_desc}</p>
-                            <p className="region-hidden-desc"><i>{region.hidden_desc}</i></p>
+                            <p className="region-visible-desc">{region.visible_description}</p>
+                            <p className="region-hidden-desc"><i>{region.hidden_description}</i></p>
                         </div>
                     ))}
                 </div>
