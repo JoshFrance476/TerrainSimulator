@@ -1,9 +1,13 @@
+from models import Location, SceneContext
+from storytelling.story_state import StoryState
+from world.world import World
+
 class ContextBuilder:
-    def __init__(self, state, world):
+    def __init__(self, state: StoryState, world: World):
         self.state = state
         self.world = world
  
-    def get_most_recent_movement_json(self):
+    def get_movement_history(self):
         if len(self.state.movement_history) > 1:
             current_movement_entry = self.state.movement_history[-1]
             past_movement_entry = self.state.movement_history[-2]
@@ -13,14 +17,11 @@ class ContextBuilder:
                 "to_biome": current_movement_entry["biome"]
             }
         return {}
-    
-    def get_chunk_context_json(self, cell):
-        return self.world.get_chunk_context_json(cell)
  
-    def build_scene_guide_context(self, selected_cell):
-        tile = self.world.get_tile_data_json(selected_cell)
-        return {
-            "nearby_chunks": self.world.get_chunk_context_json(selected_cell),
-            "current_tile": tile,
-            "recent_movement": self.get_most_recent_movement_json(),
-        }
+    def build_scene_guide_context(self, selected_cell: Location) -> SceneContext:
+        return SceneContext(
+            tile_data=self.world.get_cell_data(selected_cell),
+            movement_history=self.get_movement_history(),
+            character_notebook=self.state.character_notebook,
+            story_setup=self.state.story_setup
+        )
