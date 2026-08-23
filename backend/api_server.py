@@ -41,8 +41,6 @@ import config as config
 
 from database import users, worlds
 
-from utils.colour_utils import hsv_to_rgb_array
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
