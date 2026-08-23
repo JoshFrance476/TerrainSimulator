@@ -8,7 +8,7 @@ export const biomeMapKey = ['biome-map']
 export const biomeLookupKey = ['biome-lookup']
 export const regionMapKey = ['region-map']
 export const regionLookupKey = ['region-lookup']
-export const rgbKey = ['rgb']
+export const elevationMapKey = ['elevation-map']
 export const storyKey = ['story']
 export const sceneKey = ['scene']
 export const playerKey = ['player']
@@ -77,7 +77,7 @@ export function useNewSessionMutation() {
 export function useSessionSetupMutation() {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: ({ worldDescription, character, storyFocus }) => postJson('/api/session/setup', { world_description: worldDescription, character_description: character, story_focus_description: storyFocus }),
+        mutationFn: ({ worldDescription, character, storyFocus }) => postJson('/api/session/story-setup', { world_description: worldDescription, character_description: character, story_focus_description: storyFocus }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: sessionKey }),
     })
 }
@@ -122,15 +122,15 @@ export function useBiomeMapQuery() {
 export function useRegionMapQuery() {
     return useQuery({
         queryKey: regionMapKey,
-        queryFn: async () => new Uint16Array(await getBuffer('/api/world/region-map')),
+        queryFn: async () => new Uint8Array(await getBuffer('/api/world/region-map')),
         ...binaryOptions,
     })
 }
 
-export function useRgbQuery() {
+export function useElevationMapQuery() {
     return useQuery({
-        queryKey: rgbKey,
-        queryFn: async () => new Uint8ClampedArray(await getBuffer('/api/world/rgb')),
+        queryKey: elevationMapKey,
+        queryFn: async () => new Uint8ClampedArray(await getBuffer('/api/world/elevation-map')),
         ...binaryOptions,
     })
 }
@@ -194,22 +194,9 @@ export function useSavePromptTemplateMutation(name) {
 export function useSaveEditorWorldMutation() {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: ({ world, name, description }) => {
-            const worldData = {
-                name: name,
-                description: description,
-                width: world.width,
-                height: world.height,
-                biome: world.biome.toBase64(),
-                elevation: new Uint8Array(world.elevation).toBase64(),
-                region: world.region.toBase64(),
-                colour: new Uint8Array(world.rgba).toBase64(),
-                biome_lookup: world.biomeLookup,
-                region_lookup: world.regionLookup,
-                story_setup: {},
-            }
-            return putJson('/api/editor/save-world',  worldData)
-        },            
+        mutationFn: (worldData) => {
+            return putJson('/api/editor/save-world', worldData)
+        },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: worldsKey }),
     })
 }
