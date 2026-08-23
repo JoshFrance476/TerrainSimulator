@@ -32,6 +32,7 @@
 .thumbnail {
     border-radius: 8px;
     border: 2px solid var(--colour-border);
+    width: 300px;
 }
 
 .browser {
