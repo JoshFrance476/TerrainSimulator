@@ -61,14 +61,14 @@ function Worldbuilder({ initialWorldId = null }) {
             biome: Uint8Array.fromBase64(data.biome),
             elevation: Uint8Array.fromBase64(data.elevation),
             region: Uint8Array.fromBase64(data.region),
-            rgba: Uint8Array.fromBase64(data.colour),
         })
 
-        worldRef.current = world
         setWorldId(id)
         refreshAll(world)
+        worldRef.current = world
         setBiomeLookup(world.biomeLookup)
         setRegionLookup(world.regionLookup)
+        setBorderSegments(buildRegionBorders(worldRef.current, world.regionLookup))
         commit()
     }
 
@@ -113,15 +113,15 @@ function Worldbuilder({ initialWorldId = null }) {
                     alterElevation(world, fresh, -1)
                 }
             }
-        } else if (elevationEditType === 'smoothing') {
+        } if (elevationEditType === 'smoothing') {
             smoothElevation(world, indexes)
-        } else if (elevationEditType === "flatten") {
+        } if (elevationEditType === "flatten") {
             if (strokeStartLocation.current) {
                 flattenElevation(world, indexes, world.elevation[strokeStartLocation.current.y * world.width + strokeStartLocation.current.x])
             }
-        } else if (biomeBrush !== null) {
+        } if (biomeBrush !== null) {
             paintBiome(world, indexes, biomeBrush)
-        } else if (regionBrush !== null) {
+        } if (regionBrush !== null) {
             if (button === 0) {
                 for (const index of indexes) {
                     writeRegion(world, index, regionBrush)
@@ -160,7 +160,7 @@ function Worldbuilder({ initialWorldId = null }) {
 
         const regions = [...getCellRegions(world, index)]
             .filter((id) => id !== NO_REGION)
-            .map((id) => regionLookup[id]?.name ?? `region ${id}`)
+            .map((id) => regionLookup[id]?.title)
 
         return `${biome} | Elevation: ${elevation} | Regions: ${regions.join(', ') || 'None'}`
     }
@@ -182,7 +182,20 @@ function Worldbuilder({ initialWorldId = null }) {
 
     function saveWorld(name, description) {
         console.log("Saving world with name:", name, "and description:", description)
-        saveWorldMutation.mutate({ world: worldRef.current, name, description })
+        const worldData = {
+                name: name,
+                description: description,
+                width: worldRef.current.width,
+                height: worldRef.current.height,
+                biome: worldRef.current.biome.toBase64(),
+                elevation: new Uint8Array(worldRef.current.elevation).toBase64(),
+                region: worldRef.current.region.toBase64(),
+                colour: new Uint8Array(worldRef.current.rgba).toBase64(),
+                biome_lookup: worldRef.current.biomeLookup,
+                region_lookup: worldRef.current.regionLookup,
+                story_setup: {},
+            }
+        saveWorldMutation.mutate(worldData)
     }
 
     return (
