@@ -33,9 +33,8 @@ class SceneManager:
         scene_significance = significance_options[random.randint(0, len(significance_options) - 1)]
         response = await self.llm_client.prompt_scene_setup(
             context,
-            scene_significance,
-            self.story_state.character_notebook,
-            scene_history
+            scene_history,
+            scene_significance
         )
         return response["guide"]
 
@@ -58,7 +57,7 @@ class SceneManager:
             )
         return new_quest_list
     
-    def get_current_scene(self):
+    def get_current_scene(self) -> Scene:
         return self.story_state.current_scene
  
     def clear_scene(self):
