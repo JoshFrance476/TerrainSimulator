@@ -16,11 +16,11 @@
     padding: 5px;
 }
 
-.biome-legend {
+.palette-display {
     display: flex
 }
 
-.biome-entry {
+.palette-entry {
     display: flex;
     align-items: center;
 }
@@ -36,6 +36,14 @@
         conic-gradient(#ccc 25%, transparent 0 50%, #ccc 0 75%, transparent 0),
         linear-gradient(#fff 0 0);
     background-size: 15px 15px, auto;
+}
+
+.erase-button {
+    font-weight: bold;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    color: red;
 }
 
 .elevation-buttons {
