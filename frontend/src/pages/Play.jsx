@@ -64,7 +64,7 @@ function Play({ user }) {
         const cellData = getCellData(cellX, cellY)
         const biomeName = cellData.biomeData?.name ?? 'Unknown Biome'
         const regionNames = cellData.regionData.map(r => r.title).join(', ') || 'No Regions'
-        return `${biomeName} | ${regionNames}`
+        return [`${biomeName} | ${regionNames}`]
     }
     
     function getBiomeDataAtCell(cellX, cellY) {
@@ -100,7 +100,7 @@ function Play({ user }) {
                     imageData={imageData}
                     borderSegments={borderSegments}
                     onCellClick={handleCellClick}
-                    getTooltipLabel={getTooltipLabel}
+                    getMouseTooltipLabel={getTooltipLabel}
                     selectedCell={selectedCell}
                     playerLocation={playerLocation}
                 >

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { getBrushOutline } from '../utils/world-editing'
 
 
-function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius }) {
+function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLabel, getScreenTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
@@ -11,7 +11,8 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
 
     const lastDrawn = useRef(null)
 
-    const [tooltip, setTooltip] = useState(null) //shape: {x, y, dict}
+    const [mouseTooltip, setMouseTooltip] = useState(null) //shape: {x, y, list}
+    const [screenTooltip, setScreenTooltip] = useState(null) //shape: {list}
 
     const SCALE = 4 // Interaction layer scale factor
 
@@ -196,11 +197,18 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
 
         const { cellX, cellY } = eventToCell(e)
 
-        const tooltipLabel = getTooltipLabel({ cellX, cellY })
-        if (!tooltipLabel) {
-            setTooltip(null)
+        const mouseTooltipLabel = getMouseTooltipLabel?.({ cellX, cellY }) ?? null
+        const screenTooltipLabel = getScreenTooltipLabel?.({ cellX, cellY }) ?? null
+        if (!mouseTooltipLabel) {
+            setMouseTooltip(null)
         } else {
-            setTooltip({ x: e.clientX, y: e.clientY, data: tooltipLabel })
+            setMouseTooltip({ x: e.clientX, y: e.clientY, data: mouseTooltipLabel })
+        }
+
+        if (!screenTooltipLabel) {
+            setScreenTooltip(null)
+        } else {
+            setScreenTooltip({ data: screenTooltipLabel })
         }
 
         if (isPainting.current && handleMouseDown) {
@@ -237,8 +245,9 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
     }
 
     function handleMouseLeave() {
-        setTooltip(null)
+        setMouseTooltip(null)
         setLastHoveredCell(null)
+        setScreenTooltip(null)
     }
 
     function handleClick(e) {
@@ -308,12 +317,23 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getTooltipLabel, h
 
             {children}
 
-            {tooltip && (
+            {mouseTooltip && (
                 <div
                     className="tooltip capitalise"
-                    style={{ left: tooltip.x + 4, top: tooltip.y - 20 }}
+                    style={{ left: mouseTooltip.x + 4, top: mouseTooltip.y - 20 }}
                 >
-                    {tooltip.data}
+                    {mouseTooltip.data.map((line, index) => (
+                        <div key={index}>{line}</div>
+                    ))}
+                </div>
+            )}
+            {screenTooltip && (
+                <div
+                    className="tooltip capitalise screen"
+                >
+                    {screenTooltip.data.map((line, index) => (
+                        <div key={index}>{line}</div>
+                    ))}
                 </div>
             )}
         </div>

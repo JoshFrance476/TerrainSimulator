@@ -95,6 +95,12 @@ body {
     border: 1px solid black;
 }
 
+.tooltip.screen {
+    position: absolute;
+    right: 10px;
+    bottom: 20px;
+}
+
 .capitalise {
     text-transform: capitalize;
 }

@@ -176,13 +176,19 @@ function Worldbuilder({ initialWorldId = null }) {
         const index = cellY * world.width + cellX
 
         const biome = world.biomeLookup[world.biome[index]]?.name ?? 'Unknown'
+        const detail = world.detailLookup[world.detail[index]]?.name ?? null
         const elevation = world.elevation[index]
 
         const regions = [...getCellRegions(world, index)]
             .filter((id) => id !== NO_REGION)
             .map((id) => regionLookup[id]?.title)
 
-        return `${biome} | Elevation: ${elevation} | Regions: ${regions.join(', ') || 'None'}`
+        const parts = [biome]
+        if (detail) parts.push(`${detail}`)
+        parts.push(`Elevation: ${elevation}`)
+        parts.push(`Regions: ${regions.join(', ') || 'None'}`)
+
+        return parts
     }
 
     function startStroke({ cellX, cellY }) {
@@ -246,12 +252,13 @@ function Worldbuilder({ initialWorldId = null }) {
                 setDetailBrush={setDetailBrush}
                 detailLookup={detailLookup}
                 addDetail={addDetail}
+                detailBrush={detailBrush}
             />
             <MapDisplay
                 imageData={imageData}
                 onCellClick={() => {}}
                 handleMouseDownDrag={handleCellInteraction}
-                getTooltipLabel={getTooltipLabel}
+                getScreenTooltipLabel={getTooltipLabel}
                 onStrokeStart={startStroke}
                 brushRadius={brushRadius}
                 handleMouseDown={handleContinuousCellInteraction}
