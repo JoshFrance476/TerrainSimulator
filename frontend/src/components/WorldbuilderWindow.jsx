@@ -1,5 +1,24 @@
 import { useRef, useState } from 'react';
-function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  addRegion, setElevationEditType, biomeBrush, generateRandomMap, setBrushRadius, addBiome, regionLookup, regionBrush, setRegionBrush, saveWorld, saveWorldMutation, loadWorld }) {
+function WorldbuilderWindow({ 
+    biomeLookup, 
+    setBiomeBrush, 
+    elevationEditType,  
+    addRegion, 
+    setElevationEditType, 
+    biomeBrush, 
+    generateRandomMap, 
+    setBrushRadius, 
+    addBiome, 
+    regionLookup, 
+    regionBrush, 
+    setRegionBrush, 
+    saveWorld, 
+    saveWorldMutation, 
+    loadWorld,
+    detailLookup,
+    setDetailBrush,
+    addDetail
+}) {
     const loadWorldIdRef = useRef(); 
     
     const scaleRef = useRef(null);
@@ -10,6 +29,10 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  ad
     const newBiomeNameRef = useRef(null);
     const newBiomeColourRef = useRef(null);
 
+    const newDetailNameRef = useRef(null);
+    const newDetailColourRef = useRef(null);
+    const newDetailHeightRef = useRef(null);
+
     const newRegionNameRef = useRef(null);
     const newRegionVDescRef = useRef(null);
     const newRegionHDescRef = useRef(null);
@@ -17,7 +40,7 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  ad
     const newWorldNameRef = useRef(null);
     const newWorldDescriptionRef = useRef(null);
 
-    const [tooltip, setTooltip] = useState(null); // { biomeId, x, y }
+    const [tooltip, setTooltip] = useState(null); // { text, x, y }
 
     return (
         <div className="worldbuilder-window">
@@ -37,11 +60,11 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  ad
                 </label>
             </div>
             <h3>Biome</h3>
-            <div className="biome-legend">
-                <div key={"none"} className="biome-entry">
+            <div className="palette-display">
+                <div key={"none"} className="palette-entry">
                     <button 
                         className="colour-preview-small checkerboard"
-                        onMouseMove={(e) => setTooltip({ biomeId: null, x: e.clientX, y: e.clientY })}
+                        onMouseMove={(e) => setTooltip({ text: "Null", x: e.clientX, y: e.clientY })}
                         onMouseLeave={() => setTooltip(null)}
                         onClick={() => {setBiomeBrush(null);}}
                     />
@@ -51,7 +74,7 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  ad
                         <button 
                             className="colour-preview-small" 
                             style={{ backgroundColor: biome.colour }} 
-                            onMouseMove={(e) => setTooltip({ biomeId, x: e.clientX, y: e.clientY })}
+                            onMouseMove={(e) => setTooltip({ text: biomeLookup[biomeId].name, x: e.clientX, y: e.clientY })}
                             onMouseLeave={() => setTooltip(null)}
                             onClick={() => {setBiomeBrush(biomeId);}}
                         />
@@ -66,6 +89,40 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  ad
                     const name = newBiomeNameRef.current.value;
                     const colour = newBiomeColourRef.current.value;
                     addBiome({ name, colour });
+                }}>Add</button>
+            </label>
+            <h3>Detail</h3>
+            <div className="palette-display">
+                <div key={"none"} className='palette-entry'>
+                    <button
+                    className="colour-preview-small checkerboard"
+                    onMouseMove={(e) => setTooltip({ text: "Null", x: e.clientX, y: e.clientY })}
+                        onMouseLeave={() => setTooltip(null)}
+                        onClick={() => {setDetailBrush(null);}}
+                    />
+                </div>
+                {Object.entries(detailLookup).map(([detailId, detail]) => (
+                    <div key={detailId} className="palette-entry">
+                        <button 
+                            className="colour-preview-small" 
+                            style={{ backgroundColor: detail.colour }} 
+                            onMouseMove={(e) => setTooltip({ text: detailLookup[detailId].name, x: e.clientX, y: e.clientY })}
+                            onMouseLeave={() => setTooltip(null)}
+                            onClick={() => {setDetailBrush(detailId);}}
+                        />
+                    </div>
+                ))}
+            </div>
+            <label>
+                Add detail:
+                <input type="text" placeholder="Detail name" ref={newDetailNameRef} />
+                <input type="color" ref={newDetailColourRef} />
+                <input type="number" ref={newDetailHeightRef} />
+                <button onClick={() => {
+                    const name = newDetailNameRef.current.value;
+                    const colour = newDetailColourRef.current.value;
+                    const height = Number(newDetailHeightRef.current.value);
+                    addDetail({ name, colour, height });
                 }}>Add</button>
             </label>
 
@@ -144,7 +201,7 @@ function WorldbuilderWindow({ biomeLookup, setBiomeBrush, elevationEditType,  ad
                     <button onClick={() => loadWorld(loadWorldIdRef.current.value)}>Load</button>
                 </label>
             </div>
-            {tooltip && <div className="tooltip" style={{ left: tooltip.x+2, top: tooltip.y-20 }}>{biomeLookup[tooltip.biomeId]?.name ?? "empty"}</div>}
+            {tooltip && <div className="tooltip" style={{ left: tooltip.x+2, top: tooltip.y-20 }}>{tooltip.text ?? "empty"}</div>}
         </div>
     );
 }

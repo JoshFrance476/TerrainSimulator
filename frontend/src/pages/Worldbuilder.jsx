@@ -5,7 +5,7 @@ import MapDisplay from '../components/MapDisplay'
 import './worldbuilder.css'
 import {
     createWorld, refreshAll, generateTerrain, getCellRegions, NO_REGION,
-    getBrushIndexes, paintBiome, alterElevation, smoothElevation, flattenElevation, writeRegion, removeRegion, buildRegionBorders
+    getBrushIndexes, paintBiome, paintDetail, alterElevation, smoothElevation, flattenElevation, writeRegion, removeRegion, buildRegionBorders
 } from '../utils/world-editing'
 import { useSaveEditorWorldMutation, editorWorldKey, fetchEditorWorld } from '../queries/queries'
 
@@ -16,12 +16,14 @@ function Worldbuilder({ initialWorldId = null }) {
 
     const [imageData, setImageData] = useState(null)
     const [biomeBrush, setBiomeBrush] = useState(null)
+    const [detailBrush, setDetailBrush] = useState(null)
     const [elevationEditType, setElevationEditType] = useState(null)   // 'layer', 'continuous', 'flatten', 'smoothing'
     const [regionBrush, setRegionBrush] = useState(255)
     const [brushRadius, setBrushRadius] = useState(4)
 
     const [biomeLookup, setBiomeLookup] = useState({})
     const [regionLookup, setRegionLookup] = useState({})
+    const [detailLookup, setDetailLookup] = useState({})
 
     const [borderSegments, setBorderSegments] = useState(null)
 
@@ -43,6 +45,7 @@ function Worldbuilder({ initialWorldId = null }) {
         worldRef.current = world
         setBiomeLookup(world.biomeLookup)
         setRegionLookup(world.regionLookup)
+        setDetailLookup(world.detailLookup)
         commit()
     }, [dimensions])
 
@@ -68,6 +71,7 @@ function Worldbuilder({ initialWorldId = null }) {
         worldRef.current = world
         setBiomeLookup(world.biomeLookup)
         setRegionLookup(world.regionLookup)
+        setDetailLookup(world.detailLookup)
         setBorderSegments(buildRegionBorders(worldRef.current, world.regionLookup))
         commit()
     }
@@ -83,6 +87,12 @@ function Worldbuilder({ initialWorldId = null }) {
             worldRef.current.regionLookup = regionLookup
         }
     }, [regionLookup])
+
+    useEffect(() => {
+        if (worldRef.current) {
+            worldRef.current.detailLookup = detailLookup
+        }
+    }, [detailLookup])
 
     function buildBorders() {
         setBorderSegments(buildRegionBorders(worldRef.current, regionLookup))
@@ -121,6 +131,16 @@ function Worldbuilder({ initialWorldId = null }) {
             }
         } if (biomeBrush !== null) {
             paintBiome(world, indexes, biomeBrush)
+        } if (detailBrush !== null) {
+            paintDetail(world, indexes, detailBrush)
+            const elevation = detailLookup[detailBrush].height
+            // Cheap copy of layer elevation branch editing
+            const fresh = indexes.filter((i) => !strokeCells.current.has(i))
+            for (const i of fresh) strokeCells.current.add(i)
+            if (fresh.length) {
+                if (button === 0) {
+                    alterElevation(world, fresh, elevation)
+            }}
         } if (regionBrush !== null) {
             if (button === 0) {
                 for (const index of indexes) {
@@ -175,6 +195,12 @@ function Worldbuilder({ initialWorldId = null }) {
         setBiomeLookup(next)
     }
 
+    function addDetail(detail) {
+        // +1 is a cheap fix for the lookup table starting at 1 instead of 0, with 0 being reserved for "no detail"
+        const next = {...detailLookup, [Object.keys(detailLookup).length+1]: detail }
+        setDetailLookup(next)
+    }
+
     function addRegion(region) {
         const next = { ...regionLookup, [Object.keys(regionLookup).length]: region }
         setRegionLookup(next)
@@ -217,6 +243,9 @@ function Worldbuilder({ initialWorldId = null }) {
                 saveWorld={saveWorld}
                 saveWorldMutation={saveWorldMutation}
                 loadWorld={loadWorld}
+                setDetailBrush={setDetailBrush}
+                detailLookup={detailLookup}
+                addDetail={addDetail}
             />
             <MapDisplay
                 imageData={imageData}
