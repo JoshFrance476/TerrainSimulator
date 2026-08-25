@@ -132,18 +132,18 @@ export function getBrushIndexes(world, x, y, radius) {
     return indexes
 }
 
-// biome-only edit: elevation is unchanged, so highlights stay valid
 export function paintBiome(world, indexes, biomeId) {
     for (const index of indexes) {
         world.biome[index] = biomeId
-        writeCell(world, index)
+        refreshCell(world, index)
     }
+
 }
 
 export function paintDetail(world, indexes, detailId) {
     for (const index of indexes) {
         world.detail[index] = detailId
-        writeCell(world, index)
+        refreshCell(world, index)
     }
 }
 
