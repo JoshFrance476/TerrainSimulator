@@ -17,6 +17,7 @@ function WorldbuilderWindow({
     loadWorld,
     detailLookup,
     setDetailBrush,
+    detailBrush,
     addDetail
 }) {
     const loadWorldIdRef = useRef(); 
@@ -48,6 +49,7 @@ function WorldbuilderWindow({
             <h3>Active Brush</h3>
             <div className="brush-details">
                 <h4>Biome: {biomeLookup[biomeBrush]?.name ?? 'None'}</h4>
+                <h4>Detail: {detailBrush === 0 ? 'Erase' : detailLookup[detailBrush]?.name ?? 'None'}</h4>
                 <h4>Elevation: {elevationEditType ?? 'None'} </h4>
                 <h4>Region: {regionLookup[regionBrush]?.name ?? 'None'}</h4>
                 <div
@@ -64,7 +66,7 @@ function WorldbuilderWindow({
                 <div key={"none"} className="palette-entry">
                     <button 
                         className="colour-preview-small checkerboard"
-                        onMouseMove={(e) => setTooltip({ text: "Null", x: e.clientX, y: e.clientY })}
+                        onMouseMove={(e) => setTooltip({ text: "None", x: e.clientX, y: e.clientY })}
                         onMouseLeave={() => setTooltip(null)}
                         onClick={() => {setBiomeBrush(null);}}
                     />
@@ -96,10 +98,18 @@ function WorldbuilderWindow({
                 <div key={"none"} className='palette-entry'>
                     <button
                     className="colour-preview-small checkerboard"
-                    onMouseMove={(e) => setTooltip({ text: "Null", x: e.clientX, y: e.clientY })}
+                    onMouseMove={(e) => setTooltip({ text: "None", x: e.clientX, y: e.clientY })}
                         onMouseLeave={() => setTooltip(null)}
                         onClick={() => {setDetailBrush(null);}}
                     />
+                </div>
+                <div key={"erase"} className='palette-entry'>
+                    <button
+                    className="colour-preview-small checkerboard erase-button"
+                    onMouseMove={(e) => setTooltip({ text: "Erase", x: e.clientX, y: e.clientY })}
+                        onMouseLeave={() => setTooltip(null)}
+                        onClick={() => {setDetailBrush(0);}}
+                    >X</button>
                 </div>
                 {Object.entries(detailLookup).map(([detailId, detail]) => (
                     <div key={detailId} className="palette-entry">
