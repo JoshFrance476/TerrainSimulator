@@ -8,15 +8,18 @@ export const MOUNTAIN_LEVEL = 44
 export const BIOME_LOOKUP = {
     0: { name: 'ocean', colour: '#0000ff' },
     1: { name: 'plains', colour: '#019201' },
-    2: { name: 'mountains', colour: '#888888' },
-    3: { name: "path", colour: '#a76d03'}
+    2: { name: 'mountains', colour: '#888888' }
+}
+
+export const DETAIL_LOOKUP = {
+    1: { name: "path", colour: '#a76d03', height: -1 },
 }
 
 export const NO_REGION = 255
 export const MAX_REGIONS_PER_CELL = 4
 
 
-export function createWorld({ width, height, biome, elevation, region, rgba, biomeLookup, regionLookup }) {
+export function createWorld({ width, height, biome, elevation, region, rgba, biomeLookup, regionLookup, detail, detailLookup }) {
     const cells = width * height
     return {
         width,
@@ -28,6 +31,8 @@ export function createWorld({ width, height, biome, elevation, region, rgba, bio
         biomeLookup: biomeLookup ?? BIOME_LOOKUP,
         regionLookup: regionLookup ?? {},
         highlight: new Uint8Array(cells),
+        detail: detail ?? new Uint8Array(cells),
+        detailLookup: detailLookup ?? DETAIL_LOOKUP,
     }
 }
 
@@ -62,8 +67,10 @@ export function updateHighlight(world, index) {
 }
 
 export function writeCell(world, index) {
-    const hex = world.biomeLookup[world.biome[index]]?.colour ?? '#000000'
-    let [r, g, b] = hexToRgb(hex);
+    const colour = world.detailLookup[world.detail[index]]?.colour
+        ?? world.biomeLookup[world.biome[index]]?.colour
+        ?? '#000000';
+    let [r, g, b] = hexToRgb(colour);
 
     if (world.highlight[index] === 1) {
         [r, g, b] = lighten(r, g, b, 0.2)
@@ -129,6 +136,13 @@ export function getBrushIndexes(world, x, y, radius) {
 export function paintBiome(world, indexes, biomeId) {
     for (const index of indexes) {
         world.biome[index] = biomeId
+        writeCell(world, index)
+    }
+}
+
+export function paintDetail(world, indexes, detailId) {
+    for (const index of indexes) {
+        world.detail[index] = detailId
         writeCell(world, index)
     }
 }
