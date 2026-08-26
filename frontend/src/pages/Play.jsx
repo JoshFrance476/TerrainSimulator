@@ -68,10 +68,10 @@ function Play({ user }) {
         if (!biomeMap || !regionMap) return null
         const cellData = getCellData(cellX, cellY)
         const biomeName = cellData.biomeData?.name ?? 'Unknown Biome'
-        const regionNames = cellData.regionData.map(r => r.title).join(', ') || 'No Regions'
-        const componentName = cellData.componentData?.name ?? ''
-        const detailName = cellData.detailData?.name ?? ''
-        return [`${biomeName} | ${regionNames}` + (componentName ? ` | ${componentName}` : (detailName ? ` | ${detailName}` : ''))]
+        const regionNames = cellData.regionData.map(r => r.title).join(', ')
+        const componentName = cellData.componentData?.name ?? null
+        const detailName = cellData.detailData?.name ?? null
+        return [(componentName ? `${componentName}` : (detailName ? `${detailName}` : `${biomeName}`)) + (regionNames.length > 0 ? ` | ${regionNames}` : '')]
     }
     
     function getBiomeDataAtCell(cellX, cellY) {
