@@ -62,7 +62,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
     }, [imageData?.width, imageData?.height])
 
     // Draw hovered cell and selected cell on interaction layer
-    function drawInteractionLayer(hovered, mouseLocation, selected, player = null) {
+    function drawInteractionLayer(hovered, hoveredCell, selected, player = null) {
         if (!imageData) return
         const ctx = interactionRef.current.getContext('2d')
 
@@ -89,20 +89,20 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
                 ctx.fillRect(x, y, 1, 1)
             }
         }
-        if (mouseLocation && brushOutline) {
+        if (hoveredCell && brushOutline) {
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
             const lw = 1 / SCALE
             ctx.lineWidth = lw
             ctx.beginPath()
             for (const [x1, y1, x2, y2] of brushOutline) {
                 if (y1 === y2) {
-                    const y = mouseLocation.y + y1 + lw / 2
-                    ctx.moveTo(mouseLocation.x + x1, y)
-                    ctx.lineTo(mouseLocation.x + x2, y)
+                    const y = hoveredCell.y + y1 + lw / 2
+                    ctx.moveTo(hoveredCell.x + x1, y)
+                    ctx.lineTo(hoveredCell.x + x2, y)
                 } else {
-                    const x = mouseLocation.x + x1 + lw / 2
-                    ctx.moveTo(x, mouseLocation.y + y1)
-                    ctx.lineTo(x, mouseLocation.y + y2)
+                    const x = hoveredCell.x + x1 + lw / 2
+                    ctx.moveTo(x, hoveredCell.y + y1)
+                    ctx.lineTo(x, hoveredCell.y + y2)
                 }
             }
             ctx.stroke()
@@ -139,7 +139,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         ctx.restore()
         lastDrawn.current = [
             ...hoveredPoints,
-            mouseLocation && { ...mouseLocation, r: brushRadius },
+            hoveredCell && { ...hoveredCell, r: brushRadius },
             selected,
             player,
         ].filter(Boolean)
@@ -228,7 +228,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         }
 
         if (isNewHoveredCell(cellX, cellY)) {
-            setLastHoveredCell({ cellX, cellY })
+            setLastHoveredCell({ x: cellX, y: cellY })
             setHoveredCells(getHoveredCells?.({ cellX, cellY }) ?? [])
             if (isPainting.current && handleMouseDownDrag) {
                 handleMouseDownDrag(eventToCell(e), paintButton.current)
