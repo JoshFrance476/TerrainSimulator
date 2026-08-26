@@ -3,13 +3,13 @@ from psycopg.types.json import Jsonb
 
 def upsert_save(owner_id, name, description, width, height,
                 biome, elevation, region, map_png,
-                biome_lookup, region_lookup, story_setup):
+                biome_lookup, region_lookup, story_setup, detail_lookup, component_lookup, detail, component):
     with pool.connection() as conn:
         conn.execute("""
             INSERT INTO worlds_v2 (owner_id, name, description, width, height,
                                 biome, elevation, region, map_png,
-                                biome_lookup, region_lookup, story_setup)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                biome_lookup, region_lookup, story_setup, detail_lookup, component_lookup, detail, component)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (owner_id, name) DO UPDATE SET
                 description   = EXCLUDED.description,
                 width         = EXCLUDED.width,
@@ -20,10 +20,14 @@ def upsert_save(owner_id, name, description, width, height,
                 map_png       = EXCLUDED.map_png,
                 biome_lookup  = EXCLUDED.biome_lookup,
                 region_lookup = EXCLUDED.region_lookup,
-                story_setup   = EXCLUDED.story_setup
+                story_setup   = EXCLUDED.story_setup,
+                detail_lookup = EXCLUDED.detail_lookup, 
+                component_lookup = EXCLUDED.component_lookup,
+                detail        = EXCLUDED.detail,
+                component     = EXCLUDED.component
         """, (owner_id, name, description, width, height,
               biome, elevation, region, map_png,
-              Jsonb(biome_lookup), Jsonb(region_lookup), Jsonb(story_setup)))
+              Jsonb(biome_lookup), Jsonb(region_lookup), Jsonb(story_setup), Jsonb(detail_lookup), Jsonb(component_lookup), detail, component))
 
 def get_world(world_id):
     with pool.connection() as conn:

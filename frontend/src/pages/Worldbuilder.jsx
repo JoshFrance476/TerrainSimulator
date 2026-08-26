@@ -4,8 +4,8 @@ import WorldbuilderWindow from '../components/WorldbuilderWindow'
 import MapDisplay from '../components/MapDisplay'
 import './worldbuilder.css'
 import {
-    createWorld, refreshAll, generateTerrain, getCellRegions, NO_REGION,
-    getBrushIndexes, paintBiome, paintDetail, alterElevation, smoothElevation, flattenElevation, writeRegion, removeRegion, buildRegionBorders
+    createWorld, refreshAll, generateTerrain, getCellRegions, NO_REGION, NO_COMPONENT,
+    getBrushIndexes, paintBiome, paintDetail, alterElevation, smoothElevation, flattenElevation, writeRegion, removeRegion, buildRegionBorders, writeComponent, removeComponent, buildComponentBorders, mergeSegmentMaps,
 } from '../utils/world-editing'
 import { useSaveEditorWorldMutation, editorWorldKey, fetchEditorWorld } from '../queries/queries'
 
@@ -18,12 +18,14 @@ function Worldbuilder({ initialWorldId = null }) {
     const [biomeBrush, setBiomeBrush] = useState(null)
     const [detailBrush, setDetailBrush] = useState(null)
     const [elevationEditType, setElevationEditType] = useState(null)   // 'layer', 'continuous', 'flatten', 'smoothing'
-    const [regionBrush, setRegionBrush] = useState(255)
+    const [regionBrush, setRegionBrush] = useState(null)
     const [brushRadius, setBrushRadius] = useState(4)
+    const [componentBrush, setComponentBrush] = useState(null)
 
     const [biomeLookup, setBiomeLookup] = useState({})
     const [regionLookup, setRegionLookup] = useState({})
     const [detailLookup, setDetailLookup] = useState({})
+    const [componentLookup, setComponentLookup] = useState({})
 
     const [borderSegments, setBorderSegments] = useState(null)
 
@@ -46,6 +48,7 @@ function Worldbuilder({ initialWorldId = null }) {
         setBiomeLookup(world.biomeLookup)
         setRegionLookup(world.regionLookup)
         setDetailLookup(world.detailLookup)
+        setComponentLookup(world.componentLookup)
         commit()
     }, [dimensions])
 
@@ -64,6 +67,10 @@ function Worldbuilder({ initialWorldId = null }) {
             biome: Uint8Array.fromBase64(data.biome),
             elevation: Uint8Array.fromBase64(data.elevation),
             region: Uint8Array.fromBase64(data.region),
+            detail: Uint8Array.fromBase64(data.detail),
+            detailLookup: data.detail_lookup,
+            component: Uint8Array.fromBase64(data.component),
+            componentLookup: data.component_lookup,
         })
 
         setWorldId(id)
@@ -72,7 +79,11 @@ function Worldbuilder({ initialWorldId = null }) {
         setBiomeLookup(world.biomeLookup)
         setRegionLookup(world.regionLookup)
         setDetailLookup(world.detailLookup)
-        setBorderSegments(buildRegionBorders(worldRef.current, world.regionLookup))
+        setComponentLookup(world.componentLookup)
+        setBorderSegments(mergeSegmentMaps(
+            buildRegionBorders(worldRef.current, world.regionLookup),
+            buildComponentBorders(worldRef.current, world.componentLookup),
+        ))  
         commit()
     }
 
@@ -94,8 +105,18 @@ function Worldbuilder({ initialWorldId = null }) {
         }
     }, [detailLookup])
 
+    useEffect(() => {
+        if (worldRef.current) {
+            worldRef.current.componentLookup = componentLookup
+        }
+    }, [componentLookup])
+
     function buildBorders() {
-        setBorderSegments(buildRegionBorders(worldRef.current, regionLookup))
+        const world = worldRef.current
+        setBorderSegments(mergeSegmentMaps(
+            buildRegionBorders(world, regionLookup),
+            buildComponentBorders(world, componentLookup),
+        ))
     }
 
     // hand the mutated buffer back to React as a new ImageData wrapper
@@ -153,6 +174,18 @@ function Worldbuilder({ initialWorldId = null }) {
             }
             buildBorders()
             commit()
+        } if (componentBrush !== null) {
+            if (button === 0) {
+                for (const index of indexes) {
+                    writeComponent(world, index, componentBrush)
+                }
+            } else if (button === 2) {
+                for (const index of indexes) {
+                    removeComponent(world, index)
+                }
+            }
+            buildBorders()
+            commit()
         }
     }
 
@@ -182,11 +215,14 @@ function Worldbuilder({ initialWorldId = null }) {
         const regions = [...getCellRegions(world, index)]
             .filter((id) => id !== NO_REGION)
             .map((id) => regionLookup[id]?.title)
+        
+        const component = world.componentLookup[world.component[index]]?.name ?? null
 
         const parts = [biome]
         if (detail) parts.push(`${detail}`)
         parts.push(`Elevation: ${elevation}`)
         parts.push(`Regions: ${regions.join(', ') || 'None'}`)
+        parts.push(`Component: ${component}`)
 
         return parts
     }
@@ -212,6 +248,11 @@ function Worldbuilder({ initialWorldId = null }) {
         setRegionLookup(next)
     }
 
+    function addComponent(component) {
+        const next = { ...componentLookup, [Object.keys(componentLookup).length+1]: component }
+        setComponentLookup(next)
+    }
+
     function saveWorld(name, description) {
         console.log("Saving world with name:", name, "and description:", description)
         const worldData = {
@@ -225,6 +266,10 @@ function Worldbuilder({ initialWorldId = null }) {
                 colour: new Uint8Array(worldRef.current.rgba).toBase64(),
                 biome_lookup: worldRef.current.biomeLookup,
                 region_lookup: worldRef.current.regionLookup,
+                detail_lookup: worldRef.current.detailLookup,
+                component_lookup: worldRef.current.componentLookup,
+                detail: worldRef.current.detail.toBase64(),
+                component: worldRef.current.component.toBase64(),
                 story_setup: {},
             }
         saveWorldMutation.mutate(worldData)
@@ -253,6 +298,10 @@ function Worldbuilder({ initialWorldId = null }) {
                 detailLookup={detailLookup}
                 addDetail={addDetail}
                 detailBrush={detailBrush}
+                addComponent={addComponent}
+                setComponentBrush={setComponentBrush}
+                componentLookup={componentLookup}
+                componentBrush={componentBrush}
             />
             <MapDisplay
                 imageData={imageData}

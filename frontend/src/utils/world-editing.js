@@ -18,9 +18,12 @@ export const DETAIL_LOOKUP = {
 export const NO_REGION = 255
 export const MAX_REGIONS_PER_CELL = 4
 
+export const NO_COMPONENT = 0
 
-export function createWorld({ width, height, biome, elevation, region, rgba, biomeLookup, regionLookup, detail, detailLookup }) {
+
+export function createWorld({ width, height, biome, elevation, region, rgba, biomeLookup, regionLookup, detail, detailLookup, component, componentLookup }) {
     const cells = width * height
+    const componentMap = component ?? new Uint8Array(cells).fill(NO_COMPONENT)
     return {
         width,
         height,
@@ -33,6 +36,9 @@ export function createWorld({ width, height, biome, elevation, region, rgba, bio
         highlight: new Uint8Array(cells),
         detail: detail ?? new Uint8Array(cells),
         detailLookup: detailLookup ?? DETAIL_LOOKUP,
+        component: componentMap,
+        componentLookup: componentLookup ?? {},
+        componentLocations: buildComponentLocations(componentMap),
     }
 }
 
@@ -193,6 +199,44 @@ function refreshElevationEdit(world, indexes) {
         if (below < cells) refreshCell(world, below)
     }
 }
+
+// ---------------------------------------------------------------- components
+
+export function writeComponent(world, index, componentId) {
+    const previous = world.component[index]
+    if (previous === componentId) return
+    if (previous !== NO_COMPONENT) removeComponentLocation(world.componentLocations, index, previous)
+    world.component[index] = componentId
+    addComponentLocation(world.componentLocations, index, componentId)
+}
+
+export function removeComponent(world, index) {
+    const previous = world.component[index]
+    if (previous === NO_COMPONENT) return
+    world.component[index] = NO_COMPONENT
+    removeComponentLocation(world.componentLocations, index, previous)
+}
+
+export function addComponentLocation(componentLocations, index, componentId) {
+    (componentLocations[componentId] ??= new Set()).add(index)
+}
+
+export function removeComponentLocation(componentLocationsDict, index, componentId) {
+    const locations = componentLocationsDict[componentId]
+    if (!locations) return
+    locations.delete(index)
+    if (locations.size === 0) delete componentLocationsDict[componentId]
+}
+
+export function buildComponentLocations(componentMap) {
+    const locations = {}
+    for (let index = 0; index < componentMap.length; index++) {
+        const cid = componentMap[index]
+        if (cid === NO_COMPONENT) continue
+        (locations[cid] ??= new Set()).add(index)
+    }
+    return locations
+}
 // ---------------------------------------------------------------- regions
 
 export function writeRegion(world, index, regionId) {
@@ -271,10 +315,57 @@ export function buildRegionBorders(world, regionLookup) {
     return segmentsByColour
 }
 
+export function buildComponentBorders(world, componentLookup) {
+    const { width, height } = world
+    const segmentsByColour = new Map()
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const index = y * width + x
+            const cid = world.component[index]
+            if (cid === NO_COMPONENT) continue
+
+            const component = componentLookup[cid]
+            if (!component) continue
+
+            let segments = segmentsByColour.get(component.colour)
+            if (!segments) {
+                segments = []
+                segmentsByColour.set(component.colour, segments)
+            }
+
+            if (!cellIsComponent(world, x, y - 1, cid)) segments.push([x, y, x + 1, y])
+            if (!cellIsComponent(world, x, y + 1, cid)) segments.push([x, y + 1, x + 1, y + 1])
+            if (!cellIsComponent(world, x - 1, y, cid)) segments.push([x, y, x, y + 1])
+            if (!cellIsComponent(world, x + 1, y, cid)) segments.push([x + 1, y, x + 1, y + 1])
+        }
+    }
+
+    return segmentsByColour
+}
+
+// off-grid counts as "not in the component" — draws a border at the map's edge
+function cellIsComponent(world, x, y, componentId) {
+    if (x < 0 || x >= world.width || y < 0 || y >= world.height) return false
+    return world.component[y * world.width + x] === componentId
+}
+
 // off-grid counts as "not in the region" — draws a border at the map's edge
 function cellHasRegion(world, x, y, regionId) {
     if (x < 0 || x >= world.width || y < 0 || y >= world.height) return false
     return hasRegion(world, y * world.width + x, regionId)
+}
+
+export function mergeSegmentMaps(...maps) {
+    const merged = new Map()
+    for (const map of maps) {
+        for (const [colour, segments] of map) {
+            const existing = merged.get(colour)
+            if (existing) existing.push(...segments)
+            else merged.set(colour, [...segments])
+        }
+    }
+    return merged
 }
 
 // ---------------------------------------------------------------- generation

@@ -18,7 +18,11 @@ function WorldbuilderWindow({
     detailLookup,
     setDetailBrush,
     detailBrush,
-    addDetail
+    addDetail,
+    addComponent,
+    setComponentBrush,
+    componentBrush,
+    componentLookup
 }) {
     const loadWorldIdRef = useRef(); 
     
@@ -34,6 +38,9 @@ function WorldbuilderWindow({
     const newDetailColourRef = useRef(null);
     const newDetailHeightRef = useRef(null);
 
+    const newComponentNameRef = useRef(null);
+    const newComponentDescriptionRef = useRef(null);
+
     const newRegionNameRef = useRef(null);
     const newRegionVDescRef = useRef(null);
     const newRegionHDescRef = useRef(null);
@@ -43,6 +50,50 @@ function WorldbuilderWindow({
 
     const [tooltip, setTooltip] = useState(null); // { text, x, y }
 
+    function handleAddDetail() {
+        const name = newDetailNameRef.current.value;
+        const colour = newDetailColourRef.current.value;
+        const height = Number(newDetailHeightRef.current.value);
+        newDetailNameRef.current.value = '';
+        newDetailColourRef.current.value = '#000000';
+        newDetailHeightRef.current.value = 0;
+        addDetail({ name, colour, height });
+    }
+
+    function handleAddComponent() {
+        const name = newComponentNameRef.current.value;
+        const description = newComponentDescriptionRef.current.value;
+        newComponentNameRef.current.value = '';
+        newComponentDescriptionRef.current.value = '';
+        addComponent({ name, description });
+    }
+
+    function handleAddBiome() {
+        const name = newBiomeNameRef.current.value;
+        const colour = newBiomeColourRef.current.value;
+        newBiomeNameRef.current.value = '';
+        newBiomeColourRef.current.value = '#000000';
+        addBiome({ name, colour });
+    }
+
+    function handleAddRegion() {
+        const title = newRegionNameRef.current.value;
+        const visible_description = newRegionVDescRef.current.value;
+        const hidden_description = newRegionHDescRef.current.value;
+        newRegionNameRef.current.value = '';
+        newRegionVDescRef.current.value = '';
+        newRegionHDescRef.current.value = '';
+        addRegion({ title, visible_description, hidden_description });
+    }
+
+    function handleSaveWorld() {
+        const name = newWorldNameRef.current.value;
+        const description = newWorldDescriptionRef.current.value;
+        newWorldNameRef.current.value = '';
+        newWorldDescriptionRef.current.value = '';
+        saveWorld(name, description);
+    }
+
     return (
         <div className="worldbuilder-window">
             <h2>Worldbuilder</h2>
@@ -51,7 +102,8 @@ function WorldbuilderWindow({
                 <h4>Biome: {biomeLookup[biomeBrush]?.name ?? 'None'}</h4>
                 <h4>Detail: {detailBrush === 0 ? 'Erase' : detailLookup[detailBrush]?.name ?? 'None'}</h4>
                 <h4>Elevation: {elevationEditType ?? 'None'} </h4>
-                <h4>Region: {regionLookup[regionBrush]?.name ?? 'None'}</h4>
+                <h4>Region: {regionLookup[regionBrush]?.title ?? 'None'}</h4>
+                <h4>Component: {componentLookup[componentBrush]?.name ?? 'None'}</h4>
                 <div
                     className={`colour-preview ${biomeLookup[biomeBrush] ? '' : 'checkerboard'}`}
                     style={biomeLookup[biomeBrush] ? { backgroundColor: biomeLookup[biomeBrush].colour } : undefined}
@@ -87,11 +139,7 @@ function WorldbuilderWindow({
                 Add biome:
                 <input type="text" placeholder="Biome name" ref={newBiomeNameRef} />
                 <input type="color" ref={newBiomeColourRef} />
-                <button onClick={() => {
-                    const name = newBiomeNameRef.current.value;
-                    const colour = newBiomeColourRef.current.value;
-                    addBiome({ name, colour });
-                }}>Add</button>
+                <button onClick={handleAddBiome}>Add</button>
             </label>
             <h3>Detail</h3>
             <div className="palette-display">
@@ -128,12 +176,23 @@ function WorldbuilderWindow({
                 <input type="text" placeholder="Detail name" ref={newDetailNameRef} />
                 <input type="color" ref={newDetailColourRef} />
                 <input type="number" ref={newDetailHeightRef} />
-                <button onClick={() => {
-                    const name = newDetailNameRef.current.value;
-                    const colour = newDetailColourRef.current.value;
-                    const height = Number(newDetailHeightRef.current.value);
-                    addDetail({ name, colour, height });
-                }}>Add</button>
+                <button onClick={handleAddDetail}>Add</button>
+            </label>
+            <h3>Connected Components</h3>
+            <div key={"none"} className="component-entry">
+                    <button onClick={() => setComponentBrush(null)}>Clear</button>
+                </div>
+            {Object.entries(componentLookup).map(([componentId, component]) => (
+                <div key={componentId} className="component-entry">
+                    <span>{component.name}</span>
+                    <button onClick={() => setComponentBrush(Number(componentId))}>Select</button>
+                </div>
+            ))}
+            <label>
+                Add component:
+                <input type="text" placeholder="Name" ref={newComponentNameRef} />
+                <textarea placeholder="Description" ref={newComponentDescriptionRef} />
+                <button onClick={handleAddComponent}>Add</button>
             </label>
 
             <h3>Elevation</h3>
@@ -157,13 +216,7 @@ function WorldbuilderWindow({
                 <input type="text" placeholder="Region title" ref={newRegionNameRef} />
                 <input type="text" placeholder="Region visible-description" ref={newRegionVDescRef} />
                 <input type="text" placeholder="Region hidden-description" ref={newRegionHDescRef} />
-                <button onClick={() => {
-                    addRegion({
-                        title: newRegionNameRef.current.value,
-                        visible_description: newRegionVDescRef.current.value,
-                        hidden_description: newRegionHDescRef.current.value,
-                    });
-                }}>Add</button>
+                <button onClick={handleAddRegion}>Add</button>
             </label>
             <div className="map-generator-section">
                 <h3>Map Generator</h3>
@@ -198,11 +251,7 @@ function WorldbuilderWindow({
                     Save map:
                     <input type="text" placeholder="Filename" ref={newWorldNameRef} />
                     <textarea placeholder="description" ref={newWorldDescriptionRef} />
-                    <button onClick={() => {
-                        const name = newWorldNameRef.current.value;
-                        const description = newWorldDescriptionRef.current.value;
-                        saveWorld(name, description);
-                    }}>Save</button>
+                    <button onClick={handleSaveWorld}>Save</button>
                 </label>
                 {saveWorldMutation.isError && <p className="error">{saveWorldMutation.error.message}</p>}
                 <label>

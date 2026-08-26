@@ -74,6 +74,10 @@ class WorldData(BaseModel):
     biome_lookup: dict
     region_lookup: dict
     story_setup: dict
+    detail_lookup: dict
+    component_lookup: dict
+    detail: bytes
+    component: bytes
 
 class WorldPayload(BaseModel):
     """World data with map layers base64-encoded for JSON transport."""
@@ -87,6 +91,10 @@ class WorldPayload(BaseModel):
     biome_lookup: dict
     story_setup: dict
     region_lookup: dict
+    detail_lookup: dict
+    component_lookup: dict
+    detail: str
+    component: str
 
 class SaveWorldPayload(WorldPayload):
     colour: str
@@ -103,6 +111,10 @@ def to_payload(world: WorldData) -> WorldPayload:
         biome_lookup=world.biome_lookup,
         story_setup=world.story_setup,
         region_lookup=world.region_lookup,
+        detail_lookup=world.detail_lookup,
+        component_lookup=world.component_lookup,
+        detail=base64.b64encode(world.detail).decode(),
+        component=base64.b64encode(world.component).decode(),
     )
 
 def to_data(payload: WorldPayload) -> WorldData:
@@ -117,4 +129,8 @@ def to_data(payload: WorldPayload) -> WorldData:
         biome_lookup=payload.biome_lookup,
         story_setup=payload.story_setup,
         region_lookup=payload.region_lookup,
+        detail_lookup=payload.detail_lookup,
+        component_lookup=payload.component_lookup,
+        detail=base64.b64decode(payload.detail),
+        component=base64.b64decode(payload.component)
     )

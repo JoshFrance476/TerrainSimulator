@@ -13,6 +13,10 @@ class World:
         self.region = np.frombuffer(world_data.region, dtype=np.uint8).copy()
         self.biome_lookup = world_data.biome_lookup
         self.region_lookup = world_data.region_lookup
+        self.detail = np.frombuffer(world_data.detail, dtype=np.uint8).copy()
+        self.detail_lookup = world_data.detail_lookup
+        self.component = np.frombuffer(world_data.component, dtype=np.uint8).copy()
+        self.component_lookup = world_data.component_lookup
 
         self.max_regions_per_cell = 4
         self.no_region_sentinel = 255

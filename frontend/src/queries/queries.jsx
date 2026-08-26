@@ -16,6 +16,10 @@ export const tokenUsageKey = ['token-usage']
 export const modelKey = ['model']
 export const worldsKey = ['worlds']
 export const sessionKey = ['session']
+export const detailMapKey = ['detail-map']
+export const componentMapKey = ['component-map']
+export const detailLookupKey = ['detail-lookup']
+export const componentLookupKey = ['component-lookup']
 
 export const editorWorldKey = (worldId) => ['editor-world', worldId]
 
@@ -132,6 +136,36 @@ export function useElevationMapQuery() {
         queryKey: elevationMapKey,
         queryFn: async () => new Uint8ClampedArray(await getBuffer('/api/world/elevation-map')),
         ...binaryOptions,
+    })
+}
+
+export function useDetailMapQuery() {
+    return useQuery({
+        queryKey: detailMapKey,
+        queryFn: async () => new Uint8Array(await getBuffer('/api/world/detail-map')),
+        ...binaryOptions,
+    })
+}
+
+export function useComponentMapQuery() {
+    return useQuery({
+        queryKey: componentMapKey,
+        queryFn: async () => new Uint8Array(await getBuffer('/api/world/component-map')),
+        ...binaryOptions,
+    })
+}
+
+export function useDetailLookupQuery() {
+    return useQuery({
+        queryKey: detailLookupKey,
+        queryFn: () => getJson('/api/world/detail-lookup'),
+    })
+}
+
+export function useComponentLookupQuery() {
+    return useQuery({
+        queryKey: componentLookupKey,
+        queryFn: () => getJson('/api/world/component-lookup'),
     })
 }
 

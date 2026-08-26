@@ -6,6 +6,10 @@ import {
     useRegionMapQuery,
     useRegionLookupQuery,
     useElevationMapQuery,
+    useDetailMapQuery,
+    useComponentMapQuery,
+    useDetailLookupQuery,
+    useComponentLookupQuery,
 } from '../queries/queries'
 
 export function useWorld() {
@@ -15,8 +19,12 @@ export function useWorld() {
     const regionMap = useRegionMapQuery()
     const regionLookup = useRegionLookupQuery()
     const elevationMap = useElevationMapQuery()
+    const detailMap = useDetailMapQuery()
+    const componentMap = useComponentMapQuery()
+    const detailLookup = useDetailLookupQuery()
+    const componentLookup = useComponentLookupQuery()
 
-    const queries = [world, biomeMap, biomeLookup, regionMap, regionLookup, elevationMap]
+    const queries = [world, biomeMap, biomeLookup, regionMap, regionLookup, elevationMap, detailMap, componentMap, detailLookup, componentLookup]
 
     // stable reference so `dimensions` can safely sit in effect dependency arrays
     const dimensions = useMemo(
@@ -34,6 +42,10 @@ export function useWorld() {
         regionMap: regionMap.data,
         regionLookup: regionLookup.data ?? {},
         elevationMap: elevationMap.data,
+        detailMap: detailMap.data,
+        componentMap: componentMap.data,
+        detailLookup: detailLookup.data ?? {},
+        componentLookup: componentLookup.data ?? {},
 
         isLoading: queries.some((q) => q.isLoading),
         isFetching: queries.some((q) => q.isFetching),

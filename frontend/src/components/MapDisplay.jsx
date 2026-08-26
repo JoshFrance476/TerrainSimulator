@@ -2,12 +2,13 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { getBrushOutline } from '../utils/world-editing'
 
 
-function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLabel, getScreenTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius }) {
+function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLabel, getScreenTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius, getHoveredCells }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
+    const [hoveredCells, setHoveredCells] = useState([]) // shape: [{x, y}]
 
     const lastDrawn = useRef(null)
 
@@ -41,10 +42,10 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         baseMapRef.current.getContext('2d').putImageData(imageData, 0, 0)
     }, [imageData])
 
-    // Redraw interaction layer when selected cell changes
+    // Redraw interaction layer
     useEffect(() => {
-        drawInteractionLayer(lastHoveredCell, selectedCell, playerLocation)
-    }, [imageData, selectedCell, playerLocation, lastHoveredCell])
+        drawInteractionLayer(hoveredCells, lastHoveredCell, selectedCell, playerLocation)
+    }, [imageData, selectedCell, playerLocation, hoveredCells, lastHoveredCell])
 
     useEffect(() => {
         if (!imageData) return
@@ -61,7 +62,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
     }, [imageData?.width, imageData?.height])
 
     // Draw hovered cell and selected cell on interaction layer
-    function drawInteractionLayer(hovered, selected, player = null) {
+    function drawInteractionLayer(hovered, mouseLocation, selected, player = null) {
         if (!imageData) return
         const ctx = interactionRef.current.getContext('2d')
 
@@ -78,24 +79,30 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         ctx.save()
         ctx.scale(SCALE, SCALE)
         
-        if (hovered) {
+        const hoveredPoints = []
+        if (hovered.size > 0) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
-            ctx.fillRect(hovered.x, hovered.y, 1, 1)
+            for (const index of hovered) {
+                const x = index % imageData.width
+                const y = (index / imageData.width) | 0
+                hoveredPoints.push({ x, y })
+                ctx.fillRect(x, y, 1, 1)
+            }
         }
-        if (hovered && brushOutline) {
+        if (mouseLocation && brushOutline) {
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
             const lw = 1 / SCALE
             ctx.lineWidth = lw
             ctx.beginPath()
             for (const [x1, y1, x2, y2] of brushOutline) {
                 if (y1 === y2) {
-                    const y = hovered.y + y1 + lw / 2
-                    ctx.moveTo(hovered.x + x1, y)
-                    ctx.lineTo(hovered.x + x2, y)
+                    const y = mouseLocation.y + y1 + lw / 2
+                    ctx.moveTo(mouseLocation.x + x1, y)
+                    ctx.lineTo(mouseLocation.x + x2, y)
                 } else {
-                    const x = hovered.x + x1 + lw / 2
-                    ctx.moveTo(x, hovered.y + y1)
-                    ctx.lineTo(x, hovered.y + y2)
+                    const x = mouseLocation.x + x1 + lw / 2
+                    ctx.moveTo(x, mouseLocation.y + y1)
+                    ctx.lineTo(x, mouseLocation.y + y2)
                 }
             }
             ctx.stroke()
@@ -130,7 +137,12 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
             ctx.stroke()
         }
         ctx.restore()
-        lastDrawn.current = [hovered && {...hovered, r: brushRadius}, selected, player].filter(Boolean)
+        lastDrawn.current = [
+            ...hoveredPoints,
+            mouseLocation && { ...mouseLocation, r: brushRadius },
+            selected,
+            player,
+        ].filter(Boolean)
     }
 
     useEffect(() => {
@@ -216,7 +228,8 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         }
 
         if (isNewHoveredCell(cellX, cellY)) {
-            setLastHoveredCell({ x: cellX, y: cellY })
+            setLastHoveredCell({ cellX, cellY })
+            setHoveredCells(getHoveredCells?.({ cellX, cellY }) ?? [])
             if (isPainting.current && handleMouseDownDrag) {
                 handleMouseDownDrag(eventToCell(e), paintButton.current)
             }
@@ -246,6 +259,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
 
     function handleMouseLeave() {
         setMouseTooltip(null)
+        setHoveredCells([])
         setLastHoveredCell(null)
         setScreenTooltip(null)
     }
