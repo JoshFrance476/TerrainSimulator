@@ -173,7 +173,6 @@ function Worldbuilder({ initialWorldId = null }) {
                 }
             }
             buildBorders()
-            commit()
         } if (componentBrush !== null) {
             if (button === 0) {
                 for (const index of indexes) {
@@ -185,8 +184,8 @@ function Worldbuilder({ initialWorldId = null }) {
                 }
             }
             buildBorders()
-            commit()
         }
+        commit()
     }
 
     function handleContinuousCellInteraction({ cellX, cellY }, button) {
