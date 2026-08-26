@@ -287,6 +287,22 @@ def get_region_map(s: Session = Depends(get_session)):
 def get_region_lookup(s: Session = Depends(get_session)):
     return s.world.region_lookup
 
+@app.get("/api/world/detail-map")
+def get_detail_map(s: Session = Depends(get_session)):
+    return Response(s.world.detail.tobytes(), media_type="application/octet-stream")
+
+@app.get("/api/world/detail-lookup")
+def get_detail_lookup(s: Session = Depends(get_session)):
+    return s.world.detail_lookup
+
+@app.get("/api/world/component-map")
+def get_component_map(s: Session = Depends(get_session)):
+    return Response(s.world.component.tobytes(), media_type="application/octet-stream")
+
+@app.get("/api/world/component-lookup")
+def get_component_lookup(s: Session = Depends(get_session)):
+    return s.world.component_lookup
+
 @app.get('/api/token-usage')
 def get_token_usage(s: Session = Depends(get_session)):
     return {
@@ -324,7 +340,11 @@ def load_world(world_id: int) -> WorldData:
         region=row["region"],
         biome_lookup=row["biome_lookup"],
         story_setup=row["story_setup"],
-        region_lookup=row["region_lookup"]
+        region_lookup=row["region_lookup"],
+        detail_lookup=row["detail_lookup"],
+        component_lookup=row["component_lookup"],
+        detail=row["detail"],
+        component=row["component"]
     )
 
 @app.get("/api/load-world/{world_id}")
@@ -359,7 +379,11 @@ def save_world(request: SaveWorldPayload, user=Depends(require_user)):
         map_png=map_png,
         biome_lookup=data.biome_lookup,
         story_setup=data.story_setup,
-        region_lookup=data.region_lookup
+        region_lookup=data.region_lookup,
+        detail_lookup=data.detail_lookup,
+        component_lookup=data.component_lookup,
+        detail=data.detail,
+        component=data.component
     )
 
 def rgba_to_png(rgba: bytes, width: int, height: int) -> bytes:
