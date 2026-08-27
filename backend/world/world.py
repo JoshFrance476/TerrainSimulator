@@ -28,6 +28,8 @@ class World:
         index = self._convert_coords_to_index(loc.x, loc.y)
         return CellData(
             biome=self._get_biome_name_from_id(self.biome[index]),
+            detail=self._get_detail_name_from_id(self.detail[index]),
+            component=self._get_component_name_from_id(self.component[index]),
             elevation=int(self.elevation[index]),
             regions=self._get_cell_regions(loc),
         )
@@ -44,4 +46,10 @@ class World:
 
     def _get_biome_name_from_id(self, biome_id):
         return self.biome_lookup.get(str(biome_id))
+
+    def _get_detail_name_from_id(self, detail_id):
+        return self.detail_lookup.get(str(detail_id))
+
+    def _get_component_name_from_id(self, component_id):
+        return self.component_lookup.get(str(component_id))
 
