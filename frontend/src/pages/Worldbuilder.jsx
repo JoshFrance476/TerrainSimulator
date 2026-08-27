@@ -87,6 +87,8 @@ function Worldbuilder({ initialWorldId = null }) {
         commit()
     }
 
+    // These use effects below should be replaced, it's not a reliable way to keep world in sync. Should be updated explicitly whenever the lookups change.
+
     useEffect(() => {
         if (worldRef.current) {
             worldRef.current.biomeLookup = biomeLookup
@@ -132,6 +134,7 @@ function Worldbuilder({ initialWorldId = null }) {
 
     function handleCellInteraction({ cellX, cellY }, button) {
         const world = worldRef.current
+        const index = cellY * world.width + cellX
         const indexes = getBrushIndexes(world, cellX, cellY, brushRadius)
 
         if (elevationEditType === 'layer') {
@@ -236,6 +239,17 @@ function Worldbuilder({ initialWorldId = null }) {
         setBiomeLookup(next)
     }
 
+    function editBiome({ biomeBrush, name, colour }) {
+        const next = { ...biomeLookup }
+        if (biomeBrush !== null && next[biomeBrush]) {
+            next[biomeBrush] = { ...next[biomeBrush], name, colour }
+        }
+        setBiomeLookup(next)
+        worldRef.current.biomeLookup = next
+        refreshAll(worldRef.current)
+        commit()
+    }
+
     function addDetail(detail) {
         // +1 is a cheap fix for the lookup table starting at 1 instead of 0, with 0 being reserved for "no detail"
         const next = {...detailLookup, [Object.keys(detailLookup).length+1]: detail }
@@ -283,6 +297,7 @@ function Worldbuilder({ initialWorldId = null }) {
                 biomeBrush={biomeBrush}
                 generateRandomMap={handleGenerate}
                 addBiome={addBiome}
+                editBiome={editBiome}
                 setBrushRadius={setBrushRadius}
                 setElevationEditType={setElevationEditType}
                 elevationEditType={elevationEditType}

@@ -9,6 +9,7 @@ function WorldbuilderWindow({
     generateRandomMap, 
     setBrushRadius, 
     addBiome, 
+    editBiome,
     regionLookup, 
     regionBrush, 
     setRegionBrush, 
@@ -22,7 +23,7 @@ function WorldbuilderWindow({
     addComponent,
     setComponentBrush,
     componentBrush,
-    componentLookup
+    componentLookup,
 }) {
     const loadWorldIdRef = useRef(); 
     
@@ -33,6 +34,9 @@ function WorldbuilderWindow({
 
     const newBiomeNameRef = useRef(null);
     const newBiomeColourRef = useRef(null);
+
+    const editBiomeNameRef = useRef(null);
+    const editBiomeColourRef = useRef(null);
 
     const newDetailNameRef = useRef(null);
     const newDetailColourRef = useRef(null);
@@ -74,6 +78,14 @@ function WorldbuilderWindow({
         newBiomeNameRef.current.value = '';
         newBiomeColourRef.current.value = '#000000';
         addBiome({ name, colour });
+    }
+
+    function handleEditBiome() {
+        const name = editBiomeNameRef.current.value;
+        const colour = editBiomeColourRef.current.value;
+        editBiomeNameRef.current.value = '';
+        editBiomeColourRef.current.value = '#000000';
+        editBiome({ biomeBrush, name, colour });
     }
 
     function handleAddRegion() {
@@ -141,6 +153,13 @@ function WorldbuilderWindow({
                 <input type="color" ref={newBiomeColourRef} />
                 <button onClick={handleAddBiome}>Add</button>
             </label>
+            {biomeBrush && 
+            <label>
+                Edit biome:
+                <input type="text" defaultValue={biomeLookup[biomeBrush].name} ref={editBiomeNameRef} />
+                <input type="color" defaultValue={biomeLookup[biomeBrush].colour} ref={editBiomeColourRef} />
+                <button onClick={handleEditBiome}>Submit</button>
+            </label>}
             <h3>Detail</h3>
             <div className="palette-display">
                 <div key={"none"} className='palette-entry'>
