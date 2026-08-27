@@ -12,7 +12,7 @@ export const BIOME_LOOKUP = {
 }
 
 export const DETAIL_LOOKUP = {
-    1: { name: "path", colour: '#a76d03', height: -1 },
+    1: { name: "path", colour: '#a76d03', height: 0 },
 }
 
 export const NO_REGION = 255
@@ -56,7 +56,7 @@ export function updateHighlight(world, index) {
         if (elevation > SEA_LEVEL-2) {
             world.highlight[index] = 1
         } else if (elevation > SEA_LEVEL-3) {
-            world.highlight[index] = 3
+            world.highlight[index] = 0
         } else {
             world.highlight[index] = 2
         }
