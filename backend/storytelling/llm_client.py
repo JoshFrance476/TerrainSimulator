@@ -69,7 +69,7 @@ class LLMClient:
 
             result = {
                 "description": data["interaction_description"],
-                "actions": data["actions"],
+                "actions": data["player_actions"],
             }
 
             if final_chunk:
