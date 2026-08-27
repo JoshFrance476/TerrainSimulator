@@ -5,7 +5,7 @@
       "type": "string",
       "description": "A second-person scene description under 50 words"
     },
-    "actions": {
+    "player_actions": {
       "type": "array",
       "description": "player actions",
       "items": {
@@ -25,6 +25,6 @@
       }
     }
   },
-  "required": ["interaction_description", "actions"],
+  "required": ["interaction_description", "player_actions"],
   "additionalProperties": false
 }
