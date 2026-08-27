@@ -18,6 +18,8 @@ class CellData:
     biome: str
     elevation: int
     regions: list[Region]
+    detail: str | None
+    component: str | None
 
 @dataclass(frozen=True)
 class StorySetup:
