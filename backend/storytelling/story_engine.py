@@ -52,6 +52,9 @@ class StoryEngine:
                 })
                 self.world.add_new_region_to_chunk(quest["chunk_id"], quest["title"], quest["visible_context"], quest["hidden_context"])
             self.state.quest_list = self.state.quest_list
+
+    async def generate_storylines(self, setup: StorySetup):
+        return await self.llm.prompt_storylines(setup)
  
     def clear_scene(self):
         self.scene_manager.clear_scene()
