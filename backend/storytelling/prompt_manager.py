@@ -10,6 +10,7 @@ _DEFAULT_SETTINGS = {
     "interaction": {"file_name": "scene_v2.yaml", "temperature": 1.0, "max_tokens": 800, "reasoning_effort": "low"},
     "scene-guide": {"file_name": "scene_setup_v2.yaml", "temperature": 0.7, "max_tokens": 800, "reasoning_effort": "medium"},
     "scene-summary": {"file_name": "scene_summary.yaml", "temperature": 0.7, "max_tokens": 400, "reasoning_effort": "low"},
+    "storylines": {"file_name": "storylines.yaml", "temperature": 0.7, "max_tokens": 800, "reasoning_effort": "medium"}
 }
 
 
