@@ -1,4 +1,4 @@
-from models import SceneContext
+from models import SceneContext, StorySetup
 from storytelling.prompt_manager import PromptManager
 from storytelling.log_writer import LogWriter
 from huggingface_hub import AsyncInferenceClient
@@ -90,6 +90,23 @@ class LLMClient:
             yield {"data": json.dumps({"error": "Stream failed", "detail": str(e)}), "event": "stream_error"}
             raise
 
+    async def prompt_storylines(self, setup: StorySetup):
+        messages = [
+            {"role": "system", "content": self.prompt_manager.render("storylines", setup)},
+            {"role": "user", "content": json.dumps({
+                "world_description": setup.world_description,
+                "story_focus": setup.story_focus_description,
+                "character_description": setup.character_description
+            })}
+        ]
+
+        response = await self.client.chat.completions.create(
+            messages=messages,
+            **self._settings_kwargs("storylines")
+        )
+        content = response.choices[0].message.content
+        return(content)
+
 
     async def prompt_scene_setup(self, scene_context: SceneContext, scene_history: list[dict], significance: str):
             context = {
@@ -107,7 +124,7 @@ class LLMClient:
                 {"role": "system", "content": self.prompt_manager.render("scene-guide", asdict(scene_context.story_setup))},
                 {"role": "user", "content": json.dumps({
                     "context": context,
-                })},
+                })}
             ]
             
             response = await self.client.chat.completions.create(
