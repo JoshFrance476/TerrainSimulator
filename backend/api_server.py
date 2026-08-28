@@ -310,6 +310,15 @@ def get_token_usage(s: Session = Depends(get_session)):
         "input_tokens": s.story_engine.state.prompt_tokens
     }
 
+# ---------------------------------------------------------------- setup
+
+@app.post("/api/setup/generate-storylines")
+async def generate_storylines(body: SetupStoryBody, s: Session = Depends(get_session), user=Depends(require_user)):
+    print(body)
+    return await s.story_engine.generate_storylines(body)
+
+
+
 # ---------------------------------------------------------------- worlds
 
 @app.get("/api/worlds")
