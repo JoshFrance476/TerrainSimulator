@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "environment_description": {
+      "type": "string",
+      "description": "One grounded sentence describing the environment"
+    },
+    "location_precise": {
+      "type": "string"
+    },
+    "story_suggestion": {
+      "type": "string",
+      "description": "One sentence suggesting what the player could encounter in the scene - based on scene significance"
+    },
+    "suggested_outcomes": {
+      "type": "array",
+      "description": "2-4 potential outcomes",
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "description": "A short sentence describing a potential outcome of the scene"
+      } 
+    }
+  },
+  "required": ["environment_description", "location_precise", "story_suggestion", "suggested_outcomes"]
+}
