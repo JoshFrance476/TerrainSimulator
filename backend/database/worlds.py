@@ -38,7 +38,7 @@ def get_world(world_id):
 def list_worlds():
     with pool.connection() as conn:
         return conn.execute(
-            "SELECT id, name, description, biome_lookup, story_setup, region_lookup FROM worlds_v2 ORDER BY name"
+            "SELECT id, name, description, biome_lookup, story_setup, region_lookup, component_lookup FROM worlds_v2 ORDER BY name"
         ).fetchall()
 
 def get_world_png(world_id): 
