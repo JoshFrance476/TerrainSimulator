@@ -58,7 +58,19 @@ function Landing({ onNavigate }) {
                 </ul>
                 )}
             </div>
-            {showPlaySetupModal && <PlaySetupModal onPlay={handlePlay} isPending={newSession.isPending} world={worldMetadata} onClose={() => setShowPlaySetupModal(false)}/>}
+            {showPlaySetupModal && <PlaySetupModal 
+                                    onSubmit={handlePlay} 
+                                    isPending={newSession.isPending} 
+                                    worldTitle={worldMetadata?.name}
+                                    initialWorldDescription={worldMetadata?.story_setup.world_description}
+                                    initialCharacterDescription={worldMetadata?.story_setup.character_description}
+                                    initialStoryFocus={worldMetadata?.story_setup.story_focus}
+                                    initialStorylines={worldMetadata?.storylines}
+                                    regionLookup={worldMetadata?.region_lookup}
+                                    componentLookup={worldMetadata?.component_lookup}
+                                    onClose={() => setShowPlaySetupModal(false)}
+                                    submitLabel="Play"
+                                    />}
         </div>
         
     )
