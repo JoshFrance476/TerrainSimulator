@@ -38,7 +38,17 @@ class LogWriter:
                 first = True
                 for key, value in message.items():
                     prefix = "  " if not first else ""
-                    if isinstance(value, str) and "\n" in value:
+                    parsed = None
+                    if isinstance(value, str):
+                        try:
+                            parsed = json.loads(value)
+                        except json.JSONDecodeError:
+                            pass
+                    if isinstance(parsed, (dict, list)):
+                        f.write(f"{prefix}{key}:\n")
+                        for line in yaml.dump(parsed, sort_keys=False, allow_unicode=True, indent=2).splitlines():
+                            f.write(f"    {line}\n")
+                    elif isinstance(value, str) and "\n" in value:
                         f.write(f"{prefix}{key}: |\n")
                         for line in value.splitlines():
                             f.write(f"    {line}\n")
