@@ -34,7 +34,7 @@ class StoryEngine:
             if event["event"] == "guide":
                 self.state.current_scene.add_interaction(description,
                                                          actions, 
-                                                         event["data"]["outcome_suggestions"], 
+                                                         event["data"]["suggested_outcomes"], 
                                                          event["data"])
                 
 

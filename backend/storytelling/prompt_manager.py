@@ -1,104 +1,74 @@
 from pathlib import Path
 import yaml
-import re
 import json
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
 
-_DEFAULT_SETTINGS = {
-    "interaction": {"file_name": "scene_v2.yaml", "temperature": 1.0, "max_tokens": 800, "reasoning_effort": "low"},
-    "scene-guide": {"file_name": "scene_setup_v2.yaml", "temperature": 0.7, "max_tokens": 800, "reasoning_effort": "medium"},
-    "scene-summary": {"file_name": "scene_summary.yaml", "temperature": 0.7, "max_tokens": 400, "reasoning_effort": "low"},
-    "storylines": {"file_name": "storylines.yaml", "temperature": 0.7, "max_tokens": 800, "reasoning_effort": "medium"}
-}
-
-
-def _render(template: str, variables: dict) -> str:
-    def replacer(match):
-        key = match.group(1)
-        if key not in variables:
-            raise KeyError(f"Template variable '{{{{ {key} }}}}' not provided")
-        return str(variables[key])
-    return re.sub(r'\{\{\s*(\w+)\s*\}\}', replacer, template)
-
-def _load_system_prompt(filename: str) -> str:
-    with open(PROMPTS_DIR / filename, "r", encoding="utf-8") as f:
-        messages = yaml.safe_load(f)
-    for msg in messages:
-        if msg["role"] == "system":
-            return msg["content"]
-    raise ValueError(f"No system message found in {filename}")
-
-class Prompt:
-    def __init__(self, name: str, text: str, temperature: float, max_tokens: int, reasoning_effort: str):
-        self.name = name
-        self.text = text
-        self.temperature = temperature
-        self.max_tokens = max_tokens
-        self.reasoning_effort = reasoning_effort
-
-    def to_dict(self) -> dict:
-        return {
-            "name": self.name,
-            "text": self.text,
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-            "reasoning_effort": self.reasoning_effort
-        }
-
 
 class PromptManager:
-    """Editable system-prompt templates and their model settings, held in memory
-    for the session. Loaded from disk once at startup. Edits never write back to file."""
+    """System-prompt templates, their model settings, and the JSON schemas they
+    reference. Loaded from disk once at startup and held in memory for the
+    session. Edits via set() never write back to file.
+
+    Each prompt is a dict loaded from prompts/<name>.yaml, keyed by filename stem:
+
+        temperature:      float    (required)
+        max_tokens:       int      (required)
+        reasoning_effort: str      (required)
+        system:           str      (required) - the template text
+        response_schema:  str      (optional) - schema name for constrained output
+        tools:            list[str](optional) - schema names for tool calling
+    """
 
     def __init__(self):
-        self.prompts = {}
+        self.prompts = {
+            path.stem: yaml.safe_load(path.read_text(encoding="utf-8"))
+            for path in PROMPTS_DIR.glob("*.yaml")
+        }
+        self.schemas = {
+            path.stem: json.loads(path.read_text(encoding="utf-8"))
+            for path in SCHEMAS_DIR.glob("*.json")
+        }
 
-        for name, settings in _DEFAULT_SETTINGS.items():
-
-            self.prompts[name] = Prompt(
-                name=name,
-                text=_load_system_prompt(settings["file_name"]),
-                temperature=settings["temperature"],
-                max_tokens=settings["max_tokens"],
-                reasoning_effort=settings["reasoning_effort"]
-            )
-
-    def get(self, name: str) -> Prompt:
-        if name in self.prompts:
-            return self.prompts[name]
-        else:
+    def get(self, name: str) -> dict:
+        if name not in self.prompts:
             raise KeyError(f"Unknown prompt: {name}")
+        return self.prompts[name]
 
-    def set(self, name: str, text: str, temperature: float = None, max_tokens: int = None, reasoning_effort: str = None):
+    def set(self, name: str, text: str = None, temperature: float = None,
+            max_tokens: int = None, reasoning_effort: str = None):
         prompt = self.get(name)
-        prompt.text = text
-        if temperature is not None:
-            prompt.temperature = temperature
-        if max_tokens is not None:
-            prompt.max_tokens = max_tokens
-        if reasoning_effort is not None:
-            prompt.reasoning_effort = reasoning_effort
+        updates = {
+            "system": text,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "reasoning_effort": reasoning_effort,
+        }
+        for key, value in updates.items():
+            if value is not None:
+                prompt[key] = value
 
-    def render(self, name: str, variables: dict = None) -> str:
-        return _render(self.get(name).text, variables or {})
+    def get_schema(self, schema_name: str) -> dict:
+        if schema_name not in self.schemas:
+            raise KeyError(f"Unknown schema: {schema_name}")
+        return self.schemas[schema_name]
 
     def load_response_format_schema(self, schema_name: str) -> dict:
-        schema = self.load_raw_schema(schema_name)
-        return {"type": "json_schema", "json_schema": {"name": schema_name, "schema": schema}}
+        return {
+            "type": "json_schema",
+            "json_schema": {"name": schema_name, "schema": self.get_schema(schema_name)},
+        }
 
     def load_tools_schema(self, *schema_names: str) -> list:
         tools = []
         for name in schema_names:
-            schema = self.load_raw_schema(name)
+            # Shallow copy: schemas are cached now, so popping would mutate the
+            # cached dict and break the second call.
+            schema = dict(self.get_schema(name))
             function_name = schema.pop("_function_name")
-            tools.append({"type": "function", "function": {"name": function_name, "parameters": schema}})
+            tools.append({
+                "type": "function",
+                "function": {"name": function_name, "parameters": schema},
+            })
         return tools
-
-    def load_raw_schema(self, schema_name: str) -> dict:
-        path = SCHEMAS_DIR / f"{schema_name}.json"
-        if not path.exists():
-            raise FileNotFoundError(f"Schema file not found: {path}")
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
