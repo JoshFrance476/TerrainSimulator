@@ -31,7 +31,8 @@ from models import (
     WorldPayload,
     to_payload,
     to_data,
-    StorySetup
+    StorySetup,
+    StorylinesBody
 )
 
 from world.world import World
@@ -248,7 +249,7 @@ async def set_prompt_template(name: str, body: PromptBody, s: Session = Depends(
 
 @app.get("/api/scene/templates/{name}")
 def get_prompt_template(name: str, s: Session = Depends(get_session)): 
-    return s.story_engine.llm.prompt_manager.get(name).to_dict()
+    return s.story_engine.llm.prompt_manager.get(name)
 
 # ---------------------------------------------------------------- player
 
@@ -314,10 +315,11 @@ def get_token_usage(s: Session = Depends(get_session)):
 
 @app.post("/api/setup/generate-storylines")
 async def generate_storylines(body: SetupStoryBody, s: Session = Depends(get_session), user=Depends(require_user)):
-    print(body)
     return await s.story_engine.generate_storylines(body)
 
-
+@app.post("/api/setup/generate-hidden-context")
+async def generate_hidden_context(body: StorylinesBody, s: Session = Depends(get_session), user=Depends(require_user)):
+    return await s.story_engine.generate_hidden_context(body)
 
 # ---------------------------------------------------------------- worlds
 
