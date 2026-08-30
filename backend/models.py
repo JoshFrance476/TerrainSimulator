@@ -64,6 +64,9 @@ class SetupStoryBody(BaseModel):
     character_description: str
     story_focus_description: str
 
+class StorylinesBody(BaseModel):
+    storylines: str
+
 class WorldData(BaseModel):
     """World data with map layers in bytes for server-side handling."""
     name: str
