@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePlayer } from '../hooks/usePlayer'
-import { useSubmitActionMutation, promptScene, sceneKey, storyKey, tokenUsageKey, useSceneQuery } from '../queries/queries'
+import { useSubmitActionMutation, useGenerateSceneSummaryMutation, sceneKey, storyKey, tokenUsageKey, useSceneQuery } from '../queries/queries'
 import EngineTab from './scene-tabs/EngineTab'
 import SceneTab from './scene-tabs/SceneTab'
 import {streamRequest} from "../utils/streaming"
@@ -14,6 +14,7 @@ function StoryWindow({ user }) {
     const { playerLocation } = usePlayer()
     const queryClient = useQueryClient()
     const submitAction = useSubmitActionMutation()
+    const generateSummary = useGenerateSceneSummaryMutation()
 
     const [sceneGuideIsStreaming, setSceneGuideIsStreaming] = useState(false)
     const [interactionIsStreaming, setInteractionIsStreaming] = useState(false)
@@ -25,7 +26,7 @@ function StoryWindow({ user }) {
                 setStreamedOutput((prev) => prev + token)
                 console.log(token)
             },
-            done: (payload) => {
+            done: () => {
                 setStreamedOutput('')
                 setSceneGuideIsStreaming(false)
                 queryClient.invalidateQueries({ queryKey: sceneKey })
@@ -43,7 +44,7 @@ function StoryWindow({ user }) {
                 setStreamedOutput((prev) => prev + token)
                 console.log(token)
             },
-            done: (payload) => {
+            done: () => {
                 setStreamedOutput('')
                 setInteractionIsStreaming(false)
                 queryClient.invalidateQueries({ queryKey: sceneKey })
@@ -53,7 +54,6 @@ function StoryWindow({ user }) {
             error: (payload) => console.log(JSON.parse(payload))
         })
     }
-
 
     async function handleSubmitAction({ action }) {
         try {
@@ -91,6 +91,7 @@ function StoryWindow({ user }) {
                 sceneGuideIsStreaming={sceneGuideIsStreaming}
                 interactionIsStreaming={interactionIsStreaming}
                 onPromptInteraction={generateInteraction}
+                onSummariseScene={() => generateSummary.mutate()}
             />}
             {activeTab === 'engine' && <EngineTab/>}
         </div>

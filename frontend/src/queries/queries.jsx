@@ -262,3 +262,17 @@ export function useSubmitActionMutation() {
         },
     })
 }
+
+export function useGenerateSceneSummaryMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => postJson('/api/scene/generate-summary', {}),
+    onError: (err) => console.error('Summary failed:', err),
+    onSuccess: () => {
+        queryClient.invalidateQueries({queryKey: sceneKey})
+        queryClient.invalidateQueries({queryKey: storyKey})
+        queryClient.invalidateQueries({queryKey: tokenUsageKey})
+    }
+  })
+}
