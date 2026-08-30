@@ -32,4 +32,7 @@ class StoryState:
 
     def get_scene(self) -> Scene:
         return self.current_scene
+
+    def clear_scene(self):
+        self.current_scene = None
     
