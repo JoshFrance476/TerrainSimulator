@@ -1,7 +1,6 @@
 from storytelling.llm_client import LLMClient
 from storytelling.story_state import StoryState
 from storytelling.context_builder import ContextBuilder
-from storytelling.scene_manager import SceneManager
 
 from world.world import World
 
@@ -18,46 +17,58 @@ class StoryEngine:
         self.player_location = Location(0, 0)
  
         self.context_builder = ContextBuilder(self.state, self.world)
-        self.scene_manager = SceneManager(self.state, self.llm, self.context_builder)
  
     # ------------------------------------------------------------------
     # Public interface
     # ------------------------------------------------------------------
  
-    async def generate_scene_interaction(self, selected_cell: Location):
-        async for event in self.scene_manager.generate_scene_interaction(selected_cell):
-            yield event
-            if event["event"] == "done":
-                data = json.loads(event["data"])
-                description = data["description"]
-                actions = data["actions"]
-            if event["event"] == "guide":
-                self.state.current_scene.add_interaction(description,
-                                                         actions, 
-                                                         event["data"]["suggested_outcomes"], 
-                                                         event["data"])
-                
+    async def choose_action(self, action: str):
+        self.state.current_scene.submit_action(action)
 
- 
-    async def choose_action(self, action: str, selected_cell: Location):
-        scene = self.state.current_scene
-        scene.submit_action(action)
-        if scene.ended:
-            new_quest_list = await self.scene_manager.end_scene(scene, selected_cell)
-            for quest in new_quest_list:
-                self.state.quest_list.append({
-                    "title": quest["title"],
-                    "visible_context": quest["visible_context"],
-                    "hidden_context": quest["hidden_context"]
-                })
-                self.world.add_new_region_to_chunk(quest["chunk_id"], quest["title"], quest["visible_context"], quest["hidden_context"])
-            self.state.quest_list = self.state.quest_list
+    async def generate_scene_guide(self, selected_cell: Location):
+        context = self.context_builder.build_scene_guide_context(selected_cell)
+
+        scene = self.state.get_or_create_scene()
+        scene_history = scene.get_history()
+        
+        async for event in self.llm.prompt_scene_guide(context, scene_history, "medium"):
+            if event["event"] == "done":
+                scene.set_guide(json.loads(event["payload"]))
+            yield event
+
+    async def generate_interaction(self):
+        scene = self.state.get_scene()
+        guide = scene.guide
+        previous_interactions = scene.get_history()
+        async for event in self.llm.prompt_interaction(guide, previous_interactions):
+            if event["event"] == "done":
+                payload = json.loads(event["payload"])
+                scene.add_interaction(
+                    description=payload["interaction_description"],
+                    actions=payload["player_actions"]
+                    )
+            yield event
 
     async def generate_storylines(self, setup: StorySetup):
-        return await self.llm.prompt_storylines(setup)
+        async for event in self.llm.prompt_storylines(setup, self.world.component_lookup, self.world.region_lookup):
+            yield event
+
+    async def generate_hidden_context(self, storylines):
+        response = await self.llm.prompt_hidden_context(storylines, self.world.component_lookup, self.world.region_lookup)
+        print(response)
+        for component in response["components"]:
+            self.world.component_lookup[str(component["component_id"])]["context"] = component["context"]
+        return self.world.component_lookup
+
+    async def generate_scene_summary(self):
+        response = await self.llm.prompt_scene_summary(self.state.get_scene())
+        self.state.character_history.append(response["summary"])
+        self.state.scene_history.append(self.state.get_scene())
+        self.state.clear_scene()
+
  
     def clear_scene(self):
-        self.scene_manager.clear_scene()
+        self.state.clear_scene()
  
     def add_to_movement_history(self, movement):
         self.state.movement_history.append(movement)
@@ -104,7 +115,7 @@ class StoryEngine:
         return self.state.character_history
  
     def get_current_scene(self):
-        return self.scene_manager.get_current_scene()
+        return self.state.get_scene()
     
     # ------------------------------------------------------------------
     # Internal
