@@ -1,56 +1,45 @@
-import { useEffect, useState } from 'react'
-
-function SceneTab( { playerLocation , scene , streamedOutput , onStartNewScene , onRetryPrompt, onSubmitAction, user } ) {
-    const [expandedGuides, setExpandedGuides] = useState(new Set())
-
-
-    function toggleGuide(index) {
-    setExpandedGuides((prev) => {
-        const next = new Set(prev)
-        if (next.has(index)) {
-            next.delete(index)
-        } else {
-            next.add(index)
-        }
-        return next
-    })
-}
-
+function SceneTab( { 
+    playerLocation , 
+    scene , 
+    streamedOutput , 
+    onStartNewScene ,
+    onPromptInteraction, 
+    onRetryPrompt, 
+    onSubmitAction, 
+    user, 
+    sceneGuideIsStreaming, 
+    interactionIsStreaming 
+    } ) {
 
     return (
         <div className="scene-window">
             <p className="position">Position: ({playerLocation ? playerLocation.x : 'N/A'}, {playerLocation ? playerLocation.y : 'N/A'})</p>
             <div>
-                {user && (
-                    <button onClick={onStartNewScene}>Send</button>
+                {user && !scene && !sceneGuideIsStreaming && (
+                    <button onClick={onStartNewScene}>Start Scene</button>
                 )}
                 {!user && (
                     <button disabled>Log in to prompt</button>
                 )}
             </div>
 
-            {!scene && <p>No active scene.</p>}
-
             {scene && (
                 <>
+                    <div className="interaction-guide">
+                        <p><b>Environment description:</b> {scene.guide.environment_description}</p>
+                        <p><b>Precise location:</b> {scene.guide.location_precise}</p>
+                        <p><b>Story suggestion:</b> {scene.guide.story_suggestion}</p>
+                        <ul>
+                            {scene.guide.suggested_outcomes.map((outcome, outcomeIndex) => (
+                                <li key={outcomeIndex}>{outcome}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    {!interactionIsStreaming && scene.interactions?.length === 0 && (
+                        <button onClick={onPromptInteraction}>Prompt Interaction</button>
+                    )}
                     {scene.interactions.map((interaction, index) => (
-                        <div key={index}>
-                            <button className="link-button" onClick={() => toggleGuide(index)}>
-                                {expandedGuides.has(index) ? 'Hide Guide' : 'Show Guide'}
-                            </button>
-                            
-                            {expandedGuides.has(index) && (
-                                <div className="interaction-guide">
-                                    <p><b>Environment description:</b> {interaction.guide.environment_description}</p>
-                                    <p><b>Precise location:</b> {interaction.guide.precise_location}</p>
-                                    <p><b>Story suggestion:</b> {interaction.guide.story_suggestion}</p>
-                                    <ul>
-                                        {interaction.guide.outcome_suggestions.map((outcome, outcomeIndex) => (
-                                            <li key={outcomeIndex}>{outcome}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
+                        <div key={index}>                            
                             {interaction.completed && (
                                 <>
                                     <p>{interaction.description}</p>
