@@ -33,7 +33,7 @@ class LLMClient:
         ]
 
         kwargs = {
-            "model": self.model,
+            "model": prompt.get("model", self.model),
             "temperature": prompt["temperature"],
             "max_tokens": prompt["max_tokens"],
             "extra_body": {"reasoning_effort": prompt["reasoning_effort"]},
@@ -106,46 +106,49 @@ class LLMClient:
             "story_setup": asdict(self.state.story_setup)
         }
 
-        try:
-            async for event in self._complete_streaming("interaction", context):
-                if "token" in event:
-                    yield {"data": event["token"], "event": "data"}
-                else:
-                    data = json.loads(event["content"])
+        async for event in self._complete_streaming("interaction", context):
+            if "token" in event:
+                yield {"event": "token", "payload": event["token"]}
+            else:
+                data = event["content"]
+                yield {"event": "done", "payload": data}
 
-            result = {
-                "description": data["interaction_description"],
-                "actions": data["player_actions"],
-            }
-            yield {"data": json.dumps(result), "event": "done"}
-
-        except json.JSONDecodeError as e:
-            yield {
-                "data": json.dumps({"error": "Invalid JSON from model", "detail": str(e)}),
-                "event": "stream_error",
-            }
-
-        except KeyError as e:
-            yield {
-                "data": json.dumps({"error": "Unexpected response schema", "missing_key": str(e)}),
-                "event": "stream_error",
-            }
-
-        except Exception as e:
-            yield {
-                "data": json.dumps({"error": "Stream failed", "detail": str(e)}),
-                "event": "stream_error",
-            }
-            raise
-
-    async def prompt_storylines(self, setup: StorySetup):
+    async def prompt_storylines(self, setup: StorySetup, component_lookup, region_lookup):
         context = {
             "world_description": setup.world_description,
             "story_focus_description": setup.story_focus_description,
             "character_description": setup.character_description,
         }
-        response = await self._complete("storylines", context)
-        return response.choices[0].message.content
+        async for event in self._complete_streaming("storylines", context):
+            if "token" in event:
+                yield {"event": "token", "payload": event["token"]}
+            else:
+                data = event["content"]
+                yield {"event": "done", "payload": data}
+
+    async def prompt_scene_guide(self, scene_context: SceneContext, scene_history: list[dict], significance: str):
+        context = {
+            "location_context": asdict(scene_context.tile_data),
+            "significance": significance,
+            "character_notebook": scene_context.character_notebook,
+            "scene_history": scene_history,
+            "story_setup": asdict(scene_context.story_setup),
+        }
+        async for event in self._complete_streaming("scene-guide", context):
+            if "token" in event:
+                yield {"event": "token", "payload": event["token"]}
+            else:
+                data = event["content"]
+                yield {"event": "done", "payload": data}
+
+    async def prompt_hidden_context(self, storylines, component_lookup, region_lookup):
+        context = {
+            "storylines": storylines.storylines,
+            "components": component_lookup,
+            "regions": region_lookup
+        }
+        response = await self._complete("context", context)
+        return json.loads(response.choices[0].message.content)
 
     async def prompt_scene_setup(self, scene_context: SceneContext,
                                  scene_history: list[dict], significance: str):
