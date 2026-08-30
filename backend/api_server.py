@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image
 import io
 import uuid
+import json
 
 from models import (
     Location,
@@ -204,33 +205,27 @@ def get_story(s: Session = Depends(get_session)):
 def get_scene(s: Session = Depends(get_session)):
     return s.get_current_scene_json()
 
+@app.post('/api/scene/generate-guide')
+async def prompt_scene_guide(body: CellBody, request: Request, user=Depends(require_user), s: Session = Depends(get_session)):
+    return EventSourceResponse(sse_events(s.story_engine.generate_scene_guide(Location(body.x, body.y))))
 
-@app.post("/api/scene/prompt")
-async def prompt_scene(body: CellBody, request: Request, user=Depends(require_user), s: Session = Depends(get_session)):
-    stream_id = str(uuid.uuid4())
- 
-    active_streams[stream_id] = {  
-        "key": session_key(request),
-        "cell": Location(body.x, body.y)
-    } 
-    return {"stream_id": stream_id} 
+@app.post("/api/scene/generate-interaction")
+async def prompt_interaction(request: Request, user=Depends(require_user), s: Session = Depends(get_session)):
+    return EventSourceResponse(sse_events(s.story_engine.generate_interaction()))
 
+@app.post("/api/setup/generate-storylines")
+async def generate_storylines(body: SetupStoryBody, user=Depends(require_user), s: Session = Depends(get_session)):
+    return EventSourceResponse(sse_events(s.story_engine.generate_storylines(body)))
 
-@app.get("/api/stream")
-async def stream_response(id: str, request: Request, s: Session = Depends(get_session)):
-    data = active_streams.pop(id, None)
+async def sse_events(source):
+    """Domain events -> sse_starlette's wire shape."""
+    async for event in source:
+        payload = event["payload"]
+        yield {
+            "event": event["event"],
+            "data": payload if isinstance(payload, str) else json.dumps(payload),
+        }
 
-    if not data or data["key"] != session_key(request):
-        raise HTTPException(status_code=404, detail="Stream ID not found")
-    
-    if not data["cell"] and not s.story_engine.get_current_scene():
-        raise HTTPException(status_code=404, detail="No cell provided and no existing scene")
-
-    async def generate():
-        async for event in s.story_engine.generate_scene_interaction(data["cell"]):
-            yield event
- 
-    return EventSourceResponse(generate())
 
 @app.post("/api/scene/action") 
 async def scene_action(body: ActionBody, s: Session = Depends(get_session)):
