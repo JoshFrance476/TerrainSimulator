@@ -1,5 +1,5 @@
-import queue
 from models import StorySetup
+from storytelling.scene import Scene
 
 class StoryState:
     def __init__(self):
@@ -20,10 +20,16 @@ class StoryState:
 
         self.current_scene = None
 
-        self.chunk_queue = queue.Queue()
-        self.is_streaming = False
-        self.stream_response = ""
+        self.scene_history: list[Scene] = []
 
         self.completion_tokens = 0
         self.prompt_tokens = 0
+
+    def get_or_create_scene(self) -> Scene:
+        if self.current_scene is None or self.current_scene.ended:
+            self.current_scene = Scene()
+        return self.current_scene
+
+    def get_scene(self) -> Scene:
+        return self.current_scene
     
