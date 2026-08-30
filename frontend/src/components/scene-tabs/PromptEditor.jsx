@@ -13,7 +13,7 @@ function PromptEditor({ name }) {
         <div className="interaction-tab">
             <textarea
                 className="prompt-textbox"
-                defaultValue={data?.text ?? ''}
+                defaultValue={data?.system ?? ''}
                 placeholder={isLoading ? 'Loading prompt…' : ''}
                 disabled={isLoading || isError}
                 ref={textRef}
