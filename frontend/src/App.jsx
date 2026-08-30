@@ -8,7 +8,6 @@ import WorldBuilder from './pages/Worldbuilder'
 function App() {
 	const [user, setUser] = useState(undefined); // undefined = loading, null = logged out
 	const [page, setPage] = useState({name: "landing"});  // 'name' is page name, 'worldId' is optional for editor page
-	const [selectedWorldId, setSelectedWorldId] = useState(null);
 	const [showAccountWindow, setShowAccountWindow] = useState(false);
 
 
