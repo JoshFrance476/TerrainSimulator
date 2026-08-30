@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { getBrushOutline } from '../utils/world-editing'
 
 
@@ -42,11 +42,6 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         baseMapRef.current.getContext('2d').putImageData(imageData, 0, 0)
     }, [imageData])
 
-    // Redraw interaction layer
-    useEffect(() => {
-        drawInteractionLayer(hoveredCells, lastHoveredCell, selectedCell, playerLocation)
-    }, [imageData, selectedCell, playerLocation, hoveredCells, lastHoveredCell])
-
     useEffect(() => {
         if (!imageData) return
 
@@ -59,10 +54,10 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         }
 
         baseMapRef.current.getContext('2d').putImageData(imageData, 0, 0)
-    }, [imageData?.width, imageData?.height])
+    }, [imageData])
 
     // Draw hovered cell and selected cell on interaction layer
-    function drawInteractionLayer(hovered, hoveredCell, selected, player = null) {
+    const drawInteractionLayer = useCallback((hovered, hoveredCell, selected, player = null) => {
         if (!imageData) return
         const ctx = interactionRef.current.getContext('2d')
 
@@ -143,12 +138,12 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
             selected,
             player,
         ].filter(Boolean)
-    }
+    }, [imageData, brushOutline, brushRadius])
 
+    // Redraw interaction layer
     useEffect(() => {
-        if (!borderSegments) return
-        drawRegionBorders(borderSegments)
-    }, [borderSegments, zoom, imageData])
+        drawInteractionLayer(hoveredCells, lastHoveredCell, selectedCell, playerLocation)
+    }, [drawInteractionLayer, selectedCell, playerLocation, hoveredCells, lastHoveredCell])
 
     function drawRegionBorders(segmentsByColour) {
         const canvas = overlayRef.current
@@ -185,6 +180,11 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
 
         ctx.restore()
     }
+
+    useEffect(() => {
+        if (!borderSegments) return
+        drawRegionBorders(borderSegments)
+    }, [borderSegments, zoom, imageData])
 
     // Convert mouse event coordinates to cell coordinates with clamping
     function eventToCell(e) {
