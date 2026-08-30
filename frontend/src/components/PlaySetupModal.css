@@ -78,6 +78,7 @@
 .modal-text.variable-height {
     field-sizing: content;
     max-height: 20vh;
+    min-height: 10vh;
 }
 
 .modal-actions {
