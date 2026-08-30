@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Summary of the character's experience"
+    }
+  },
+  "required": ["summary"],
+  "additionalProperties": false
+}
