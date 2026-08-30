@@ -5,6 +5,7 @@ class Scene:
         self.guide = None
         self.interactions = []
         self.ended = False
+        self.summary = None
 
     @property
     def pending_interaction(self):
