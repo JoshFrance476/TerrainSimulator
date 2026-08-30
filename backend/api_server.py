@@ -205,17 +205,21 @@ def get_story(s: Session = Depends(get_session)):
 def get_scene(s: Session = Depends(get_session)):
     return s.get_current_scene_json()
 
-@app.post('/api/scene/generate-guide')
-async def prompt_scene_guide(body: CellBody, request: Request, user=Depends(require_user), s: Session = Depends(get_session)):
+@app.post("/api/scene/generate-guide")
+async def prompt_scene_guide(body: CellBody, user=Depends(require_user), s: Session = Depends(get_session)):
     return EventSourceResponse(sse_events(s.story_engine.generate_scene_guide(Location(body.x, body.y))))
 
 @app.post("/api/scene/generate-interaction")
-async def prompt_interaction(request: Request, user=Depends(require_user), s: Session = Depends(get_session)):
+async def prompt_interaction(user=Depends(require_user), s: Session = Depends(get_session)):
     return EventSourceResponse(sse_events(s.story_engine.generate_interaction()))
 
 @app.post("/api/setup/generate-storylines")
 async def generate_storylines(body: SetupStoryBody, user=Depends(require_user), s: Session = Depends(get_session)):
     return EventSourceResponse(sse_events(s.story_engine.generate_storylines(body)))
+
+@app.post("/api/scene/generate-summary")
+async def prompt_scene_summary(user=Depends(require_user), s: Session = Depends(get_session)):
+    return await s.story_engine.generate_scene_summary()
 
 async def sse_events(source):
     """Domain events -> sse_starlette's wire shape."""
@@ -229,7 +233,7 @@ async def sse_events(source):
 
 @app.post("/api/scene/action") 
 async def scene_action(body: ActionBody, s: Session = Depends(get_session)):
-    await s.story_engine.choose_action(body.action, s.story_engine.get_player_location())
+    await s.story_engine.choose_action(body.action)
     scene = s.story_engine.get_current_scene()
     return {"ended": scene.ended if scene else True}
     
