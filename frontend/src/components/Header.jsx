@@ -1,5 +1,4 @@
 import { useTokenUsageQuery } from '../queries/queries'
-import { useState } from 'react'
 
 function Header({ user , setShowAccountWindow, onNavigate }) {
     const { data } = useTokenUsageQuery()

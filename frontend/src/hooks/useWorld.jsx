@@ -29,7 +29,7 @@ export function useWorld() {
     // stable reference so `dimensions` can safely sit in effect dependency arrays
     const dimensions = useMemo(
         () => (world.data ? { width: world.data.width, height: world.data.height } : null),
-        [world.data?.width, world.data?.height]
+        [world.data]
     )
 
     return {

@@ -1,8 +1,6 @@
 import StoryWindow from '../components/StoryWindow'
 import MapDisplay from '../components/MapDisplay'
 import InfoWindow from '../components/InfoWindow'
-import Header from '../components/Header'
-import AccountWindow from '../components/AccountWindow'
 import { useWorld } from '../hooks/useWorld'
 import { useState, useMemo } from 'react'
 import { usePlayer } from '../hooks/usePlayer'

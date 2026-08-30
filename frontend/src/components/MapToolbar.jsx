@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 function MapToolbar({ interactionMode, onInteractionModeChange }) {
     return (
         <div className="map-toolbar">

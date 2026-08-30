@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { usePlayerQuery } from '../queries/queries'
 
 export function usePlayer() {
