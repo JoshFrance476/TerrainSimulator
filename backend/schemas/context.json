@@ -1,0 +1,36 @@
+{
+    "type": "object",
+    "properties": {
+        "components": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "component_id": {
+                        "type": "integer"
+                    },
+                    "context": {
+                        "type": "string"
+                    }
+                },
+                "required": ["component_id", "context"]
+            }
+        },
+        "regions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "region_id": {
+                        "type": "integer"
+                    },
+                    "context": {
+                        "type": "string"
+                    }
+                },
+                "required": ["region_id", "context"]
+            }
+        }
+    },
+    "required": ["components", "regions"]
+}
