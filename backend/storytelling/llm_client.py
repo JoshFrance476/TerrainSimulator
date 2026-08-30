@@ -150,55 +150,8 @@ class LLMClient:
         response = await self._complete("context", context)
         return json.loads(response.choices[0].message.content)
 
-    async def prompt_scene_setup(self, scene_context: SceneContext,
-                                 scene_history: list[dict], significance: str):
-        context = {
-            "location_context": asdict(scene_context.tile_data),
-            "significance": significance,
-            "character_notebook": scene_context.character_notebook,
-            "scene_history": scene_history,
-            "story_setup": asdict(scene_context.story_setup),
-        }
-        if scene_history:
-            context["scene_trigger"] = scene_history[0]["chosen_action"]
-
-        response = await self._complete("scene-guide", context)
-
-        raw_output = response.choices[0].message.content
-        try:
-            data = json.loads(raw_output)
-        except json.JSONDecodeError as e:
-            print(f"JSON parse failed: {e}")
-            print(f"completion_tokens used: {response.usage.completion_tokens}")
-            print(f"finish_reason: {response.choices[0].finish_reason}")
-            print(f"raw content: {raw_output!r}")
-            raise
-
-        return {
-            "completion_tokens": response.usage.completion_tokens,
-            "prompt_tokens": response.usage.prompt_tokens,
-            "guide": data,
-        }
-
-    async def prompt_scene_summary(self, scene, chunk_list):
-        # Stays non-streaming: tool call arguments arrive as fragments when
-        # streamed and would need per-index reassembly for no visible benefit.
-        context = {"scene": scene, "chunk_list": chunk_list}
+    async def prompt_scene_summary(self, scene):
+        context = {"scene": scene.to_dict()}
         response = await self._complete("scene-summary", context)
-
-        summary = None
-        new_quests = []
-
-        for tool_call in (response.choices[0].message.tool_calls or []):
-            args = json.loads(tool_call.function.arguments)
-            if tool_call.function.name == "generate_summary":
-                summary = args.get("summary")
-            elif tool_call.function.name == "add_quest":
-                new_quests.append({
-                    "chunk_id": args.get("chunk_id"),
-                    "title": args.get("title"),
-                    "visible_description": args.get("visible_description"),
-                    "hidden_description": args.get("hidden_description"),
-                })
-
-        return {"summary": summary, "new_quests": new_quests}
+        return json.loads(response.choices[0].message.content)
+    
