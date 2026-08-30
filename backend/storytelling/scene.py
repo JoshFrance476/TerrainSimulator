@@ -2,6 +2,7 @@ from storytelling.interaction import Interaction
 
 class Scene:
     def __init__(self):
+        self.guide = None
         self.interactions = []
         self.ended = False
 
@@ -24,10 +25,10 @@ class Scene:
                                  "Action": interaction.chosen_action})
         return interactions
 
-    def add_interaction(self, description, actions, outcomes, guide):
+    def add_interaction(self, description, actions):
         if self.pending_interaction:
             self.interactions.remove(self.pending_interaction)
-        self.interactions.append(Interaction(description, actions, outcomes, guide))
+        self.interactions.append(Interaction(description, actions))
     
     def submit_action(self, action):
         interaction = self.pending_interaction
@@ -37,6 +38,7 @@ class Scene:
 
     def to_dict(self):
         return {
+            "guide": self.guide,
             "interactions": [i.to_dict() for i in self.interactions],
             "ended": self.ended,
         }
@@ -48,8 +50,10 @@ class Scene:
                 history.append({ 
                     "description": interaction.description,
                     "chosen_action": interaction.chosen_action,
-                    "outcome": interaction.outcome
                 })
         return history
+
+    def set_guide(self, guide):
+        self.guide = guide
                 
     
