@@ -11,9 +11,16 @@ function LocationTab({ selectedCell }) {
                         <div key={index} className="info-window-box">
                             <h3 className="capitalise box-title">{region.title}</h3>
                             <p className="region-visible-desc">{region.visible_description}</p>
-                            <p className="region-hidden-desc"><i>{region.hidden_description}</i></p>
+                            <p className="region-hidden-desc"><i>{region.context}</i></p>
                         </div>
                     ))}
+                    {selectedCell.componentData && (
+                        <div className="info-window-box">
+                            <h3 className="capitalise box-title">{selectedCell.componentData.name}</h3>
+                            <p className="region-visible-desc">{selectedCell.componentData.description}</p>
+                            <p className="region-hidden-desc"><i>{selectedCell.componentData.context}</i></p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
