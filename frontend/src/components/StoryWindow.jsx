@@ -4,6 +4,7 @@ import { usePlayer } from '../hooks/usePlayer'
 import { useSubmitActionMutation, promptScene, sceneKey, storyKey, tokenUsageKey, useSceneQuery } from '../queries/queries'
 import EngineTab from './scene-tabs/EngineTab'
 import SceneTab from './scene-tabs/SceneTab'
+import {streamRequest} from "../utils/streaming"
 
 function StoryWindow({ user }) {
     const [activeTab, setActiveTab] = useState('scene') // 'scene', 'engine'
@@ -14,58 +15,50 @@ function StoryWindow({ user }) {
     const queryClient = useQueryClient()
     const submitAction = useSubmitActionMutation()
 
-    const sourceRef = useRef(null)
+    const [sceneGuideIsStreaming, setSceneGuideIsStreaming] = useState(false)
+    const [interactionIsStreaming, setInteractionIsStreaming] = useState(false)
 
-    // close any open stream when the component unmounts
-    useEffect(() => () => sourceRef.current?.close(), [])
-
-    function closeStream() {
-        sourceRef.current?.close()
-        sourceRef.current = null
+    async function generateSceneGuide() {
+        setSceneGuideIsStreaming(true)
+        await streamRequest('/api/scene/generate-guide', { x: playerLocation.x, y: playerLocation.y }, {
+            token: (token) => {
+                setStreamedOutput((prev) => prev + token)
+                console.log(token)
+            },
+            done: (payload) => {
+                setStreamedOutput('')
+                setSceneGuideIsStreaming(false)
+                queryClient.invalidateQueries({ queryKey: sceneKey })
+                queryClient.invalidateQueries({ queryKey: storyKey })
+                queryClient.invalidateQueries({ queryKey: tokenUsageKey })
+            },
+            error: (payload) => console.log(JSON.parse(payload))
+        })
     }
 
-    async function callPrompt() {
-        if (!playerLocation) {
-            console.error('Player location is not available.')
-            return
-        }
-
-        closeStream()
-        setStreamedOutput('')
-
-        let stream_id
-        try {
-            ({ stream_id } = await promptScene({ x: playerLocation.x, y: playerLocation.y }))
-        } catch (err) {
-            console.error('Failed to start scene:', err)
-            return
-        }
-
-        const source = new EventSource(`/api/stream?id=${stream_id}`)
-        sourceRef.current = source
-        
-        source.addEventListener('data', (e) => {
-            setStreamedOutput((prev) => prev + e.data)
+    async function generateInteraction() {
+        setInteractionIsStreaming(true)
+        await streamRequest('/api/scene/generate-interaction', {}, {
+            token: (token) => {
+                setStreamedOutput((prev) => prev + token)
+                console.log(token)
+            },
+            done: (payload) => {
+                setStreamedOutput('')
+                setInteractionIsStreaming(false)
+                queryClient.invalidateQueries({ queryKey: sceneKey })
+                queryClient.invalidateQueries({ queryKey: storyKey })
+                queryClient.invalidateQueries({ queryKey: tokenUsageKey })
+            },
+            error: (payload) => console.log(JSON.parse(payload))
         })
-        source.addEventListener('done', () => {
-            closeStream()
-            setStreamedOutput('')
-            queryClient.invalidateQueries({ queryKey: sceneKey })
-            queryClient.invalidateQueries({ queryKey: storyKey })
-            queryClient.invalidateQueries({ queryKey: tokenUsageKey })
-        })
-        source.addEventListener('stream_error', (e) => {
-            const { error, detail } = JSON.parse(e.data)
-            console.error(`${error}: ${detail}`)
-            closeStream()
-        })
-        source.onerror = () => closeStream()
     }
+
 
     async function handleSubmitAction({ action }) {
         try {
             const { ended } = await submitAction.mutateAsync(action)
-            if (!ended) await callPrompt()
+            if (!ended) await generateInteraction()
         } catch (err) {
             console.error('Action failed:', err)
         }
@@ -91,10 +84,13 @@ function StoryWindow({ user }) {
                 playerLocation={playerLocation}
                 scene={scene}
                 streamedOutput={streamedOutput}
-                onStartNewScene={callPrompt}
-                onRetryPrompt={callPrompt}
+                onStartNewScene={generateSceneGuide}
+                onRetryPrompt={generateSceneGuide}
                 onSubmitAction={handleSubmitAction}
                 user={user}
+                sceneGuideIsStreaming={sceneGuideIsStreaming}
+                interactionIsStreaming={interactionIsStreaming}
+                onPromptInteraction={generateInteraction}
             />}
             {activeTab === 'engine' && <EngineTab/>}
         </div>
