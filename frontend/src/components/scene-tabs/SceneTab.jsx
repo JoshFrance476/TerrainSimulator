@@ -8,7 +8,8 @@ function SceneTab( {
     onSubmitAction, 
     user, 
     sceneGuideIsStreaming, 
-    interactionIsStreaming 
+    interactionIsStreaming,
+    onSummariseScene
     } ) {
 
     return (
@@ -59,6 +60,9 @@ function SceneTab( {
                             )}
                         </div>
                     ))}
+                    {scene.ended && (
+                        <button onClick={onSummariseScene}>Finish</button>
+                    )}
                 </>
             )}
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', width: '100%', boxSizing: 'border-box' }}>
