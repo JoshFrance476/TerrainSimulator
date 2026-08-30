@@ -186,7 +186,7 @@ export function useSceneQuery() {
 }
 
 export function promptScene({ x, y }) {
-    return postJson('/api/scene/prompt', { x, y })
+    return postJson('/api/scene/generate-interaction', { x, y })
 }
 
 export function usePlayerQuery() {
