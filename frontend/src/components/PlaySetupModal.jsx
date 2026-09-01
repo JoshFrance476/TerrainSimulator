@@ -1,11 +1,11 @@
 import { useEffect , useRef, useState } from "react"
 import "./PlaySetupModal.css"
 import StorylinesSetup from "./StorylinesSetup"
+import CharacterSetup from "./CharacterSetup"
 
 function PlaySetupModal({ 
     worldTitle,
     initialWorldDescription,
-    initialCharacterDescription,
     initialStoryFocus,
     initialStorylines,
     regionLookup,
@@ -70,35 +70,30 @@ function PlaySetupModal({
     return (
         <dialog ref={dialogRef} className="modal play-setup-modal" onClose={onClose} spellCheck={false}>
             <div className="modal-header">
-                <p className="modal-title-caption">World name</p>
+                <p className="modal-caption">World name</p>
                 <h1 className="modal-title">{worldTitle}</h1>
             </div>
             <div className="modal-content">
                 <div className="modal-container">
-                    <div className="modal-component">
-                        <p className="modal-title-caption">World description</p>
-                        <textarea 
-                            ref={worldDescRef}
-                            className="modal-text"
-                            defaultValue={initialWorldDescription}
-                        ></textarea>
+                    <div className="modal-container">
+                        <div className="modal-component">
+                            <p className="modal-caption">World description</p>
+                            <textarea 
+                                ref={worldDescRef}
+                                className="modal-text"
+                                defaultValue={initialWorldDescription}
+                            ></textarea>
+                        </div>
+                        <div className="modal-component">
+                            <p className="modal-caption">Story focus</p>
+                            <textarea 
+                                ref={storyFocusRef}
+                                className="modal-text"
+                                defaultValue={initialStoryFocus}
+                            ></textarea>
+                        </div>
                     </div>
-                    <div className="modal-component">
-                        <p className="modal-title-caption">Character description</p>
-                        <textarea 
-                            ref={characterRef}
-                            className="modal-text"
-                            defaultValue={initialCharacterDescription}
-                        ></textarea>
-                    </div>
-                    <div className="modal-component">
-                        <p className="modal-title-caption">Story focus</p>
-                        <textarea 
-                            ref={storyFocusRef}
-                            className="modal-text"
-                            defaultValue={initialStoryFocus}
-                        ></textarea>
-                    </div>
+                    <CharacterSetup/>
                 </div>
                 <div className="modal-container-2">
                     <StorylinesSetup
