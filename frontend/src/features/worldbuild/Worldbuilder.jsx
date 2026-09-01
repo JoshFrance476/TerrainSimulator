@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import WorldbuilderWindow from '../components/WorldbuilderWindow'
-import MapDisplay from '../components/MapDisplay'
+import MapDisplay from '../../components/MapDisplay'
 import './worldbuilder.css'
 import {
-    createWorld, refreshAll, generateTerrain, getCellRegions, NO_REGION, NO_COMPONENT,
+    createWorld, refreshAll, generateTerrain, getCellRegions, NO_REGION,
     getBrushIndexes, paintBiome, paintDetail, alterElevation, smoothElevation, flattenElevation, writeRegion, removeRegion, buildRegionBorders, writeComponent, removeComponent, buildComponentBorders, mergeSegmentMaps,
-} from '../utils/world-editing'
-import { useSaveEditorWorldMutation, editorWorldKey, fetchEditorWorld } from '../queries/queries'
+} from '../../utils/world-editing'
+import { useSaveEditorWorldMutation, editorWorldKey, fetchEditorWorld } from '../../queries/queries'
 
 function Worldbuilder({ initialWorldId = null }) {
     const [worldId, setWorldId] = useState(initialWorldId)
@@ -134,7 +134,6 @@ function Worldbuilder({ initialWorldId = null }) {
 
     function handleCellInteraction({ cellX, cellY }, button) {
         const world = worldRef.current
-        const index = cellY * world.width + cellX
         const indexes = getBrushIndexes(world, cellX, cellY, brushRadius)
 
         if (elevationEditType === 'layer') {

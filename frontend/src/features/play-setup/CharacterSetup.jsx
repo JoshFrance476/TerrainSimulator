@@ -1,4 +1,4 @@
-import EditableList from "./EditableList"
+import EditableList from "../../components/EditableList"
 import { useState } from 'react'
 
 function CharacterSetup() {

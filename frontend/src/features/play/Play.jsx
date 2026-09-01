@@ -1,13 +1,13 @@
 import StoryWindow from '../components/StoryWindow'
-import MapDisplay from '../components/MapDisplay'
+import MapDisplay from '../../components/MapDisplay'
 import InfoWindow from '../components/InfoWindow'
-import { useWorld } from '../hooks/useWorld'
+import { useWorld } from '../../hooks/useWorld'
 import { useState, useMemo } from 'react'
-import { usePlayer } from '../hooks/usePlayer'
+import { usePlayer } from '../../hooks/usePlayer'
 import MapToolbar from '../components/MapToolbar'
-import { useMovePlayerMutation } from '../queries/queries'
-import { buildBorderSegments } from '../utils/regions'
-import { createWorld, refreshAll, getCellRegions } from '../utils/world-editing'
+import { useMovePlayerMutation } from '../../queries/queries'
+import { buildBorderSegments } from '../../utils/regions'
+import { createWorld, refreshAll, getCellRegions } from '../../utils/world-editing'
 
 
 function Play({ user }) {

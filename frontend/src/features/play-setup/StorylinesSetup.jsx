@@ -1,6 +1,6 @@
 // StorylinesSetup.jsx
 import { useState } from "react"
-import { streamRequest } from "../utils/streaming"
+import { streamRequest } from "../../utils/streaming"
 
 function StorylinesSetup({
     storylines,
