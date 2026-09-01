@@ -34,7 +34,7 @@ function StorylinesSetup({
 
     return (
         <div className="modal-component">
-            <p className="modal-title-caption">Storylines</p>
+            <p className="modal-caption">Storylines</p>
             <textarea
                 value={storylines}
                 disabled={isStreaming}
