@@ -2,6 +2,7 @@ from models import SceneContext, StorySetup
 from storytelling.prompt_manager import PromptManager
 from storytelling.log_writer import LogWriter
 from huggingface_hub import AsyncInferenceClient
+from huggingface_hub.errors import BadRequestError
 
 from dataclasses import asdict
 
@@ -14,8 +15,8 @@ class LLMClient:
         self.model = "Qwen/Qwen3-235B-A22B-Instruct-2507:novita"
         self.prompt_manager = PromptManager()
         self.log_writer = LogWriter()
-        self.state = state
-
+        self.state = state 
+ 
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
@@ -44,15 +45,15 @@ class LLMClient:
             )
         if "tools" in prompt:
             kwargs["tools"] = self.prompt_manager.load_tools_schema(*prompt["tools"])
-
+  
         return messages, kwargs
 
     def _record_usage(self, usage):
-        if usage:
+        if usage: 
             self.state.completion_tokens += usage.completion_tokens
             self.state.prompt_tokens += usage.prompt_tokens
         else:
-            print("No usage data returned by provider")
+            print("No usage data returned by provider") 
 
     async def _complete(self, name: str, context: dict):
         """Non-streaming request. Returns the raw response so callers can read
@@ -62,38 +63,45 @@ class LLMClient:
 
         response = await self.client.chat.completions.create(messages=messages, **kwargs)
 
-        self.log_writer.write_to_log(response.choices[0].message, label=f"{name.upper()} RESPONSE")
+        self.log_writer.write_to_log(response.choices[0].message, label=f"{name.upper()} RESPONSE") 
         self._record_usage(response.usage)
         return response
 
     async def _complete_streaming(self, name: str, context: dict):
-        """Streaming request. Yields {"token": str} per delta, then a final
-        {"content": str} carrying the reassembled response."""
         messages, kwargs = self._build(name, context)
         self.log_writer.write_to_log(messages, label=f"{name.upper()} REQUEST")
 
-        stream = await self.client.chat.completions.create(
-            messages=messages,
-            stream=True,
-            stream_options={"include_usage": True},
-            **kwargs,
-        )
+        try:
+            stream = await self.client.chat.completions.create(
+                messages=messages,
+                stream=True,
+                stream_options={"include_usage": True},
+                **kwargs,
+            )
+        except BadRequestError as e:
+            print(e.response.text)
+            raise
 
-        content = ""
+        reasoning_content = ""
+        response_content = ""
         usage = None
         async for chunk in stream:
             if chunk.usage:
                 usage = chunk.usage
             if not chunk.choices:
                 continue
-            token = chunk.choices[0].delta.content
-            if token:
-                content += token
-                yield {"token": token}
+            delta = chunk.choices[0].delta
+            reasoning = getattr(delta, "reasoning_content", None) 
+            if reasoning:
+                reasoning_content += reasoning
+                yield {"reasoning": reasoning}
+            if delta.content: 
+                response_content += delta.content
+                yield {"token": delta.content}
 
-        self.log_writer.write_to_log({"role": "assistant", "content": content}, label=f"{name.upper()} RESPONSE")
+        self.log_writer.write_to_log({"role": "assistant", "content": response_content, "reasoning": reasoning_content}, label=f"{name.upper()} RESPONSE")
         self._record_usage(usage)
-        yield {"content": content}
+        yield {"content": response_content}
 
     # ------------------------------------------------------------------
     # Prompts
@@ -104,7 +112,7 @@ class LLMClient:
             "guide": guide, 
             "previous_interactions": previous_interactions,
             "story_setup": asdict(self.state.story_setup)
-        }
+        } 
 
         async for event in self._complete_streaming("interaction", context):
             if "token" in event:
@@ -118,13 +126,15 @@ class LLMClient:
             "world_description": setup.world_description,
             "story_focus_description": setup.story_focus_description,
             "character_description": setup.character_description,
+            "regions": region_lookup
         }
         async for event in self._complete_streaming("storylines", context):
             if "token" in event:
-                yield {"event": "token", "payload": event["token"]}
+                yield {"event": "token", "payload": event["token"]} 
+            elif "reasoning" in event:
+                yield {"event": "reasoning", "payload": event["reasoning"]}
             else:
-                data = event["content"]
-                yield {"event": "done", "payload": data}
+                yield {"event": "done", "payload": event["content"]}
 
     async def prompt_scene_guide(self, scene_context: SceneContext, scene_history: list[dict], significance: str):
         context = {
