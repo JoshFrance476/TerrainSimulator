@@ -1,0 +1,14 @@
+{
+    "type": "object",
+    "properties": {
+        "storylines": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "description": "A single sentence describing the core premise of one storyline."
+            }
+        }
+    },
+    "required": ["storylines"],
+    "additionalProperties": false
+}
