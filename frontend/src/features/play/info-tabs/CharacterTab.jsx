@@ -1,5 +1,5 @@
 
-import { useStory } from '../../hooks/useStory'
+import { useStory } from '../../../hooks/useStory'
 
 function CharacterTab() {
     const { characterHistory: fetchedCharacterHistory } = useStory()

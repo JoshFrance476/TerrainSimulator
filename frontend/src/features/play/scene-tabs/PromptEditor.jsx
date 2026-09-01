@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { usePromptTemplateQuery, useSavePromptTemplateMutation } from '../../queries/queries'
+import { usePromptTemplateQuery, useSavePromptTemplateMutation } from '../../../queries/queries'
 
 function PromptEditor({ name }) {
     const { data, isLoading, isError } = usePromptTemplateQuery(name)

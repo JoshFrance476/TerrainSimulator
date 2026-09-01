@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import WorldbuilderWindow from '../components/WorldbuilderWindow'
+import WorldbuilderWindow from './WorldbuilderWindow'
 import MapDisplay from '../../components/MapDisplay'
 import './worldbuilder.css'
 import {

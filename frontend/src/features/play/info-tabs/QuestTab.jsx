@@ -1,4 +1,4 @@
-import { useStory } from "../../hooks/useStory";
+import { useStory } from "../../../hooks/useStory";
 
 function QuestTab() {
     const { questsList, isLoading, isError } = useStory()

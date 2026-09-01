@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import AccountWindow from './components/AccountWindow'
-import Landing from './pages/Landing'
-import Play from './pages/Play'
-import WorldBuilder from './pages/Worldbuilder'
+import Landing from './features/Landing'
+import Play from './features/play/Play'
+import WorldBuilder from './features/worldbuild/Worldbuilder'
 
 function App() {
 	const [user, setUser] = useState(undefined); // undefined = loading, null = logged out

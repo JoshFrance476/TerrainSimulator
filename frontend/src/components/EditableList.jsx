@@ -1,3 +1,5 @@
+import './EditableList.css'
+
 function EditableList({ items, onItemsChange, renderItem, createItem, getItemKey = (item) => item.id }) {
   const updateItem = (index, updated) => {
     onItemsChange(items.map((item, i) => (i === index ? updated : item)))

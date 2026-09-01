@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import LocationTab from '../../components/info-tabs/LocationTab'
-import QuestTab from '../../components/info-tabs/QuestTab'
-import CharacterTab from '../../components/info-tabs/CharacterTab'
+import LocationTab from './info-tabs/LocationTab'
+import QuestTab from './info-tabs/QuestTab'
+import CharacterTab from './info-tabs/CharacterTab'
 function InfoWindow({ selectedCell }) {
     const [activeTab, setActiveTab] = useState('location') // 'location', 'character','npcs','quests', "story"
     return (

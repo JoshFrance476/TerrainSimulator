@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePlayer } from '../../hooks/usePlayer'
 import { useSubmitActionMutation, useGenerateSceneSummaryMutation, sceneKey, storyKey, tokenUsageKey, useSceneQuery } from '../../queries/queries'
-import EngineTab from '../../components/scene-tabs/EngineTab'
-import SceneTab from '../../components/scene-tabs/SceneTab'
+import EngineTab from './scene-tabs/EngineTab'
+import SceneTab from './scene-tabs/SceneTab'
 import {streamRequest} from "../../utils/streaming"
 
 function StoryWindow({ user }) {
