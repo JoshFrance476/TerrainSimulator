@@ -1,6 +1,6 @@
 import { useEffect , useRef, useState } from "react"
 import "./PlaySetupModal.css"
-import {streamRequest} from "../utils/streaming"
+import StorylinesSetup from "./StorylinesSetup"
 
 function PlaySetupModal({ 
     worldTitle,
@@ -22,15 +22,19 @@ function PlaySetupModal({
     const storyFocusRef = useRef(null)
 
     const [storylines, setStorylines] = useState(initialStorylines)
-    const [storylinesIsStreaming, setStorylinesIsStreaming] = useState(false)
 
     useEffect(() => {
         dialogRef.current.showModal()
     }, [])
 
-    async function handleGenerateStorylines() {
-        await generateStorylines()
+    function getSetupDescriptions() {
+        return {
+            world_description: worldDescRef.current.value,
+            character_description: characterRef.current.value,
+            story_focus_description: storyFocusRef.current.value,
+        }
     }
+
 
     function handleOnSubmit() {
         const worldDescription = worldDescRef.current.value
@@ -40,29 +44,6 @@ function PlaySetupModal({
         onSubmit(worldDescription, characterDescription, storyFocusDescription, storylines)
     }
 
-    async function generateStorylines() {
-        const payload = {
-            world_description: worldDescRef.current.value,
-            character_description: characterRef.current.value,
-            story_focus_description: storyFocusRef.current.value,
-            region_lookup: regionLookup,
-            component_lookup: componentLookup
-        }
-        setStorylines('')
-        setStorylinesIsStreaming(true)
-        await streamRequest('/api/setup/generate-storylines', payload, {
-            token: (token) => {
-                setStorylines(prev => prev + token)
-                console.log(token)
-            },
-            done: (payload) => {
-                setStorylines(payload)
-                setStorylinesIsStreaming(false)
-            },
-            error: (payload) => console.log(JSON.parse(payload))
-        })
-    }
-    
     async function generateHiddenContext(storylines) {
         const payload = { storylines }
         console.log("Generating hidden context with payload:", payload)
@@ -83,6 +64,8 @@ function PlaySetupModal({
         const hiddenContext = await generateHiddenContext(storylines)
         console.log("Hidden context:", hiddenContext)
     }
+
+
 
     return (
         <dialog ref={dialogRef} className="modal play-setup-modal" onClose={onClose} spellCheck={false}>
@@ -118,18 +101,15 @@ function PlaySetupModal({
                     </div>
                 </div>
                 <div className="modal-container-2">
-                    <div className="modal-component">
-                        <p className="modal-title-caption">Storylines</p>
-                        <textarea 
-                            value={storylines}
-                            disabled={storylinesIsStreaming}
-                            onChange={(e) => setStorylines(e.target.value)}
-                            className="modal-text variable-height"
-                        />
-                        <div>
-                            <button onClick={handleGenerateStorylines}>Generate Storylines</button>
-                            <button onClick={handleGenerateHiddenContext}>Generate hidden context</button>
-                        </div>
+                    <StorylinesSetup
+                        storylines={storylines}
+                        setStorylines={setStorylines}
+                        getSetupDescriptions={getSetupDescriptions}
+                        regionLookup={regionLookup}
+                        componentLookup={componentLookup}
+                    />
+                    <div>
+                        <button onClick={handleGenerateHiddenContext}>Generate hidden context</button>
                     </div>
                     <div className="modal-container-vertical">
                         <div>

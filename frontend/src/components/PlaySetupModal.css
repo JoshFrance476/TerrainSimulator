@@ -19,7 +19,7 @@
 
 .modal-container {
     display: grid;
-    grid-template-rows: repeat(3, 1fr);
+    grid-template-rows: repeat(3, minmax(0, 1fr));
     gap: 40px;
 }
 
@@ -30,7 +30,8 @@
 
 .modal-container-2 {
     display: grid;
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+    min-height: 0;
 }
 
 .modal-component {
@@ -76,9 +77,15 @@
 }
 
 .modal-text.variable-height {
-    field-sizing: content;
-    max-height: 20vh;
-    min-height: 10vh;
+    flex: 0 1 auto;
+    max-height: 50%;
+    min-height: 40%;
+}
+
+.modal-text.reasoning {
+    max-height: 14vh;
+    font-size: 0.8rem;
+    color: #b3b3b3;
 }
 
 .modal-actions {
