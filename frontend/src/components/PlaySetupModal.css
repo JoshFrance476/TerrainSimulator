@@ -19,7 +19,7 @@
 
 .modal-container {
     display: grid;
-    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: 40px;
 }
 
@@ -50,7 +50,7 @@
     flex-direction: column;
 }
 
-.modal-title-caption {
+.modal-caption {
     margin: 0;
     padding: 0;
     font-size: 0.75rem;
@@ -103,4 +103,17 @@
 
 .modal-actions button:hover {
     background-color: #acacac;
+}
+
+.character-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.character-container {
+    background-color: var(--colour-modal-background);
+    border: 3px solid rgb(155, 154, 154);
+    border-radius: 8px;
+    padding: 20px 10px 0 10px;
+    height: 100%;
 }
