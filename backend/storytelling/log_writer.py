@@ -5,16 +5,18 @@ import yaml
 import json
 
 
+LOG_DIR = Path(__file__).resolve().parent.parent.parent / "logs"
+
 class LogWriter:
     def __init__(self):
-        self.log_file_name = None
+        self.log_file_name = None 
         self.now = datetime.now()
         self.map_name = MAP_NAME if MAP_NAME else "Procedural"
     
     def write_to_log(self, message, label=None):
         if not self.log_file_name:
             self.log_file_name = self.map_name + "_" + self.now.strftime("%Y-%m-%d_%H-%M-%S") + ".yaml"
-        path = Path("data/logs")
+        path = LOG_DIR
         path.mkdir(parents=True, exist_ok=True)
 
         with open(path / self.log_file_name, "a", encoding="utf-8") as f:
