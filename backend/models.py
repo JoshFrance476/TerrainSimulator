@@ -24,7 +24,6 @@ class CellData:
 @dataclass(frozen=True)
 class StorySetup:
     world_description: str
-    character_description: str
     story_focus_description: str
 
 @dataclass(frozen=True)
@@ -33,6 +32,8 @@ class SceneContext:
     movement_history: dict
     character_notebook: dict
     story_setup: StorySetup
+
+
 
 
 class CellBody(BaseModel):
@@ -47,7 +48,7 @@ class MoveDestinationBody(BaseModel):
     y: int
 
 class PromptBody(BaseModel):
-    text: str
+    text: str 
     temperature: float | None
     max_tokens: int = None
     reasoning_effort: str = None
@@ -61,11 +62,16 @@ class StartSessionBody(BaseModel):
 
 class SetupStoryBody(BaseModel):
     world_description: str
-    character_description: str
     story_focus_description: str
 
 class StorylinesBody(BaseModel):
     storylines: str
+
+class CharacterSetupBody(BaseModel):
+    character_description: str
+    world_description: str
+    focus_description: str
+
 
 class WorldData(BaseModel):
     """World data with map layers in bytes for server-side handling."""
