@@ -125,7 +125,6 @@ class LLMClient:
         context = {
             "world_description": setup.world_description,
             "story_focus_description": setup.story_focus_description,
-            "character_description": setup.character_description,
             "regions": region_lookup
         }
         async for event in self._complete_streaming("storylines", context):
@@ -158,6 +157,16 @@ class LLMClient:
             "regions": region_lookup
         }
         response = await self._complete("context", context)
+        return json.loads(response.choices[0].message.content)
+
+    async def prompt_character_setup(self, character_description: str, world_description: str, focus_description: str):
+        context = {
+            "character_description": character_description,
+            "world_description": world_description,
+            "focus_description": focus_description,
+        }
+        response = await self._complete("character-setup", context)
+        print(response)
         return json.loads(response.choices[0].message.content)
 
     async def prompt_scene_summary(self, scene):

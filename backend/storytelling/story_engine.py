@@ -60,6 +60,10 @@ class StoryEngine:
             self.world.component_lookup[str(component["component_id"])]["context"] = component["context"]
         return self.world.component_lookup
 
+    async def generate_character_setup(self, character_description: str, world_description: str, focus_description: str):
+        response = await self.llm.prompt_character_setup(character_description, world_description, focus_description)
+        return response
+
     async def generate_scene_summary(self):
         response = await self.llm.prompt_scene_summary(self.state.get_scene())
         self.state.character_history.append(response["summary"])
