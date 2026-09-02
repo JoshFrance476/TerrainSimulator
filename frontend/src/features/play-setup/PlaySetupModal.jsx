@@ -4,13 +4,15 @@ import StorylinesSetup from "./StorylinesSetup"
 import CharacterSetup from "./CharacterSetup"
 import WorldSetup from "./WorldSetup"
 
+
 function PlaySetupModal({ 
     worldTitle,
     initialWorldDescription,
     initialStoryFocus,
     initialStorylines,
-    regionLookup,
-    componentLookup,
+    initialCharacterSetup,
+    initialRegionLookup,
+    initialComponentLookup,
     submitLabel,
     onSubmit , 
     isPending , 
@@ -20,8 +22,13 @@ function PlaySetupModal({
 
     const worldDescRef = useRef(null)
     const storyFocusRef = useRef(null)
+    const characterDescriptionRef = useRef(null)
 
     const [storylines, setStorylines] = useState(initialStorylines)
+
+    const [regionLookup, setRegionLookup] = useState(initialRegionLookup)
+    const [componentLookup, setComponentLookup] = useState(initialComponentLookup)
+
 
     useEffect(() => {
         dialogRef.current.showModal()
@@ -31,6 +38,7 @@ function PlaySetupModal({
         return {
             world_description: worldDescRef.current.value,
             story_focus_description: storyFocusRef.current.value,
+            character_description: characterDescriptionRef.current.value
         }
     }
 
@@ -60,7 +68,9 @@ function PlaySetupModal({
 
     async function handleGenerateHiddenContext() {
         const hiddenContext = await generateHiddenContext(storylines)
-        console.log("Hidden context:", hiddenContext)
+        setRegionLookup(hiddenContext.regions)
+        setComponentLookup(hiddenContext.components)
+        console.log(hiddenContext)
     }
 
 
@@ -88,6 +98,14 @@ function PlaySetupModal({
                                 ref={storyFocusRef}
                                 className="modal-text"
                                 defaultValue={initialStoryFocus}
+                            ></textarea>
+                        </div>
+                        <div className="modal-component">
+                            <p className="modal-caption">Character Description</p>
+                            <textarea 
+                                ref={characterDescriptionRef}
+                                className="modal-text"
+                                defaultValue={initialCharacterSetup}
                             ></textarea>
                         </div>
                     </div>
