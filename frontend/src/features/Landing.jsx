@@ -66,8 +66,8 @@ function Landing({ onNavigate }) {
                                     initialCharacterDescription={worldMetadata?.story_setup.character_description}
                                     initialStoryFocus={worldMetadata?.story_setup.story_focus}
                                     initialStorylines={worldMetadata?.storylines}
-                                    regionLookup={worldMetadata?.region_lookup}
-                                    componentLookup={worldMetadata?.component_lookup}
+                                    initialRegionLookup={worldMetadata?.region_lookup}
+                                    initialComponentLookup={worldMetadata?.component_lookup}
                                     onClose={() => setShowPlaySetupModal(false)}
                                     submitLabel="Play"
                                     />}
