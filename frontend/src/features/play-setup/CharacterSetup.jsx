@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './CharacterSetup.css'
 
 function CharacterSetup( {getSetupDescriptions} ) {
     const [inventory, setInventory] = useState([]) // id, name

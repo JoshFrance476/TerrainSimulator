@@ -1,4 +1,5 @@
-// StorylinesSetup.jsx
+import './StorylinesSetup.css'
+    
 import { useState } from "react"
 import { streamRequest } from "../../utils/streaming"
 
