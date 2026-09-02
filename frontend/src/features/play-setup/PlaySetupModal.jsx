@@ -2,6 +2,7 @@ import { useEffect , useRef, useState } from "react"
 import "./PlaySetupModal.css"
 import StorylinesSetup from "./StorylinesSetup"
 import CharacterSetup from "./CharacterSetup"
+import WorldSetup from "./WorldSetup"
 
 function PlaySetupModal({ 
     worldTitle,
@@ -18,7 +19,6 @@ function PlaySetupModal({
     const dialogRef = useRef(null)
 
     const worldDescRef = useRef(null)
-    const characterRef = useRef(null)
     const storyFocusRef = useRef(null)
 
     const [storylines, setStorylines] = useState(initialStorylines)
@@ -30,7 +30,6 @@ function PlaySetupModal({
     function getSetupDescriptions() {
         return {
             world_description: worldDescRef.current.value,
-            character_description: characterRef.current.value,
             story_focus_description: storyFocusRef.current.value,
         }
     }
@@ -38,10 +37,9 @@ function PlaySetupModal({
 
     function handleOnSubmit() {
         const worldDescription = worldDescRef.current.value
-        const characterDescription = characterRef.current.value
         const storyFocusDescription = storyFocusRef.current.value
 
-        onSubmit(worldDescription, characterDescription, storyFocusDescription, storylines)
+        onSubmit(worldDescription, storyFocusDescription, storylines)
     }
 
     async function generateHiddenContext(storylines) {
@@ -85,7 +83,7 @@ function PlaySetupModal({
                             ></textarea>
                         </div>
                         <div className="modal-component">
-                            <p className="modal-caption">Story focus</p>
+                            <p className="modal-caption">Playthrough style and tone</p>
                             <textarea 
                                 ref={storyFocusRef}
                                 className="modal-text"
@@ -93,7 +91,9 @@ function PlaySetupModal({
                             ></textarea>
                         </div>
                     </div>
-                    <CharacterSetup/>
+                    <CharacterSetup
+                        getSetupDescriptions={getSetupDescriptions}
+                    />
                 </div>
                 <div className="modal-container-2">
                     <StorylinesSetup
@@ -106,24 +106,10 @@ function PlaySetupModal({
                     <div>
                         <button onClick={handleGenerateHiddenContext}>Generate hidden context</button>
                     </div>
-                    <div className="modal-container-vertical">
-                        <div>
-                            <h3>Regions</h3>
-                            <div className="modal-list">
-                                {Object.entries(regionLookup).map(([key, region]) => (
-                                    <div key={key}>{region.title} - {region.visible_description}</div>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <h3>Components</h3>
-                            <div className="modal-list">
-                                {Object.entries(componentLookup).map(([key, component]) => (
-                                    <div key={key}>{component.name} - {component.description}</div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                    <WorldSetup 
+                        componentLookup={componentLookup}
+                        regionLookup={regionLookup}
+                    />
                 </div>
             </div>
             <div className="modal-actions">
