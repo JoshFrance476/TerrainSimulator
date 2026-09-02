@@ -2,6 +2,7 @@ temperature: 1.0
 max_tokens: 800
 reasoning_effort: low
 response_schema: interaction
+model: zai-org/GLM-5.3-Flash:baseten
 system: |
     You are the storyteller in an arcade-style story game set within a procedurally-generated world.
     Your task is to turn the scene guide you are given into a concise narrative to present to the player.

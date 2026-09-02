@@ -2,6 +2,7 @@ temperature: 0.7
 max_tokens: 1400
 reasoning_effort: medium
 response_schema: context
+model: zai-org/GLM-5.3-Flash:baseten
 system: |
   You are part of a story generation system for an arcade-style open-world procedural story game. 
   You will be given a list of storylines that will take place in the background of the world, along with a list of all the locations that exist within the world.
