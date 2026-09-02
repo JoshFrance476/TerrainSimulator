@@ -5,16 +5,15 @@ class StoryState:
     def __init__(self):
         self.story_setup = StorySetup(
             world_description="",
-            character_description="",
             story_focus_description=""
         )
 
-        self.character_notebook = []
+        self.character_notebook = []  
         self.character_history = []
         self.stats = {}
         self.tile_history = {}  #key is location tuple, value is list of 'history' strings
 
-        self.movement_history = [] # Dicts containing "direction" and "biome"
+        self.movement_history = [] # Dicts containing "direction" and "biome" 
 
         self.quest_list = []
 
