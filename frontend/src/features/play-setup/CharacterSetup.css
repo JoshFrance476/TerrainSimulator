@@ -1,0 +1,78 @@
+.character-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex: 1;
+    min-height: 0;
+    padding-top: 10px;
+}
+
+.character-container {
+    background-color: var(--colour-modal-background);
+    border: 3px solid rgb(155, 154, 154);
+    border-radius: 8px;
+    padding: 10px 10px 0 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.list-item .remove {
+    background-color: var(--colour-modal-background);
+    color: white;
+}
+
+.list-item.horizontal {
+  display: flex;
+  gap: 8px;
+}
+
+
+.stat-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.stat-list-item {
+    display: flex;
+}
+
+.stat-list-name {
+    flex: 20;
+    background-color: #3d4147;
+    color: white;
+}
+
+.stat-list-value {
+    flex: 3;
+    background-color: #3d4147;
+    color: white;
+    min-width: 0;
+}
+
+.stat-list-remove {
+    flex: 1;
+    background-color: var(--colour-modal-background);
+    color: white;
+}
+
+.inventory-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 10px 2px 4px 2px;
+}
+
+.inventory-list-item {
+    display: flex
+}
+
+.inventory-list-name {
+    flex: 20;
+    background-color: #3d4147;
+    color: white;
+}
+
+.inventory-list-remove {
+    flex: 1;
+    background-color: var(--colour-modal-background);
+    color: white;
+}

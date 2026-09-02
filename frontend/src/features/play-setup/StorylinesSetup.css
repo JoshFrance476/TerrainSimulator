@@ -1,0 +1,10 @@
+.world-setup-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    min-height: 0
+}
+
+.location-hidden-context {
+    font-size: 0.85em;
+    font-style: italic;
+}
