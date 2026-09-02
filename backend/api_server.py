@@ -33,7 +33,8 @@ from models import (
     to_payload,
     to_data,
     StorySetup,
-    StorylinesBody
+    StorylinesBody,
+    CharacterSetupBody
 )
 
 from world.world import World
@@ -319,6 +320,10 @@ async def generate_storylines(body: SetupStoryBody, s: Session = Depends(get_ses
 @app.post("/api/setup/generate-hidden-context")
 async def generate_hidden_context(body: StorylinesBody, s: Session = Depends(get_session), user=Depends(require_user)):
     return await s.story_engine.generate_hidden_context(body)
+
+@app.post("/api/setup/generate-character-setup")
+async def generate_character_setup(body: CharacterSetupBody, s: Session = Depends(get_session), user=Depends(require_user)):
+    return await s.story_engine.generate_character_setup(body.character_description, body.world_description, body.focus_description)
 
 # ---------------------------------------------------------------- worlds
 
