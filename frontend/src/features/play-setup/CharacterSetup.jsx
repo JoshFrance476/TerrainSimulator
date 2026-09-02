@@ -5,8 +5,6 @@ function CharacterSetup( {getSetupDescriptions} ) {
     const [stats, setStats] = useState([]) // id, name, value
     const [notebook, setNotebook] = useState("")
 
-    const [description, setDescription] = useState("")
-
     const updateItem = (id, name) =>
         setInventory((prev) => prev.map((item) => (item.id === id ? { ...item, name } : item)))
 
@@ -26,10 +24,10 @@ function CharacterSetup( {getSetupDescriptions} ) {
     const removeStat = (id) =>
         setStats((prev) => prev.filter((stat) => stat.id !== id))
 
-    async function generateCharacterSetup(characterDescription) {
+    async function generateCharacterSetup() {
         const worldSetup = getSetupDescriptions()
         const payload = {
-            character_description: characterDescription,
+            character_description: worldSetup.character_description,
             world_description: worldSetup.world_description,
             focus_description: worldSetup.story_focus_description
         }
@@ -66,13 +64,7 @@ function CharacterSetup( {getSetupDescriptions} ) {
             <h2 className="modal-caption">Character Setup</h2>
             <div className="character-container">
                 <div>
-                    <p className="modal-caption">Character description</p>
-                    <textarea 
-                        className="modal-text"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    />
-                    <button onClick={() => generateCharacterSetup(description)}>Generate Details</button>
+                    <button onClick={() => generateCharacterSetup()}>Generate Details</button>
                 </div>
                 <div className="character-content">
                     <div className='modal-container-even'>
