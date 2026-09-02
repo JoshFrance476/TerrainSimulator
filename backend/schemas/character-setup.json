@@ -1,0 +1,48 @@
+{
+    "type": "object",
+    "properties": {
+        "notebook": {
+            "type": "array",
+            "description": "A list of the character's idiosyncracies relevant to the playthrough",
+            "items": {
+                "type": "string",
+                "description": "A single short sentence"
+            },
+            "minItems": 1,
+            "maxItems": 5
+        },
+        "inventory": {
+            "type": "array",
+            "description": "Significant items that the character would plausibly have at the start of the playthrough",
+            "items": {
+                "type": "string",
+                "description": "A single specific item"
+            },
+            "minItems": 0,
+            "maxItems": 5
+        },
+        "stats": {
+            "type": "array",
+            "description": "Character attributes that fit the genre and convention, rated out of 10",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "stat_name": {
+                        "type": "string", 
+                        "description": "A single word"
+                    },
+                    "value": {
+                        "description": "A realistic representation of the character's abilities at the start of the playthrough.",
+                        "type": "integer", 
+                        "minimum": 1, 
+                        "maximum": 10
+                    }
+                },
+                "required": ["stat_name", "value"],
+                "additionalProperties": false
+            },
+            "minItems": 2,
+            "maxItems": 4
+        }
+    }
+}
