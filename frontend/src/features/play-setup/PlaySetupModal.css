@@ -102,12 +102,28 @@
 
 .modal-actions button {
     width: 50%;
-    background-color: #cecdcd;
-    border-color: #757575;
+    background-color: #3b3b3b;
+    border-color: #c4c4c4;
+    color: white;
 }
 
 .modal-actions button:hover {
-    background-color: #acacac;
+    background-color: #575757;
+}
+
+input,button {
+    font-family: var(--font-body)
+}
+
+.modal-content button {
+    background-color: #3b3b3b;
+    border-color: #c4c4c4;
+    border-radius: 3px;
+    color: white;
+}
+
+.modal-content button:hover {
+    background-color: #575757;
 }
 
 .character-content {
@@ -115,13 +131,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     flex: 1;
     min-height: 0;
+    padding-top: 10px;
 }
 
 .character-container {
     background-color: var(--colour-modal-background);
     border: 3px solid rgb(155, 154, 154);
     border-radius: 8px;
-    padding: 20px 10px 0 10px;
+    padding: 10px 10px 0 10px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -201,4 +218,15 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.world-setup-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    min-height: 0
+}
+
+.location-hidden-context {
+    font-size: 0.85em;
+    font-style: italic;
 }
