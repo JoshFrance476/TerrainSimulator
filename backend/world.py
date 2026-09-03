@@ -1,7 +1,7 @@
 from models import WorldData
 import numpy as np
 
-from models import WorldData, Location, CellData, Region
+from models import WorldData, Location, CellData, Region, Location
 
 class World:
     """Server-side representation of the world, with map layers as numpy arrays."""
@@ -17,9 +17,8 @@ class World:
         self.detail_lookup = world_data.detail_lookup
         self.component = np.frombuffer(world_data.component, dtype=np.uint8).copy()
         self.component_lookup = world_data.component_lookup
-        self.fog = np.ones((self.height, self.width), dtype=np.uint8)
 
-        self.starting_location = world_data.starting_location
+        self.starting_location = Location(world_data.starting_location['x'], world_data.starting_location['y'])
 
         self.max_regions_per_cell = 4
         self.no_region_sentinel = 255
