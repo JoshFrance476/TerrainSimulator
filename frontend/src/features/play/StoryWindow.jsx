@@ -11,7 +11,7 @@ function StoryWindow({ user }) {
     const [streamedOutput, setStreamedOutput] = useState('')
 
     const { data: scene } = useSceneQuery()
-    const { playerLocation } = usePlayer()
+    const { location: playerLocation } = usePlayer()
     const queryClient = useQueryClient()
     const submitAction = useSubmitActionMutation()
     const generateSummary = useGenerateSceneSummaryMutation()
