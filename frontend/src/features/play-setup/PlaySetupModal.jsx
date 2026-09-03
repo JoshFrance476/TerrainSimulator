@@ -28,6 +28,8 @@ function PlaySetupModal({
 
     const [regionLookup, setRegionLookup] = useState(initialRegionLookup)
     const [componentLookup, setComponentLookup] = useState(initialComponentLookup)
+    
+    const characterSetupRef = useRef(null)
 
 
     useEffect(() => {
@@ -47,8 +49,9 @@ function PlaySetupModal({
         const worldDescription = worldDescRef.current.value
         const storyDescription = storyFocusRef.current.value
         const characterDescription = characterDescriptionRef.current.value
+        const { inventory, stats, notebook } = characterSetupRef.current.getCharacterSetup()
 
-        onSubmit(worldDescription, characterDescription, storyDescription, regionLookup, componentLookup)
+        onSubmit(worldDescription, characterDescription, storyDescription, regionLookup, componentLookup, inventory, stats, notebook)
     }
 
     async function generateHiddenContext(storylines) {
@@ -112,6 +115,7 @@ function PlaySetupModal({
                     </div>
                     <CharacterSetup
                         getSetupDescriptions={getSetupDescriptions}
+                        characterSetupRef={characterSetupRef}
                     />
                 </div>
                 <div className="modal-container-right">
