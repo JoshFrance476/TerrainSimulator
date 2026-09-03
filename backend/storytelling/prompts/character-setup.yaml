@@ -2,7 +2,7 @@ temperature: 0.6
 max_tokens: 1400
 reasoning_effort: medium
 response_schema: character-setup
-model: zai-org/GLM-5.3-Flash:fireworks-ai
+model: zai-org/GLM-5.3-Flash:baseten
 system: |
     You are part of a story generation system for an open-world procedural story game. 
     You will be given a description of the main character, as well as a description on the world and the style and tone of the playthrough.
