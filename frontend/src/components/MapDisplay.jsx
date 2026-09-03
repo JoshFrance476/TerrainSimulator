@@ -2,10 +2,11 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { getBrushOutline } from '../utils/world-editing'
 
 
-function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLabel, getScreenTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius, getHoveredCells }) {
+function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLabel, getScreenTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius, getHoveredCells, revealed_tiles = null, }) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
+    const fogOverlayRef = useRef(null) //fog of war overlay canvas
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
     const [hoveredCells, setHoveredCells] = useState([]) // shape: [{x, y}]
@@ -34,6 +35,36 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         () => (brushRadius ? getBrushOutline(brushRadius) : null),
         [brushRadius]
     )
+
+    const width = imageData?.width
+    const height = imageData?.height
+
+    const fogOverlay = useMemo(() => {
+        if (!revealed_tiles || revealed_tiles.length === 0) return null
+
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+        ctx.fillRect(0, 0, width, height)
+        for (const [x, y] of revealed_tiles) {
+            ctx.clearRect(x, y, 1, 1)
+        }
+        return canvas
+    }, [revealed_tiles, width, height])
+
+    useEffect(() => {
+        if (!imageData || !fogOverlayRef.current) return
+
+        fogOverlayRef.current.width = imageData.width
+        fogOverlayRef.current.height = imageData.height
+
+        if (fogOverlay) {
+            fogOverlayRef.current.getContext('2d').drawImage(fogOverlay, 0, 0)
+        }
+    }, [imageData, fogOverlay])
 
     // Load RGB map into base map canvas when it changes
     useEffect(() => {
@@ -138,7 +169,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
             selected,
             player,
         ].filter(Boolean)
-    }, [imageData, brushOutline, brushRadius])
+    }, [imageData, brushOutline, brushRadius,])
 
     // Redraw interaction layer
     useEffect(() => {
@@ -322,6 +353,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
             >
                 <canvas ref={baseMapRef} className="map-layer" />
                 <canvas ref={overlayRef} className="map-layer" />
+                <canvas ref={fogOverlayRef} className="map-layer" />
                 <canvas ref={interactionRef} className="map-layer"
                     onMouseMove={handleHover}
                     onMouseLeave={handleMouseLeave}
