@@ -16,8 +16,8 @@ function Landing({ onNavigate }) {
         newSession.mutate(world.id)
     }
 
-    function handlePlay(worldDescription, character, storyFocus, regionLookup, componentLookup) {
-        sessionSetup.mutate({ worldDescription, character, storyFocus, regionLookup, componentLookup })
+    function handlePlay(worldDescription, character, storyFocus, regionLookup, componentLookup, inventory, stats, notebook) {
+        sessionSetup.mutate({ worldDescription, character, storyFocus, regionLookup, componentLookup, inventory, stats, notebook })
         onNavigate({name: "play"})
     }
 
