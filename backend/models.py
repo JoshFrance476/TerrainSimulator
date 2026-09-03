@@ -23,8 +23,17 @@ class CellData:
 
 @dataclass(frozen=True)
 class StorySetup:
+    world_description: str = ""
+    story_description: str = ""
+    character_description: str = ""
+
+class StorylinePromptData(BaseModel):
     world_description: str
-    story_focus_description: str
+    story_description: str
+    character_description: str
+    region_lookup: dict
+    component_lookup: dict
+
 
 @dataclass(frozen=True)
 class SceneContext:
@@ -49,9 +58,9 @@ class MoveDestinationBody(BaseModel):
 
 class PromptBody(BaseModel):
     text: str 
-    temperature: float | None
-    max_tokens: int = None
-    reasoning_effort: str = None
+    temperature: float | None = None
+    max_tokens: int | None = None
+    reasoning_effort: str | None = None
 
 class SaveWorldBody(BaseModel):
     name: str
@@ -60,17 +69,20 @@ class SaveWorldBody(BaseModel):
 class StartSessionBody(BaseModel):
     world_id: int | None = None
 
-class SetupStoryBody(BaseModel):
+class SetupBody(BaseModel):
     world_description: str
-    story_focus_description: str
+    story_description: str
+    character_description: str
+    region_lookup: dict
+    component_lookup: dict
 
 class StorylinesBody(BaseModel):
     storylines: str
 
-class CharacterSetupBody(BaseModel):
+class SetupDescriptionsBody(BaseModel):
     character_description: str
     world_description: str
-    focus_description: str
+    story_description: str
 
 
 class WorldData(BaseModel):

@@ -4,10 +4,7 @@ from story_generation.scene import Scene
 class StoryState:
     """Maintains the current state of the story"""
     def __init__(self):
-        self.story_setup = StorySetup(
-            world_description="",
-            story_focus_description=""
-        )
+        self.setup = StorySetup()
 
         self.character_notebook = []  
         self.character_history = []

@@ -27,7 +27,7 @@ from models import (
     Location,
     SaveWorldPayload,
     StartSessionBody,
-    SetupStoryBody,
+    SetupBody,
     CellBody,
     ActionBody,
     PromptBody,
@@ -39,7 +39,7 @@ from models import (
     to_data,
     StorySetup,
     StorylinesBody,
-    CharacterSetupBody
+    SetupDescriptionsBody
 )
 
 from world import World
@@ -224,10 +224,6 @@ async def prompt_scene_guide(body: CellBody, user=Depends(require_user), s: Sess
 async def prompt_interaction(user=Depends(require_user), s: Session = Depends(get_session)):
     return EventSourceResponse(sse_events(s.story_engine.generate_interaction()))
 
-@app.post("/api/setup/generate-storylines")
-async def generate_storylines(body: SetupStoryBody, user=Depends(require_user), s: Session = Depends(get_session)):
-    return EventSourceResponse(sse_events(s.story_engine.generate_storylines(body)))
-
 @app.post("/api/scene/generate-summary")
 async def prompt_scene_summary(user=Depends(require_user), s: Session = Depends(get_session)):
     return await s.story_engine.generate_scene_summary()
@@ -320,17 +316,20 @@ def get_token_usage(s: Session = Depends(get_session)):
 
 # ---------------------------------------------------------------- setup
 
+# These endpoints only send llm responses back to the client - nothing is stored server side 
+# All setup information is sent to the server once when play setup is submitted
+
 @app.post("/api/setup/generate-storylines")
-async def generate_storylines(body: SetupStoryBody, s: Session = Depends(get_session), user=Depends(require_user)):
-    return await s.story_engine.generate_storylines(body)
+async def generate_storylines(body: SetupBody, user=Depends(require_user), s: Session = Depends(get_session)):
+    return EventSourceResponse(sse_events(s.story_engine.generate_storylines(body)))
 
 @app.post("/api/setup/generate-hidden-context")
 async def generate_hidden_context(body: StorylinesBody, s: Session = Depends(get_session), user=Depends(require_user)):
     return await s.story_engine.generate_hidden_context(body)
 
 @app.post("/api/setup/generate-character-setup")
-async def generate_character_setup(body: CharacterSetupBody, s: Session = Depends(get_session), user=Depends(require_user)):
-    return await s.story_engine.generate_character_setup(body.character_description, body.world_description, body.focus_description)
+async def generate_character_setup(body: SetupDescriptionsBody, s: Session = Depends(get_session), user=Depends(require_user)):
+    return await s.story_engine.generate_character_setup(body)
 
 # ---------------------------------------------------------------- worlds
 

@@ -4,11 +4,11 @@ from story_generation.utils.context_builder import ContextBuilder
 
 from world import World
 
-from models import Location, StorySetup
+from models import Location, SetupDescriptionsBody, StorySetup, StorylinePromptData
 
 import json
  
- 
+
 class StoryEngine:
     def __init__(self, world: World):
         """Orchestrates story generation by collecting context, calling LLM prompts and updating state and world with responses"""
@@ -41,7 +41,7 @@ class StoryEngine:
         scene = self.state.get_scene()
         guide = scene.guide
         previous_interactions = scene.get_history()
-        async for event in self.llm.prompt_interaction(guide, previous_interactions, self.state.story_setup):
+        async for event in self.llm.prompt_interaction(guide, previous_interactions, self.state.setup):
             if event["event"] == "done":
                 payload = json.loads(event["payload"])
                 scene.add_interaction(
@@ -50,24 +50,25 @@ class StoryEngine:
                     )
             yield event
 
-    async def generate_storylines(self, setup: StorySetup):
+    async def generate_storylines(self, setup: StorylinePromptData):
         async for event in self.llm.prompt_storylines(setup, self.world.component_lookup, self.world.region_lookup):
             yield event
 
     async def generate_hidden_context(self, storylines):
         response = await self.llm.prompt_hidden_context(storylines, self.world.component_lookup, self.world.region_lookup)
-        print(response)
+        temp_components = self.world.component_lookup.copy()
+        temp_regions = self.world.region_lookup.copy()
         for component in response["components"]:
-            self.world.component_lookup[str(component["component_id"])]["context"] = component["context"]
+            temp_components[str(component["component_id"])]["context"] = component["context"]
         for region in response["regions"]:
-            self.world.region_lookup[str(region["region_id"])]["context"] = region["context"]
+            temp_regions[str(region["region_id"])]["context"] = region["context"]
         return {
-            "components": self.world.component_lookup,
-            "regions": self.world.region_lookup
+            "components": temp_components,
+            "regions": temp_regions
         }
 
-    async def generate_character_setup(self, character_description: str, world_description: str, focus_description: str):
-        response = await self.llm.prompt_character_setup(character_description, world_description, focus_description)
+    async def generate_character_setup(self, setup: SetupDescriptionsBody):
+        response = await self.llm.prompt_character_setup(setup.character_description, setup.world_description, setup.story_description)
         return response
 
     async def generate_scene_summary(self):
@@ -94,17 +95,13 @@ class StoryEngine:
     # ------------------------------------------------------------------
  
     def setup(self, story_setup: StorySetup):
-        self.state.story_setup = story_setup
+        self.state.setup = story_setup
  
     def get_setup(self) -> StorySetup:
-        return self.state.story_setup
+        return self.state.setup
  
     def clear_setup(self):
-        self.state.story_setup = StorySetup(
-            world_description="",
-            character_description="",
-            story_focus_description=""
-        )
+        self.state.setup = StorySetup()
  
     # ------------------------------------------------------------------
     # Accessors delegated to managers
