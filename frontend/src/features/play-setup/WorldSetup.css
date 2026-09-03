@@ -1,0 +1,23 @@
+.world-setup-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 0;
+}
+
+.location-item {
+    padding: 6px 0 0 0;
+}
+
+.location-column {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0 3px 0 3px;
+}
+
+.location-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
