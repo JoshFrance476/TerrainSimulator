@@ -38,10 +38,15 @@ function Worldbuilder({ initialWorldId = null }) {
     const queryClient = useQueryClient()
 
     useEffect(() => {
-        if (initialWorldId != null) {
-            loadWorld(initialWorldId)
+        if (worldId != null) {
+            loadWorld(worldId)
             return
         }
+        setupBlankWorld()
+    }, [dimensions, worldId])
+
+
+    function setupBlankWorld() {
         const world = createWorld({ ...dimensions })
         refreshAll(world)
         worldRef.current = world
@@ -50,7 +55,7 @@ function Worldbuilder({ initialWorldId = null }) {
         setDetailLookup(world.detailLookup)
         setComponentLookup(world.componentLookup)
         commit()
-    }, [dimensions])
+    }
 
     async function loadWorld(id) {
         const data = await queryClient.fetchQuery({
@@ -73,8 +78,6 @@ function Worldbuilder({ initialWorldId = null }) {
             component: Uint8Array.fromBase64(data.component),
             componentLookup: data.component_lookup,
         })
-
-        setWorldId(id)
         refreshAll(world)
         worldRef.current = world
         setBiomeLookup(world.biomeLookup)
@@ -87,32 +90,7 @@ function Worldbuilder({ initialWorldId = null }) {
         ))  
         commit()
     }
-
-    // These use effects below should be replaced, it's not a reliable way to keep world in sync. Should be updated explicitly whenever the lookups change.
-
-    useEffect(() => {
-        if (worldRef.current) {
-            worldRef.current.biomeLookup = biomeLookup
-        }
-    }, [biomeLookup])
-
-    useEffect(() => {
-        if (worldRef.current) {
-            worldRef.current.regionLookup = regionLookup
-        }
-    }, [regionLookup])
-
-    useEffect(() => {
-        if (worldRef.current) {
-            worldRef.current.detailLookup = detailLookup
-        }
-    }, [detailLookup])
-
-    useEffect(() => {
-        if (worldRef.current) {
-            worldRef.current.componentLookup = componentLookup
-        }
-    }, [componentLookup])
+    
 
     function buildBorders() {
         const world = worldRef.current
@@ -239,6 +217,7 @@ function Worldbuilder({ initialWorldId = null }) {
     function addBiome(biome) {
         const next = { ...biomeLookup, [Object.keys(biomeLookup).length]: biome }
         setBiomeLookup(next)
+        worldRef.current.biomeLookup = next
     }
 
     function editBiome({ biomeBrush, name, colour }) {
@@ -256,16 +235,19 @@ function Worldbuilder({ initialWorldId = null }) {
         // +1 is a cheap fix for the lookup table starting at 1 instead of 0, with 0 being reserved for "no detail"
         const next = {...detailLookup, [Object.keys(detailLookup).length+1]: detail }
         setDetailLookup(next)
+        worldRef.current.detailLookup = next
     }
 
     function addRegion(region) {
         const next = { ...regionLookup, [Object.keys(regionLookup).length]: region }
         setRegionLookup(next)
+        worldRef.current.regionLookup = next
     }
 
     function addComponent(component) {
         const next = { ...componentLookup, [Object.keys(componentLookup).length+1]: component }
         setComponentLookup(next)
+        worldRef.current.componentLookup = next
     }
 
     function setStartingLocation(location) {
@@ -274,7 +256,6 @@ function Worldbuilder({ initialWorldId = null }) {
     }
 
     function saveWorld(name, description) {
-        console.log("Saving world with name:", name, "and description:", description)
         const worldData = {
                 name: name,
                 description: description,
@@ -315,7 +296,6 @@ function Worldbuilder({ initialWorldId = null }) {
                 setRegionBrush={setRegionBrush}
                 saveWorld={saveWorld}
                 saveWorldMutation={saveWorldMutation}
-                loadWorld={loadWorld}
                 setDetailBrush={setDetailBrush}
                 detailLookup={detailLookup}
                 addDetail={addDetail}
