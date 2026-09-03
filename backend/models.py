@@ -75,6 +75,9 @@ class SetupBody(BaseModel):
     character_description: str
     region_lookup: dict
     component_lookup: dict
+    inventory: list
+    stats: list[dict]
+    notebook: list
 
 class StorylinesBody(BaseModel):
     storylines: str
