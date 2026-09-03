@@ -7,7 +7,7 @@ import { usePlayer } from '../../hooks/usePlayer'
 import MapToolbar from './MapToolbar'
 import { useMovePlayerMutation } from '../../queries/queries'
 import { buildBorderSegments } from '../../utils/regions'
-import { createWorld, refreshAll, getCellRegions } from '../../utils/world-editing'
+import { getCellRegions } from '../../utils/world-editing'
 
 
 function Play({ user }) {
@@ -17,25 +17,8 @@ function Play({ user }) {
     const movePlayer = useMovePlayerMutation()
     const { playerLocation } = usePlayer()
 
-    const { dimensions, maxRegionsPerCell, noRegionId, 
-            biomeMap, biomeLookup, regionMap, regionLookup, elevationMap, detailMap, componentMap, detailLookup, componentLookup
-    } = useWorld()
+    const { world, maxRegionsPerCell, noRegionId, isLoading } = useWorld()
 
-    const world = useMemo(() => {
-        if (!dimensions || !biomeMap || !elevationMap || !regionMap) return null
-        const w = createWorld({
-            width: dimensions.width,
-            height: dimensions.height,
-            biomeLookup, regionLookup, detailLookup, componentLookup,
-            biome: biomeMap,
-            elevation: elevationMap,
-            region: regionMap,
-            detail: detailMap,
-            component: componentMap,
-        })
-        refreshAll(w)
-        return w
-    }, [dimensions, biomeMap, elevationMap, regionMap, biomeLookup, regionLookup, detailMap, componentMap, detailLookup, componentLookup])
 
     const imageData = useMemo(
         () => world && new ImageData(world.rgba, world.width, world.height),
@@ -46,62 +29,44 @@ function Play({ user }) {
         if (interactionMode === 'move') {
             movePlayer.mutate({ x, y })
         } else {
-            setSelectedCell(getCellData(x, y))
+            setSelectedCell(getCellData(world, x, y, noRegionId))
         }
     }
 
     const borderSegments = useMemo(
-        () => dimensions && buildBorderSegments({
-            regionMap,
-            rows: dimensions.height,
-            cols: dimensions.width,
+        () => world && buildBorderSegments({
+            regionMap: world.region,
+            rows: world.height,
+            cols: world.width,
             maxRegionsPerCell,
             noRegionId,
-            regionLookup,
+            regionLookup: world.regionLookup,
         }),
-        [regionMap, dimensions, maxRegionsPerCell, noRegionId, regionLookup]
+        [world, maxRegionsPerCell, noRegionId]
     )
 
-    function getTooltipLabel({cellX, cellY}) {
-        if (!biomeMap || !regionMap) return null
-        const cellData = getCellData(cellX, cellY)
+    function getCellData(world, cellX, cellY, noRegionId) {
+        const index = cellY * world.width + cellX
+        return {
+            x: cellX,
+            y: cellY,
+            biomeData: world.biomeLookup[world.biome[index]],
+            detailData: world.detailLookup[world.detail[index]],
+            componentData: world.componentLookup[world.component[index]],
+            regionData: [...getCellRegions(world, index)]
+                .filter((id) => id !== noRegionId)
+                .map((id) => world.regionLookup[id]),
+        }
+    }
+
+    function getTooltipLabel({ cellX, cellY }) {
+        if (!world) return null
+        const cellData = getCellData(world, cellX, cellY, noRegionId)
         const biomeName = cellData.biomeData?.name ?? 'Unknown Biome'
         const regionNames = cellData.regionData.map(r => r.title).join(', ')
         const componentName = cellData.componentData?.name ?? null
         const detailName = cellData.detailData?.name ?? null
-        return [(componentName ? `${componentName}` : (detailName ? `${detailName}` : `${biomeName}`)) + (regionNames.length > 0 ? ` | ${regionNames}` : '')]
-    }
-    
-    function getBiomeDataAtCell(cellX, cellY) {
-        const index = cellY * dimensions.width + cellX
-        return biomeLookup[biomeMap[index]]
-    }
-
-    function getDetailDataAtCell(cellX, cellY) {
-        if (!detailMap) return null
-        const index = cellY * dimensions.width + cellX
-        return detailLookup[detailMap[index]]
-    }
-
-    function getComponentDataAtCell(cellX, cellY) {
-        if (!componentMap) return null
-        const index = cellY * dimensions.width + cellX
-        return componentLookup[componentMap[index]]
-    }
-
-    function getRegionDataAtCell(cellX, cellY) {
-        const index = cellY * dimensions.width + cellX
-        return [...getCellRegions(world, index)]
-            .filter((id) => id !== noRegionId)
-            .map((id) => regionLookup[id])
-    }
-
-    function getCellData(cellX, cellY) {
-        const biomeData = getBiomeDataAtCell(cellX, cellY)
-        const regionData = getRegionDataAtCell(cellX, cellY)
-        const detailData = getDetailDataAtCell(cellX, cellY)
-        const componentData = getComponentDataAtCell(cellX, cellY)
-        return { x: cellX, y: cellY, biomeData: biomeData, regionData: regionData, detailData: detailData, componentData: componentData }
+        return [(componentName ?? detailName ?? biomeName) + (regionNames.length > 0 ? ` | ${regionNames}` : '')]
     }
 
     function getCellsToHover({ cellX, cellY }) {
