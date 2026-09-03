@@ -89,6 +89,9 @@ class StoryEngine:
 
     def set_player_location(self, location: Location):
         self.state.player_location = location
+        for dx in range(-self.state.player_view_radius, self.state.player_view_radius + 1):
+            for dy in range(-self.state.player_view_radius, self.state.player_view_radius + 1):
+                self.state.revealed_tiles.add((location.x + dx, location.y + dy))
  
     # ------------------------------------------------------------------
     # Setup
