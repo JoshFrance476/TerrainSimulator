@@ -117,7 +117,7 @@ class LLMClient:
         async for event in self._complete_streaming("interaction", context):
             if "token" in event:
                 yield {"event": "token", "payload": event["token"]}
-            else:
+            elif "content" in event: 
                 data = event["content"]
                 yield {"event": "done", "payload": data}
 
@@ -146,7 +146,7 @@ class LLMClient:
         async for event in self._complete_streaming("scene-guide", context):
             if "token" in event:
                 yield {"event": "token", "payload": event["token"]}
-            else:
+            elif "content" in event:
                 data = event["content"]
                 yield {"event": "done", "payload": data}
 
