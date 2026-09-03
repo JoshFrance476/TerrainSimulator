@@ -6,6 +6,7 @@ export function usePlayer() {
     const stats = query.data?.stats ?? null
     const inventory = query.data?.inventory ?? null
     const notebook = query.data?.notebook ?? null
+    const revealed_tiles = query.data?.revealed_tiles ?? null
 
-    return { location, stats, inventory, notebook, isLoading: query.isLoading, isError: query.isError }
+    return { location, stats, inventory, notebook, revealed_tiles, isLoading: query.isLoading, isError: query.isError }
 }
