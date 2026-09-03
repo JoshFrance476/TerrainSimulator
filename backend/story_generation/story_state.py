@@ -21,6 +21,10 @@ class StoryState:
 
         self.scene_history: list[Scene] = []
 
+        self.player_view_radius = 5
+
+        self.revealed_tiles = set()
+
     def get_or_create_scene(self) -> Scene:
         if self.current_scene is None or self.current_scene.ended:
             self.current_scene = Scene()
