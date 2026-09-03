@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useState , useImperativeHandle } from 'react'
 import './CharacterSetup.css'
 
-function CharacterSetup( {getSetupDescriptions} ) {
+function CharacterSetup( {getSetupDescriptions, characterSetupRef } ) {
     const [inventory, setInventory] = useState([]) // id, name
     const [stats, setStats] = useState([]) // id, name, value
-    const [notebook, setNotebook] = useState("")
+    const [notebook, setNotebook] = useState([])
+
+    useImperativeHandle(characterSetupRef, () => ({
+        getCharacterSetup: () => ({ inventory, stats, notebook }),
+    }))
 
     const updateItem = (id, name) =>
         setInventory((prev) => prev.map((item) => (item.id === id ? { ...item, name } : item)))
@@ -73,8 +77,8 @@ function CharacterSetup( {getSetupDescriptions} ) {
                             <p className="modal-caption">Notebook</p>
                             <textarea 
                                 className="modal-text fill"
-                                value={notebook}
-                                onChange={(e) => setNotebook(e.target.value)}
+                                value={notebook.join('\n')}
+                                onChange={(e) => setNotebook(e.target.value.split('\n'))}
                             />
                         </div>
                         <div>
