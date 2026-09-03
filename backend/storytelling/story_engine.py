@@ -13,7 +13,7 @@ class StoryEngine:
     def __init__(self, world: World):
         self.world = world
         self.state = StoryState()
-        self.llm = LLMClient(self.state) 
+        self.llm = LLMClient() 
         self.player_location = Location(0, 0)
  
         self.context_builder = ContextBuilder(self.state, self.world)
@@ -40,7 +40,7 @@ class StoryEngine:
         scene = self.state.get_scene()
         guide = scene.guide
         previous_interactions = scene.get_history()
-        async for event in self.llm.prompt_interaction(guide, previous_interactions):
+        async for event in self.llm.prompt_interaction(guide, previous_interactions, self.state.story_setup):
             if event["event"] == "done":
                 payload = json.loads(event["payload"])
                 scene.add_interaction(
@@ -82,14 +82,6 @@ class StoryEngine:
     def add_to_movement_history(self, movement):
         self.state.movement_history.append(movement)
  
-    def get_token_usage(self):
-        return (
-            f"Prompt tokens: {self.state.prompt_tokens}. "
-            f"Completion tokens: {self.state.completion_tokens}. "
-            f"Total cost (gpt-oss-120b): "
-            f"{round(self.state.prompt_tokens * 0.000015 + self.state.completion_tokens * 0.00006, 5)} cents"
-        )
-
     def get_player_location(self) -> Location:
         return self.player_location
 
@@ -125,11 +117,9 @@ class StoryEngine:
  
     def get_current_scene(self):
         return self.state.get_scene()
-    
-    # ------------------------------------------------------------------
-    # Internal
-    # ------------------------------------------------------------------
- 
-    def update_tokens(self, prompt_tokens: int, completion_tokens: int):
-        self.state.prompt_tokens += prompt_tokens
-        self.state.completion_tokens += completion_tokens
+
+    def get_token_usage(self):
+        return {
+            "input_tokens": self.llm.prompt_tokens,
+            "output_tokens": self.llm.completion_tokens
+        }

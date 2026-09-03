@@ -10,12 +10,14 @@ import json
 
 
 class LLMClient:
-    def __init__(self, state):
+    def __init__(self):
         self.client = AsyncInferenceClient()
         self.model = "Qwen/Qwen3-235B-A22B-Instruct-2507:novita"
         self.prompt_manager = PromptManager()
         self.log_writer = LogWriter()
-        self.state = state 
+
+        self.completion_tokens = 0
+        self.prompt_tokens = 0
  
     # ------------------------------------------------------------------
     # Internal
@@ -50,8 +52,8 @@ class LLMClient:
 
     def _record_usage(self, usage):
         if usage: 
-            self.state.completion_tokens += usage.completion_tokens
-            self.state.prompt_tokens += usage.prompt_tokens
+            self.completion_tokens += usage.completion_tokens
+            self.prompt_tokens += usage.prompt_tokens
         else:
             print("No usage data returned by provider") 
 
@@ -107,11 +109,11 @@ class LLMClient:
     # Prompts
     # ------------------------------------------------------------------
 
-    async def prompt_interaction(self, guide, previous_interactions):
+    async def prompt_interaction(self, guide, previous_interactions, story_setup):
         context = {
             "guide": guide, 
             "previous_interactions": previous_interactions,
-            "story_setup": asdict(self.state.story_setup)
+            "story_setup": asdict(story_setup)
         } 
 
         async for event in self._complete_streaming("interaction", context):

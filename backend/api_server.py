@@ -306,10 +306,7 @@ def get_component_lookup(s: Session = Depends(get_session)):
 
 @app.get('/api/token-usage')
 def get_token_usage(s: Session = Depends(get_session)):
-    return {
-        "output_tokens": s.story_engine.state.completion_tokens,
-        "input_tokens": s.story_engine.state.prompt_tokens
-    }
+    return s.story_engine.get_token_usage()
 
 # ---------------------------------------------------------------- setup
 
