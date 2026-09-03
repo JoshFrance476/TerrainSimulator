@@ -37,7 +37,7 @@ function PlaySetupModal({
     function getSetupDescriptions() {
         return {
             world_description: worldDescRef.current.value,
-            story_focus_description: storyFocusRef.current.value,
+            story_description: storyFocusRef.current.value,
             character_description: characterDescriptionRef.current.value
         }
     }
@@ -45,9 +45,10 @@ function PlaySetupModal({
 
     function handleOnSubmit() {
         const worldDescription = worldDescRef.current.value
-        const storyFocusDescription = storyFocusRef.current.value
+        const storyDescription = storyFocusRef.current.value
+        const characterDescription = characterDescriptionRef.current.value
 
-        onSubmit(worldDescription, storyFocusDescription, storylines)
+        onSubmit(worldDescription, characterDescription, storyDescription, regionLookup, componentLookup)
     }
 
     async function generateHiddenContext(storylines) {

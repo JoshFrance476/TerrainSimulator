@@ -195,13 +195,15 @@ def create_session(body: StartSessionBody, request: Request):
         raise HTTPException(status_code=404, detail=str(e))
     return {"ok":True}
  
-@app.post("/api/session/story-setup")
-def setup_session_story(body: SetupStoryBody, s: Session = Depends(get_session)):
+@app.post("/api/session/submit-setup")
+def setup_session_story(body: SetupBody, s: Session = Depends(get_session)):
+    s.world.region_lookup = body.region_lookup
+    s.world.component_lookup = body.component_lookup
 
     s.story_engine.setup(StorySetup(
         world_description=body.world_description,
         character_description=body.character_description,
-        story_focus_description=body.story_focus_description
+        story_description=body.story_description
     ))
 
 # ---------------------------------------------------------------- story

@@ -81,7 +81,19 @@ export function useNewSessionMutation() {
 export function useSessionSetupMutation() {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: ({ worldDescription, character, storyFocus }) => postJson('/api/session/story-setup', { world_description: worldDescription, character_description: character, story_focus_description: storyFocus }),
+        mutationFn: ({ 
+            worldDescription, 
+            character, 
+            storyFocus,
+            regionLookup,
+            componentLookup,
+        }) => postJson('/api/session/submit-setup', { 
+            world_description: worldDescription, 
+            character_description: character, 
+            story_description: storyFocus, 
+            region_lookup: regionLookup, 
+            component_lookup: componentLookup 
+        }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: sessionKey }),
     })
 }
