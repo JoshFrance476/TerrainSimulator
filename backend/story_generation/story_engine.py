@@ -1,8 +1,8 @@
-from storytelling.llm_client import LLMClient
-from storytelling.story_state import StoryState
-from storytelling.context_builder import ContextBuilder
+from story_generation.llm_client import LLMClient
+from story_generation.story_state import StoryState
+from story_generation.utils.context_builder import ContextBuilder
 
-from world.world import World
+from world import World
 
 from models import Location, StorySetup
 
@@ -11,6 +11,7 @@ import json
  
 class StoryEngine:
     def __init__(self, world: World):
+        """Orchestrates story generation by collecting context, calling LLM prompts and updating state and world with responses"""
         self.world = world
         self.state = StoryState()
         self.llm = LLMClient() 

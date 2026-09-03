@@ -1,9 +1,11 @@
 from models import Location, SceneContext
-from storytelling.story_state import StoryState
-from world.world import World
+from story_generation.story_state import StoryState
+from world import World
 
 class ContextBuilder:
+    """Collects data from story state and world to build context for prompts."""
     def __init__(self, state: StoryState, world: World):
+        
         self.state = state
         self.world = world
  

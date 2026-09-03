@@ -1,6 +1,6 @@
 from models import SceneContext, StorySetup
-from storytelling.prompt_manager import PromptManager
-from storytelling.log_writer import LogWriter
+from story_generation.utils.prompt_manager import PromptManager
+from story_generation.utils.log_writer import LogWriter
 from huggingface_hub import AsyncInferenceClient
 from huggingface_hub.errors import BadRequestError
 
@@ -10,6 +10,7 @@ import json
 
 
 class LLMClient:
+    """Provides an interface to send prompts and handle responses from LLM."""
     def __init__(self):
         self.client = AsyncInferenceClient()
         self.model = "Qwen/Qwen3-235B-A22B-Instruct-2507:novita"

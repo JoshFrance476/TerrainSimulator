@@ -1,6 +1,5 @@
 from pathlib import Path
 from datetime import datetime
-from config import MAP_NAME
 import yaml
 import json
 
@@ -8,14 +7,14 @@ import json
 LOG_DIR = Path(__file__).resolve().parent.parent.parent / "logs"
 
 class LogWriter:
+    """Writes all LLM input/output to yaml log files in a readable format"""
     def __init__(self):
         self.log_file_name = None 
         self.now = datetime.now()
-        self.map_name = MAP_NAME if MAP_NAME else "Procedural"
     
     def write_to_log(self, message, label=None):
         if not self.log_file_name:
-            self.log_file_name = self.map_name + "_" + self.now.strftime("%Y-%m-%d_%H-%M-%S") + ".yaml"
+            self.log_file_name = self.now.strftime("%Y-%m-%d_%H-%M-%S") + ".yaml"
         path = LOG_DIR
         path.mkdir(parents=True, exist_ok=True)
 

@@ -1,7 +1,8 @@
 from models import StorySetup
-from storytelling.scene import Scene
+from story_generation.scene import Scene
 
 class StoryState:
+    """Maintains the current state of the story"""
     def __init__(self):
         self.story_setup = StorySetup(
             world_description="",

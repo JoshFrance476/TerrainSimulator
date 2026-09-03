@@ -2,24 +2,12 @@ from pathlib import Path
 import yaml
 import json
 
-PROMPTS_DIR = Path(__file__).parent / "prompts"
-SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
+PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts"
+SCHEMAS_DIR = Path(__file__).parent.parent.parent / "schemas"
 
 
 class PromptManager:
-    """System-prompt templates, their model settings, and the JSON schemas they
-    reference. Loaded from disk once at startup and held in memory for the
-    session. Edits via set() never write back to file.
-
-    Each prompt is a dict loaded from prompts/<name>.yaml, keyed by filename stem:
-
-        temperature:      float    (required)
-        max_tokens:       int      (required)
-        reasoning_effort: str      (required)
-        system:           str      (required) - the template text
-        response_schema:  str      (optional) - schema name for constrained output
-        tools:            list[str](optional) - schema names for tool calling
-    """
+    """Manages system prompts and response schemas"""
 
     def __init__(self):
         self.prompts = {

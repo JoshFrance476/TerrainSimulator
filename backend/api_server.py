@@ -1,5 +1,10 @@
 import base64
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from database.db import pool
 
 
@@ -37,12 +42,15 @@ from models import (
     CharacterSetupBody
 )
 
-from world.world import World
-from world.map_entity import MapEntity
-from storytelling.story_engine import StoryEngine
-import config as config
+from world import World
+from story_generation.story_engine import StoryEngine
 
 from database import users, worlds
+
+
+SESSION_SECRET = os.environ["SESSION_SECRET"]
+GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
+GOOGLE_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
 
 
 @asynccontextmanager
@@ -65,7 +73,7 @@ app.add_middleware(
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key=config.SESSION_SECRET,   # load from env, keep it stable across restarts
+    secret_key=SESSION_SECRET,   # load from env, keep it stable across restarts
     same_site="lax",
     https_only=False,                   # True in production
 )
@@ -73,8 +81,8 @@ app.add_middleware(
 oauth = OAuth()
 oauth.register(
     name="google",
-    client_id=config.GOOGLE_CLIENT_ID,
-    client_secret=config.GOOGLE_CLIENT_SECRET,
+    client_id=GOOGLE_CLIENT_ID,
+    client_secret=GOOGLE_CLIENT_SECRET,
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"},
 )
