@@ -261,9 +261,10 @@ export function useMovePlayerMutation() {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: ({ x, y }) => postJson('/api/player/move', { x, y }),
-        onSuccess: (newLocation) => queryClient.setQueryData(playerKey, (prev) => ({
+        onSuccess: (response) => queryClient.setQueryData(playerKey, (prev) => ({
             ...prev,
-            location: newLocation,
+            location: response.location,
+            revealed_tiles: response.revealed_tiles,
         }))
     })
 }
