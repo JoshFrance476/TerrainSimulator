@@ -4,7 +4,7 @@ import yaml
 import json
 
 
-LOG_DIR = Path(__file__).resolve().parent.parent.parent / "logs"
+LOG_DIR = Path(__file__).resolve().parent.parent.parent.parent / "logs"
 
 class LogWriter:
     """Writes all LLM input/output to yaml log files in a readable format"""
