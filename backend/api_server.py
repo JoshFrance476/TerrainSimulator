@@ -200,6 +200,10 @@ def setup_session_story(body: SetupBody, s: Session = Depends(get_session)):
     s.world.region_lookup = body.region_lookup
     s.world.component_lookup = body.component_lookup
 
+    s.story_engine.state.inventory = body.inventory
+    s.story_engine.state.stats = body.stats
+    s.story_engine.state.character_notebook = body.notebook
+
     s.story_engine.setup(StorySetup(
         world_description=body.world_description,
         character_description=body.character_description,
@@ -263,10 +267,16 @@ def get_prompt_template(name: str, s: Session = Depends(get_session)):
 async def move_player_to(body: MoveDestinationBody, s: Session = Depends(get_session)):
     new_location = Location(body.x, body.y)
     s.story_engine.set_player_location(new_location)
+    return {"location": new_location}
 
 @app.get('/api/player')
-def get_player_location(s: Session = Depends(get_session)):
-    return s.story_engine.get_player_location()
+def get_player_info(s: Session = Depends(get_session)):
+    return {
+        "location": s.story_engine.get_player_location(),
+        "stats": s.story_engine.state.stats,
+        "inventory": s.story_engine.state.inventory,
+        "notebook": s.story_engine.state.character_notebook
+    }
 
 # ---------------------------------------------------------------- world
 @app.get("/api/world")
