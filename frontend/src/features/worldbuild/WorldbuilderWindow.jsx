@@ -15,7 +15,6 @@ function WorldbuilderWindow({
     setRegionBrush, 
     saveWorld, 
     saveWorldMutation, 
-    loadWorld,
     detailLookup,
     setDetailBrush,
     detailBrush,
@@ -26,8 +25,6 @@ function WorldbuilderWindow({
     componentLookup,
     setStartingLocation,
 }) {
-    const loadWorldIdRef = useRef(); 
-    
     const scaleRef = useRef(null);
     const octavesRef = useRef(null);
     const persistenceRef = useRef(null);
@@ -292,11 +289,6 @@ function WorldbuilderWindow({
                     <button onClick={handleSaveWorld}>Save</button>
                 </label>
                 {saveWorldMutation.isError && <p className="error">{saveWorldMutation.error.message}</p>}
-                <label>
-                    Load map:
-                    <input type="text" placeholder="World ID" ref={loadWorldIdRef} />
-                    <button onClick={() => loadWorld(loadWorldIdRef.current.value)}>Load</button>
-                </label>
             </div>
             {tooltip && <div className="tooltip" style={{ left: tooltip.x+2, top: tooltip.y-20 }}>{tooltip.text ?? "empty"}</div>}
         </div>
