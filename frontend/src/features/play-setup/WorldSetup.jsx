@@ -1,7 +1,9 @@
+import './WorldSetup.css'
+
 function WorldSetup({regionLookup, componentLookup}) {
     return (
         <div className="world-setup-container">
-            <div>
+            <div className="location-column">
                 <h3>Regions</h3>
                 <div className="location-list">
                     {Object.entries(regionLookup).map(([key, region]) => (
@@ -15,7 +17,7 @@ function WorldSetup({regionLookup, componentLookup}) {
                     ))}
                 </div>
             </div>
-            <div>
+            <div className="location-column">
                 <h3>Components</h3>
                 <div className="location-list">
                     {Object.entries(componentLookup).map(([key, component]) => (
