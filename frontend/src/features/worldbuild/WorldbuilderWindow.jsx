@@ -24,6 +24,7 @@ function WorldbuilderWindow({
     setComponentBrush,
     componentBrush,
     componentLookup,
+    setStartingLocation,
 }) {
     const loadWorldIdRef = useRef(); 
     
@@ -51,6 +52,9 @@ function WorldbuilderWindow({
 
     const newWorldNameRef = useRef(null);
     const newWorldDescriptionRef = useRef(null);
+
+    const startingLocationXRef = useRef(null);
+    const startingLocationYRef = useRef(null);
 
     const [tooltip, setTooltip] = useState(null); // { text, x, y }
 
@@ -263,6 +267,21 @@ function WorldbuilderWindow({
                 })}>
                     Generate Random Map
                 </button>
+            </div>
+            <div className="starting-location-section">
+                <h3>Starting Location</h3>
+                <label>
+                    X:
+                    <input type="number" placeholder="X" ref={startingLocationXRef} />
+                </label>
+                <label>
+                    Y:
+                    <input type="number" placeholder="Y" ref={startingLocationYRef} />
+                </label>
+                <button onClick={() => setStartingLocation({
+                    x: Number(startingLocationXRef.current.value),
+                    y: Number(startingLocationYRef.current.value)
+                })}>Set Starting Location</button>
             </div>
             <div className="settings-section">
                 <h3>Settings</h3>

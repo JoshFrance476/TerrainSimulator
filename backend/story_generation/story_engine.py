@@ -15,9 +15,9 @@ class StoryEngine:
         self.world = world
         self.state = StoryState()
         self.llm = LLMClient() 
-        self.player_location = Location(0, 0)
- 
         self.context_builder = ContextBuilder(self.state, self.world)
+
+        self.set_player_location(self.world.starting_location)
  
     # ------------------------------------------------------------------
     # Public interface
@@ -85,10 +85,10 @@ class StoryEngine:
         self.state.movement_history.append(movement)
  
     def get_player_location(self) -> Location:
-        return self.player_location
+        return self.state.player_location
 
     def set_player_location(self, location: Location):
-        self.player_location = location
+        self.state.player_location = location
  
     # ------------------------------------------------------------------
     # Setup

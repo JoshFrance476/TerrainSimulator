@@ -17,6 +17,9 @@ class World:
         self.detail_lookup = world_data.detail_lookup
         self.component = np.frombuffer(world_data.component, dtype=np.uint8).copy()
         self.component_lookup = world_data.component_lookup
+        self.fog = np.ones((self.height, self.width), dtype=np.uint8)
+
+        self.starting_location = world_data.starting_location
 
         self.max_regions_per_cell = 4
         self.no_region_sentinel = 255

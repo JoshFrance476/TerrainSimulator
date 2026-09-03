@@ -1,4 +1,4 @@
-from models import StorySetup
+from models import StorySetup, Location
 from story_generation.scene import Scene
 
 class StoryState:
@@ -7,9 +7,11 @@ class StoryState:
         self.setup = StorySetup()
 
         self.character_notebook = []  
-        self.character_history = []
-        self.stats = {}
-        self.tile_history = {}  #key is location tuple, value is list of 'history' strings
+        self.character_history: list[str] = [] #llm generated scene summaries
+        self.stats: dict[str, int] = {} # stat name, value
+        self.inventory: list[str] = []
+
+        self.player_location = Location(0, 0)
 
         self.movement_history = [] # Dicts containing "direction" and "biome" 
 

@@ -62,6 +62,7 @@ function Worldbuilder({ initialWorldId = null }) {
         const world = createWorld({
             width: data.width,
             height: data.height,
+            startingLocation: data.starting_location,
             biomeLookup: data.biome_lookup,
             regionLookup: data.region_lookup,
             biome: Uint8Array.fromBase64(data.biome),
@@ -221,7 +222,9 @@ function Worldbuilder({ initialWorldId = null }) {
 
         const parts = [biome]
         if (detail) parts.push(`${detail}`)
+        parts.push(`x: ${cellX}, y: ${cellY}`)
         parts.push(`Elevation: ${elevation}`)
+
         parts.push(`Regions: ${regions.join(', ') || 'None'}`)
         parts.push(`Component: ${component}`)
 
@@ -265,6 +268,11 @@ function Worldbuilder({ initialWorldId = null }) {
         setComponentLookup(next)
     }
 
+    function setStartingLocation(location) {
+        worldRef.current.startingLocation = location
+        commit()
+    }
+
     function saveWorld(name, description) {
         console.log("Saving world with name:", name, "and description:", description)
         const worldData = {
@@ -272,6 +280,7 @@ function Worldbuilder({ initialWorldId = null }) {
                 description: description,
                 width: worldRef.current.width,
                 height: worldRef.current.height,
+                starting_location: worldRef.current.startingLocation,
                 biome: worldRef.current.biome.toBase64(),
                 elevation: new Uint8Array(worldRef.current.elevation).toBase64(),
                 region: worldRef.current.region.toBase64(),
@@ -315,6 +324,7 @@ function Worldbuilder({ initialWorldId = null }) {
                 setComponentBrush={setComponentBrush}
                 componentLookup={componentLookup}
                 componentBrush={componentBrush}
+                setStartingLocation={setStartingLocation}
             />
             <MapDisplay
                 imageData={imageData}

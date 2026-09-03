@@ -91,6 +91,7 @@ class WorldData(BaseModel):
     description: str | None = None
     width: int
     height: int
+    starting_location: dict
     biome: bytes
     elevation: bytes
     region: bytes
@@ -108,6 +109,7 @@ class WorldPayload(BaseModel):
     description: str | None = None
     width: int
     height: int
+    starting_location: dict
     biome: str
     elevation: str
     region: str
@@ -128,6 +130,7 @@ def to_payload(world: WorldData) -> WorldPayload:
         description=world.description,
         width=world.width,
         height=world.height,
+        starting_location=world.starting_location,
         biome=base64.b64encode(world.biome).decode(),
         elevation=base64.b64encode(world.elevation).decode(),
         region=base64.b64encode(world.region).decode(),
@@ -146,6 +149,7 @@ def to_data(payload: WorldPayload) -> WorldData:
         description=payload.description,
         width=payload.width,
         height=payload.height,
+        starting_location=payload.starting_location,
         biome=base64.b64decode(payload.biome),
         elevation=base64.b64decode(payload.elevation),
         region=base64.b64decode(payload.region),

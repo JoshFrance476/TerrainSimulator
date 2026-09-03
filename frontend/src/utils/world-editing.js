@@ -21,12 +21,13 @@ export const MAX_REGIONS_PER_CELL = 4
 export const NO_COMPONENT = 0
 
 
-export function createWorld({ width, height, biome, elevation, region, rgba, biomeLookup, regionLookup, detail, detailLookup, component, componentLookup }) {
+export function createWorld({ width, height, startingLocation, biome, elevation, region, rgba, biomeLookup, regionLookup, detail, detailLookup, component, componentLookup }) {
     const cells = width * height
     const componentMap = component ?? new Uint8Array(cells).fill(NO_COMPONENT)
     return {
         width,
         height,
+        startingLocation: startingLocation ?? { x: 0, y: 0 },
         biome: biome ?? new Uint8Array(cells),
         elevation: elevation ? new Uint8ClampedArray(elevation) : new Uint8ClampedArray(cells).fill(SEA_LEVEL),
         rgba: rgba ? new Uint8ClampedArray(rgba) : new Uint8ClampedArray(cells * 4),
