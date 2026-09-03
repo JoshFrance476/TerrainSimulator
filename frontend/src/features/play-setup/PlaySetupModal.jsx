@@ -82,8 +82,8 @@ function PlaySetupModal({
                 <h1 className="modal-title">{worldTitle}</h1>
             </div>
             <div className="modal-content">
-                <div className="modal-container">
-                    <div className="modal-container">
+                <div className="modal-container-left">
+                    <div className="modal-container-three">
                         <div className="modal-component">
                             <p className="modal-caption">World description</p>
                             <textarea 
@@ -113,17 +113,15 @@ function PlaySetupModal({
                         getSetupDescriptions={getSetupDescriptions}
                     />
                 </div>
-                <div className="modal-container-2">
+                <div className="modal-container-right">
                     <StorylinesSetup
                         storylines={storylines}
                         setStorylines={setStorylines}
                         getSetupDescriptions={getSetupDescriptions}
                         regionLookup={regionLookup}
                         componentLookup={componentLookup}
+                        handleGenerateHiddenContext={handleGenerateHiddenContext}
                     />
-                    <div>
-                        <button onClick={handleGenerateHiddenContext}>Generate hidden context</button>
-                    </div>
                     <WorldSetup 
                         componentLookup={componentLookup}
                         regionLookup={regionLookup}

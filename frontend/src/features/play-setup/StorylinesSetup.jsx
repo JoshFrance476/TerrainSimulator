@@ -9,9 +9,12 @@ function StorylinesSetup({
     getSetupDescriptions,
     regionLookup,
     componentLookup,
+    handleGenerateHiddenContext,
 }) {
     const [reasoning, setReasoning] = useState('')
     const [isStreaming, setIsStreaming] = useState(false)
+
+    const [toggleTextbox, setToggleTextbox] = useState('storylines') //'storylines' or 'reasoning'
 
     async function generateStorylines() {
         const payload = {
@@ -35,20 +38,20 @@ function StorylinesSetup({
 
     return (
         <div className="modal-component">
-            <p className="modal-caption">Storylines</p>
+            <div>
+                <button onClick={() => setToggleTextbox('storylines')} className="modal-caption">Storylines</button>
+                <span className="modal-caption"> / </span>
+                <button onClick={() => setToggleTextbox('reasoning')} className="modal-caption">Reasoning</button>
+            </div>
             <textarea
-                value={storylines}
+                value={toggleTextbox === 'storylines' ? storylines : reasoning}
                 disabled={isStreaming}
-                onChange={(e) => setStorylines(e.target.value)}
-                className="modal-text variable-height"
-            />
-            <textarea
-                value={reasoning}
-                disabled={true}
+                onChange={(e) => toggleTextbox === 'storylines' ? setStorylines(e.target.value) : setReasoning(e.target.value)}
                 className="modal-text variable-height"
             />
             <div>
                 <button onClick={generateStorylines}>Generate Storylines</button>
+                <button onClick={handleGenerateHiddenContext}>Generate hidden context</button>
             </div>
         </div>
     )
