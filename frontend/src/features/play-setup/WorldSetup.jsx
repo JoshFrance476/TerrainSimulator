@@ -9,7 +9,7 @@ function WorldSetup({regionLookup, componentLookup}) {
                     {Object.entries(regionLookup).map(([key, region]) => (
                         <div className="location-item" key={key}>
                             <div className="location-title">{region.title}</div>
-                            <div className="location-visible-context">{region.visible_description}</div>
+                            <div className="location-visible-context">{region.description}</div>
                             {region.context && 
                                 <div className="location-hidden-context">{region.context}</div>
                             }

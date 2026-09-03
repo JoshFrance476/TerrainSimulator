@@ -127,7 +127,7 @@ class LLMClient:
     async def prompt_storylines(self, setup: StorySetup, component_lookup, region_lookup):
         context = {
             "world_description": setup.world_description,
-            "story_focus_description": setup.story_focus_description,
+            "story_focus_description": setup.story_description,
             "regions": region_lookup
         }
         async for event in self._complete_streaming("storylines", context):

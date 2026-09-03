@@ -25,5 +25,5 @@ class ContextBuilder:
             tile_data=self.world.get_cell_data(selected_cell),
             movement_history=self.get_movement_history(),
             character_notebook=self.state.character_notebook,
-            story_setup=self.state.story_setup
+            story_setup=self.state.setup
         )

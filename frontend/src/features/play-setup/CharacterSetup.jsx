@@ -30,7 +30,7 @@ function CharacterSetup( {getSetupDescriptions} ) {
         const payload = {
             character_description: worldSetup.character_description,
             world_description: worldSetup.world_description,
-            focus_description: worldSetup.story_focus_description
+            story_description: worldSetup.story_description
         }
 
         const response = await fetch('/api/setup/generate-character-setup', {
