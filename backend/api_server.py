@@ -267,7 +267,7 @@ def get_prompt_template(name: str, s: Session = Depends(get_session)):
 async def move_player_to(body: MoveDestinationBody, s: Session = Depends(get_session)):
     new_location = Location(body.x, body.y)
     s.story_engine.set_player_location(new_location)
-    return {"location": new_location}
+    return {"location": new_location, "revealed_tiles": s.story_engine.state.revealed_tiles}
 
 @app.get('/api/player')
 def get_player_info(s: Session = Depends(get_session)):
@@ -275,7 +275,8 @@ def get_player_info(s: Session = Depends(get_session)):
         "location": s.story_engine.get_player_location(),
         "stats": s.story_engine.state.stats,
         "inventory": s.story_engine.state.inventory,
-        "notebook": s.story_engine.state.character_notebook
+        "notebook": s.story_engine.state.character_notebook,
+        "revealed_tiles": s.story_engine.state.revealed_tiles
     }
 
 # ---------------------------------------------------------------- world
