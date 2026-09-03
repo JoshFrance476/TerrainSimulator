@@ -15,7 +15,7 @@ function Play({ user }) {
     const [interactionMode, setInteractionMode] = useState('view') // 'view' or 'move'
 
     const movePlayer = useMovePlayerMutation()
-    const { playerLocation } = usePlayer()
+    const player = usePlayer()
 
     const { world, maxRegionsPerCell, noRegionId, isLoading } = useWorld()
 
@@ -85,6 +85,7 @@ function Play({ user }) {
                 <StoryWindow user={user} />
                 <InfoWindow 
                     selectedCell={selectedCell} 
+                    player={player}
                 />
                 <MapDisplay
                     imageData={imageData}
@@ -92,7 +93,7 @@ function Play({ user }) {
                     onCellClick={handleCellClick}
                     getMouseTooltipLabel={getTooltipLabel}
                     selectedCell={selectedCell}
-                    playerLocation={playerLocation}
+                    playerLocation={player.location}
                     getHoveredCells={getCellsToHover}
                 > 
                     <MapToolbar interactionMode={interactionMode} onInteractionModeChange={setInteractionMode} />
