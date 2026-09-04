@@ -315,6 +315,7 @@ function Worldbuilder({ initialWorldId = null }) {
                 brushRadius={brushRadius}
                 handleMouseDown={handleContinuousCellInteraction}
                 borderSegments={borderSegments}
+                initialZoom={2}
             />
         </div>
     )

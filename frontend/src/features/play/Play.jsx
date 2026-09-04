@@ -96,6 +96,7 @@ function Play({ user }) {
                     playerLocation={player.location}
                     getHoveredCells={getCellsToHover}
                     revealed_tiles={player.revealed_tiles}
+                    initialZoom={16}
                 > 
                     <MapToolbar interactionMode={interactionMode} onInteractionModeChange={setInteractionMode} />
                 </MapDisplay>
