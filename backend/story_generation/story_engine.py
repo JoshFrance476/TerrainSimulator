@@ -1,6 +1,7 @@
 from story_generation.llm_client import LLMClient
 from story_generation.story_state import StoryState
 from story_generation.utils.context_builder import ContextBuilder
+from grid_utils import get_cell_radius_indexes
 
 from world import World
 
@@ -89,9 +90,11 @@ class StoryEngine:
 
     def set_player_location(self, location: Location):
         self.state.player_location = location
-        for dx in range(-self.state.player_view_radius, self.state.player_view_radius + 1):
-            for dy in range(-self.state.player_view_radius, self.state.player_view_radius + 1):
-                self.state.revealed_tiles.add((location.x + dx, location.y + dy))
+
+        for dx, dy in get_cell_radius_indexes(self.state.player_view_radius):
+            x, y = location.x + dx, location.y + dy
+            if 0 <= x < self.world.width and 0 <= y < self.world.height:
+                self.state.revealed_tiles.add((x, y))
  
     # ------------------------------------------------------------------
     # Setup
