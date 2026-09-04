@@ -2,11 +2,13 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { getBrushOutline } from '../utils/world-editing'
 
 
-function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLabel, getScreenTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius, getHoveredCells, revealed_tiles = null, }) {
+function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLabel, getScreenTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius, getHoveredCells, revealed_tiles = null, initialZoom = 5}) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
     const fogOverlayRef = useRef(null) //fog of war overlay canvas
+
+    const viewportRef = useRef(null)
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
     const [hoveredCells, setHoveredCells] = useState([]) // shape: [{x, y}]
@@ -18,14 +20,16 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
 
     const SCALE = 4 // Interaction layer scale factor
 
-    const [zoom, setZoom] = useState(5)
+    const [zoom, setZoom] = useState(initialZoom)
+    const hasCentred = useRef(false)
+
     const [pan, setPan] = useState({ x: 0, y: 0 })
 
     const MIN_ZOOM = 0.5
     const MAX_ZOOM = 25
 
     const isPanning = useRef(false)
-    const lastPanPos = useRef({ x: 0, y: 0 })   
+    const lastPanPos = useRef(pan)   
 
     const isPainting = useRef(false)
 
@@ -39,6 +43,18 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
     const width = imageData?.width
     const height = imageData?.height
 
+    
+    useEffect(() => {
+        if (!playerLocation || hasCentred.current) return
+
+        const { width: vw, height: vh } = viewportRef.current.getBoundingClientRect()
+        setPan({
+            x: vw / 2 - (playerLocation.x + 0.5) * zoom,
+            y: vh / 2 - (playerLocation.y + 0.5) * zoom,
+        })
+        hasCentred.current = true
+    }, [playerLocation, zoom])
+
     const fogOverlay = useMemo(() => {
         if (!revealed_tiles || revealed_tiles.length === 0) return null
 
@@ -47,7 +63,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
         canvas.height = height
         const ctx = canvas.getContext('2d')
 
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+        ctx.fillStyle = 'rgb(0, 0, 0)'
         ctx.fillRect(0, 0, width, height)
         for (const [x, y] of revealed_tiles) {
             ctx.clearRect(x, y, 1, 1)
@@ -336,6 +352,7 @@ function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLab
 
      return (
         <div className="map-viewport" 
+            ref={viewportRef}
             onWheel={handleWheel}
             onMouseDown={handlePanStart}
             onMouseMove={handlePanMove}
