@@ -21,7 +21,7 @@ class StoryState:
 
         self.scene_history: list[Scene] = []
 
-        self.player_view_radius = 5
+        self.player_view_radius = 6
 
         self.revealed_tiles = set()
 
