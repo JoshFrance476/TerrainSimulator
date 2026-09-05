@@ -38,20 +38,20 @@
 
 .stat-list-name {
     flex: 20;
-    background-color: var(--colour-background);
+    background-color: var(--colour-textbox-background);
     color: white;
 }
 
 .stat-list-value {
     flex: 3;
-    background-color: var(--colour-background);
+    background-color: var(--colour-textbox-background);
     color: var(--colour-primary);
     min-width: 0;
 }
 
 .stat-list-remove {
     flex: 1;
-    background-color: var(--colour-modal-background);
+    background-color: var(--colour-textbox-background);
     color: var(--colour-primary);
 }
 
@@ -67,12 +67,12 @@
 
 .inventory-list-name {
     flex: 20;
-    background-color: var(--colour-background);
+    background-color: var(--colour-textbox-background);
     color: var(--colour-primary);
 }
 
 .inventory-list-remove {
     flex: 1;
-    background-color: var(--colour-modal-background);
+    background-color: var(--colour-textbox-background);
     color: var(--colour-primary);
 }

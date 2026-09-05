@@ -53,7 +53,7 @@
 .modal {
     background-color: var(--colour-modal-background);
     color: var(--colour-primary);
-    border-color: var(--colour-border-strong);
+    border: 5px solid var(--colour-border);
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -77,7 +77,7 @@
     width: 100%;
     box-sizing: border-box;
     margin: 4px 0 0 0;
-    background-color: var(--colour-background); 
+    background-color: var(--colour-textbox-background); 
     color: var(--colour-primary);
     resize: none;
     font-family: var(--font-body); 

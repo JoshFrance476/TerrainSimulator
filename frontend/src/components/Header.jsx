@@ -8,12 +8,6 @@ function Header({ user , setShowAccountWindow, onNavigate }) {
         <header className="header">
             <button className="header-brand" type="button" onClick={() => onNavigate({ name: "landing" })}>Sandbox</button>
 
-            <nav className="header-nav">
-                <button className="nav-btn nav-btn-active" type="button">Play</button>
-                <button className="nav-btn" type="button">Worldbuilder</button>
-                <button className="nav-btn" type="button">Browse</button>
-            </nav>
-
             <div className="token-counter">
                 <span>I : {data?.input_tokens ?? 0}</span>
                 <span>O : {data?.output_tokens ?? 0}</span>

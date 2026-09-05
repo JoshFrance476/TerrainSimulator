@@ -32,7 +32,6 @@ function Landing({ onNavigate }) {
                 <h2 className="main-subtitle">A platform for procedural text-based open-world story games, powered by generative AI</h2>
                 <div className="main-navigation">
                     <button className="main-button" onClick={() => onNavigate({name: "play"})}>Load existing playthrough</button>
-                    <button className="main-button">Start new playthrough</button>
                     <button className="main-button" onClick={() => onNavigate({name: "worldbuilder"})}>Open worldbuilder</button>
                 </div>
             </div>
