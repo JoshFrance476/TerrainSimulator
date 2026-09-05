@@ -27,6 +27,7 @@
     font-size: 1.3rem;
     padding-top: 8px;
     margin: 0;
+    color: var(--colour-primary);
 }
 
 .thumbnail {
@@ -36,7 +37,7 @@
 }
 
 .browser {
-    background-color: #252525;
+    background-color: var(--colour-surface);
     flex: 1;  
 }
 
@@ -50,7 +51,7 @@
     padding: 12px 24px;
     border-radius: 4px;
     background-color: var(--colour-background);
-    color: #ffffff;
+    color: var(--colour-primary);
     font-size: 1rem;
     cursor: pointer;
     border: 2px solid var(--colour-secondary);
@@ -71,6 +72,7 @@
 
 .world-list-item {
     border: 2px solid var(--colour-border);
+    background-color: var(--colour-surface-browser);
     border-radius: 8px;
     padding: 4px 8px;
     display: flex;
@@ -100,7 +102,7 @@
     padding: 4px 24px;
     border-radius: 4px;
     border: 1px solid var(--colour-border);
-    background-color: #3d4147;
+    background-color: var(--colour-background);
     color: var(--colour-primary);
     font-size: 0.9rem;
     cursor: pointer;

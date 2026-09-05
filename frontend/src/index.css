@@ -1,13 +1,56 @@
 :root {
-    --colour-backgroundgradient1: #290d1a;
-    --colour-backgroundgradient2:  #b521da;
+    /* ── Page / brand ─────────────────────────── */
+    --colour-backgroundgradient1: #283618;
+    --colour-backgroundgradient2: #606c38;
     --colour-background: #3d4147;
-    --colour-text: #e8eaed;
+    --colour-text: #070707;
     --colour-primary: #ffffff;
-    --colour-secondary: #9b2e73;
+    --colour-secondary: #283618;
     --colour-border: #AAA9A9;
     --colour-button-hover: #333333;
     --colour-modal-background: #292929;
+
+    /* ── Modal / dark controls ────────────────── */
+    --colour-modal-backdrop: rgba(58, 58, 58, 0.3);
+    --colour-control-background: #3b3b3b;
+    --colour-control-hover: #575757;
+    --colour-control-border: #c4c4c4;
+    --colour-container-border: rgb(155, 154, 154);
+    --colour-caption: #808080;
+    --colour-muted-light: #b3b3b3;
+
+    /* ── Header ───────────────────────────────── */
+    --colour-header-border: #1a1d22;
+    --colour-header-text: #e8eaed;
+    --colour-header-text-muted: #a8adb5;
+    --colour-nav-hover: #383d45;
+    --colour-nav-active: #454b55;
+    --colour-avatar: #5a6270;
+    --colour-avatar-hover: #6b7482;
+
+    /* ── Play view: light surfaces ────────────── */
+    --colour-surface: #FBF5EE;
+    --colour-surface-browser: #d4d1bd;
+    --colour-surface-panel: #d6d6d6;
+    --colour-surface-raised: #e4e4e4;
+    --colour-surface-inactive: #dddddd;
+    --colour-tooltip-background: #fcfcfc;
+
+    /* ── Play view: text ──────────────────────── */
+    --colour-text-strong: #000000;
+    --colour-text-emphasis: #111111;
+    --colour-text-mid: rgb(75, 75, 75);
+    --colour-text-subtle: rgb(107, 107, 107);
+    --colour-text-disabled: #888888;
+    --colour-link: #747474;
+    --colour-link-hover: #2c2c2c;
+
+    /* ── Play view: borders / outlines ────────── */
+    --colour-border-strong: #000000;
+    --colour-border-dark: #313131;
+    --colour-border-subtle: #cccccc;
+    --colour-accent-dark: #333333;
+
     --font-body: 'Raleway', system-ui, sans-serif;
     --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
@@ -29,14 +72,14 @@ body {
 }
 
 .action {
-    color: rgb(107, 107, 107);
+    color: var(--colour-text-subtle);
 }
 
 .story-window {
     grid-column: 1;
     grid-row: 1;
     width: auto;
-    border: 1px solid black;
+    border: 1px solid var(--colour-border-strong);
     padding: 5px;
     overflow-y: auto;
     display: flex;
@@ -48,7 +91,7 @@ body {
     grid-column: 1;
     grid-row: 2;
     width: auto;
-    border: 1px solid black;
+    border: 1px solid var(--colour-border-strong);
     padding: 5px;
     overflow-y: auto;
 }
@@ -61,6 +104,7 @@ body {
     grid-template-rows: 60% auto;
     gap: 10px;
     padding: 8px;
+    background-color: var(--colour-surface);
 }
 
 .map-viewport {
@@ -68,7 +112,7 @@ body {
     overflow: hidden;
     grid-column: 2;
     grid-row: 1 / 3;
-    border: 3px solid black;
+    border: 3px solid var(--colour-border-strong);
     border-radius: 5px;
 }
 
@@ -89,10 +133,10 @@ body {
 .tooltip {
     position: fixed;
     pointer-events: none;
-    background-color: rgba(252, 252, 252, 1);
-    color: black;
+    background-color: var(--colour-tooltip-background);
+    color: var(--colour-text-strong);
     padding: 0px 2px 2px 2px;
-    border: 1px solid black;
+    border: 1px solid var(--colour-border-strong);
 }
 
 .tooltip.screen {
@@ -106,7 +150,7 @@ body {
 }
 
 .info-window-box {
-    border: 1px solid black;
+    border: 1px solid var(--colour-border-strong);
     padding: 5px;
 }
 
@@ -122,13 +166,13 @@ body {
 .region-hidden-desc {
     margin: 5px 0;
     font-style: italic;
-    color: rgb(107, 107, 107);
+    color: var(--colour-text-subtle);
 }
 
 .position {
     margin: 0px;
     font-size: 0.9em;
-    color: rgb(75, 75, 75);
+    color: var(--colour-text-mid);
 }
 
 .biome-name {
@@ -147,24 +191,24 @@ body {
 
 .mode-btn {
     padding: 6px 12px;
-    border: 1px solid #333;
+    border: 1px solid var(--colour-accent-dark);
     cursor: pointer;
     font-weight: bold;
 }
 
 .mode-btn.active {
-    background-color: white;
-    color: black;
+    background-color: var(--colour-primary);
+    color: var(--colour-text-strong);
 }
 
 .mode-btn.inactive {
-    background-color: #ddd;
+    background-color: var(--colour-surface-inactive);
     color: #888;
 }
 
 .tab-bar {
     display: flex;
-    border-bottom: 2px solid #ccc;
+    border-bottom: 2px solid var(--colour-border-subtle);
     margin-bottom: 8px;
     flex-shrink: 0;
 }
@@ -175,26 +219,26 @@ body {
     background: none;
     cursor: pointer;
     font-weight: 500;
-    color: #888;
+    color: var(--colour-text-disabled);
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;   /* overlaps the tab-bar's border so the active indicator sits flush */
 }
 
 .tab:hover {
-    color: #333;
+    color: var(--colour-accent-dark);
 }
 
 .tab.active {
-    color: #111;
-    border-bottom: 2px solid #333;
+    color: var(--colour-text-emphasis);
+    border-bottom: 2px solid var(--colour-accent-dark);
 }
 
 .interaction-guide {
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 5px;
-    border: 1px solid #313131;
-    background-color: #d6d6d6;
+    border: 1px solid var(--colour-border-dark);
+    background-color: var(--colour-surface-panel);
 }
 
 .interaction-guide p, .interaction-guide li {
@@ -214,7 +258,7 @@ body {
     background: none;
     border: none;
     padding: 0;
-    color: #747474;
+    color: var(--colour-link);
     text-decoration: underline;
     cursor: pointer;
     font: inherit;
@@ -222,7 +266,7 @@ body {
 }
 
 .link-button:hover {
-    color: #2c2c2c;
+    color: var(--colour-link-hover);
 }
 
 .prompt-textbox {
@@ -255,9 +299,9 @@ body {
     flex-shrink: 0;
     height: 40px;
     padding: 0 16px;
-    background-color: #2b2f36;
-    border-bottom: 1px solid #1a1d22;
-    color: #e8eaed;
+    background-color: var(--colour-secondary);
+    border-bottom: 1px solid var(--colour-header-border);
+    color: var(--colour-header-text);
 }
 
 .header-brand {
@@ -267,7 +311,7 @@ body {
     white-space: nowrap;
     background: none;
     border: none;
-    color: #e8eaed;
+    color: var(--colour-header-text);
     cursor: pointer;
 }
 
@@ -282,20 +326,20 @@ body {
     border: none;
     border-radius: 4px;
     background: none;
-    color: #a8adb5;
+    color: var(--colour-header-text-muted);
     font: inherit;
     font-size: 0.9rem;
     cursor: pointer;
 }
 
 .nav-btn:hover {
-    background-color: #383d45;
-    color: #e8eaed;
+    background-color: var(--colour-nav-hover);
+    color: var(--colour-header-text);
 }
 
 .nav-btn-active {
-    background-color: #454b55;
-    color: #ffffff;
+    background-color: var(--colour-nav-active);
+    color: var(--colour-primary);
 }
 
 .account-btn {
@@ -314,14 +358,14 @@ body {
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background-color: #5a6270;
-    color: #ffffff;
+    background-color: var(--colour-avatar);
+    color: var(--colour-primary);
     font-size: 0.75rem;
     font-weight: 600;
 }
 
 .account-btn:hover .account-avatar {
-    background-color: #6b7482;
+    background-color: var(--colour-avatar-hover);
 }
 
 .token-counter {
@@ -330,7 +374,7 @@ body {
     gap: 1px;
     font-size: 0.7rem;
     line-height: 1.2;
-    color: #a8adb5;
+    color: var(--colour-header-text-muted);
     text-align: right;
     font-variant-numeric: tabular-nums;
 }
@@ -347,8 +391,8 @@ body {
     top: 42px; 
     right: 14px;
     width: 300px;
-    background-color: #e4e4e4;
-    border: 2px solid #1a1d22;
+    background-color: var(--colour-surface-raised);
+    border: 2px solid var(--colour-header-border);
     border-radius: 4px;
     padding: 12px;
     z-index: 1000; /* ensure it appears above other elements */

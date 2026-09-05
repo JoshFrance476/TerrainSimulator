@@ -15,5 +15,5 @@ button.modal-caption {
     margin: 0;
     padding: 0;
     font-size: 0.75rem;
-    color: #808080; 
+    color: var(--colour-caption); 
 }

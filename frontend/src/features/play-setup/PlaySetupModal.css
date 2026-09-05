@@ -6,7 +6,7 @@
 
 .modal::backdrop {
     backdrop-filter: blur(4px);
-    background: rgba(58, 58, 58, 0.3);
+    background:  var(--colour-modal-backdrop);
 }
 
 .modal-content {
@@ -52,8 +52,8 @@
 
 .modal {
     background-color: var(--colour-modal-background);
-    color: white;
-    border-color: #000000;
+    color: var(--colour-primary);
+    border-color: var(--colour-border-strong);
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -63,7 +63,7 @@
     margin: 0;
     padding: 0;
     font-size: 0.75rem;
-    color: #808080;
+    color: var(--colour-caption);
 }
 
 .modal-title {
@@ -77,8 +77,8 @@
     width: 100%;
     box-sizing: border-box;
     margin: 4px 0 0 0;
-    background-color: #3d4147; 
-    color: white;
+    background-color: var(--colour-background); 
+    color: var(--colour-primary);
     resize: none;
     font-family: var(--font-body); 
     font-size: 0.9rem;
@@ -94,7 +94,7 @@
 .modal-text.reasoning {
     max-height: 14vh;
     font-size: 0.8rem;
-    color: #b3b3b3;
+    color: var(--colour-muted-light);
 }
 
 .modal-actions {
@@ -107,13 +107,13 @@
 
 .modal-actions button {
     width: 50%;
-    background-color: #3b3b3b;
-    border-color: #c4c4c4;
-    color: white;
+    background-color: var(--colour-control-background);
+    border-color: var(--colour-control-border);
+    color: var(--colour-primary);
 }
 
 .modal-actions button:hover {
-    background-color: #575757;
+    background-color: var(--colour-control-hover);
 }
 
 input,button {
@@ -121,14 +121,14 @@ input,button {
 }
 
 .modal-content button {
-    background-color: #3b3b3b;
-    border-color: #c4c4c4;
+    background-color: var(--colour-control-background);
+    border-color: var(--colour-control-border);
     border-radius: 3px;
-    color: white;
+    color: var(--colour-primary);
 }
 
 .modal-content button:hover {
-    background-color: #575757;
+    background-color: var(--colour-control-hover);
 }
 
 

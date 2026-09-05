@@ -8,7 +8,7 @@
 
 .character-container {
     background-color: var(--colour-modal-background);
-    border: 3px solid rgb(155, 154, 154);
+    border: 3px solid var(--colour-container-border);
     border-radius: 8px;
     padding: 10px 10px 0 10px;
     height: 100%;
@@ -18,7 +18,7 @@
 
 .list-item .remove {
     background-color: var(--colour-modal-background);
-    color: white;
+    color: var(--colour-primary);
 }
 
 .list-item.horizontal {
@@ -38,21 +38,21 @@
 
 .stat-list-name {
     flex: 20;
-    background-color: #3d4147;
+    background-color: var(--colour-background);
     color: white;
 }
 
 .stat-list-value {
     flex: 3;
-    background-color: #3d4147;
-    color: white;
+    background-color: var(--colour-background);
+    color: var(--colour-primary);
     min-width: 0;
 }
 
 .stat-list-remove {
     flex: 1;
     background-color: var(--colour-modal-background);
-    color: white;
+    color: var(--colour-primary);
 }
 
 .inventory-list {
@@ -67,12 +67,12 @@
 
 .inventory-list-name {
     flex: 20;
-    background-color: #3d4147;
-    color: white;
+    background-color: var(--colour-background);
+    color: var(--colour-primary);
 }
 
 .inventory-list-remove {
     flex: 1;
     background-color: var(--colour-modal-background);
-    color: white;
+    color: var(--colour-primary);
 }
