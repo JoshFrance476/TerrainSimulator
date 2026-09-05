@@ -260,7 +260,7 @@ export const fetchEditorWorld = (worldId) => getJson(`/api/load-world/${worldId}
 export function useMovePlayerMutation() {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: (delta) => postJson('/api/player/move', delta),
+        mutationFn: ({ x, y }) => postJson('/api/player/move', { x, y }),
         onSuccess: (response) => queryClient.setQueryData(playerKey, (prev) => ({
             ...prev,
             location: response.location,

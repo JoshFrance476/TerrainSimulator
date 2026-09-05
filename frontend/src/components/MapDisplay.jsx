@@ -1,33 +1,14 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { getBrushOutline } from '../utils/world-editing'
 
-function MapDisplay({ 
-    imageData, 
-    borderSegments, 
-    onCellClick, 
-    getMouseTooltipLabel, 
-    getScreenTooltipLabel, 
-    handleMouseDown, 
-    handleMouseDownDrag, 
-    onStrokeStart, 
-    selectedCell, 
-    playerLocation = null, 
-    children, 
-    brushRadius, 
-    getHoveredCells, 
-    revealed_tiles = null, 
-    initialZoom = 5,
-    handleKeyDown,
-    handleKeyUp,
-    handleUnfocus,
-}) {
+
+function MapDisplay({ imageData, borderSegments, onCellClick, getMouseTooltipLabel, getScreenTooltipLabel, handleMouseDown, handleMouseDownDrag, onStrokeStart, selectedCell, playerLocation = null, children, brushRadius, getHoveredCells, revealed_tiles = null, initialZoom = 5}) {
     const baseMapRef = useRef(null) //base map canvas - RBG map
     const overlayRef = useRef(null) //overlay canvas - regions
     const interactionRef = useRef(null) //interaction canvas - hovered cell, selected cell, tooltip
     const fogOverlayRef = useRef(null) //fog of war overlay canvas
 
     const viewportRef = useRef(null)
-
 
     const [lastHoveredCell, setLastHoveredCell] = useState(null) // shape: {x, y, biomeData}
     const [hoveredCells, setHoveredCells] = useState([]) // shape: [{x, y}]
@@ -369,10 +350,6 @@ function MapDisplay({
             onMouseMove={handlePanMove}
             onMouseUp={handlePanEnd}
             onMouseLeave={handlePanEnd}
-            onKeyDown={handleKeyDown}
-            onKeyUp={handleKeyUp}
-            onBlur={handleUnfocus}
-            tabIndex={0}
             onContextMenu={(e) => e.preventDefault()}
         >
             <div

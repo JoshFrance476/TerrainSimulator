@@ -5,7 +5,7 @@ from grid_utils import get_cell_radius_indexes
 
 from world import World
 
-from models import Location, SetupDescriptionsBody, StorySetup, StorylinePromptData, MoveDeltaBody
+from models import Location, SetupDescriptionsBody, StorySetup, StorylinePromptData
 
 import json
  
@@ -57,7 +57,6 @@ class StoryEngine:
 
     async def generate_hidden_context(self, storylines):
         response = await self.llm.prompt_hidden_context(storylines, self.world.component_lookup, self.world.region_lookup)
-        print(response)
         temp_components = self.world.component_lookup.copy()
         temp_regions = self.world.region_lookup.copy()
         for component in response["components"]:
@@ -89,23 +88,13 @@ class StoryEngine:
     def get_player_location(self) -> Location:
         return self.state.player_location
 
-    def move_player(self, delta: MoveDeltaBody) -> Location:
-        self.state.player_location.x += delta.x
-        self.state.player_location.y += delta.y
-        self.update_revealed_tiles()
-        return self.state.player_location
-
     def set_player_location(self, location: Location):
         self.state.player_location = location
-        self.update_revealed_tiles()
 
-    def update_revealed_tiles(self):
-        location = self.state.player_location
         for dx, dy in get_cell_radius_indexes(self.state.player_view_radius):
             x, y = location.x + dx, location.y + dy
             if 0 <= x < self.world.width and 0 <= y < self.world.height:
                 self.state.revealed_tiles.add((x, y))
-
  
     # ------------------------------------------------------------------
     # Setup
