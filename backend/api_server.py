@@ -31,7 +31,7 @@ from models import (
     CellBody,
     ActionBody,
     PromptBody,
-    MoveDestinationBody,
+    MoveDeltaBody,
     SaveWorldBody,
     WorldData,
     WorldPayload,
@@ -265,9 +265,8 @@ def get_prompt_template(name: str, s: Session = Depends(get_session)):
 # ---------------------------------------------------------------- player
 
 @app.post('/api/player/move')
-async def move_player_to(body: MoveDestinationBody, s: Session = Depends(get_session)):
-    new_location = Location(body.x, body.y)
-    s.story_engine.set_player_location(new_location)
+async def move_player_to(body: MoveDeltaBody, s: Session = Depends(get_session)):
+    new_location = s.story_engine.move_player(body)
     return {"location": new_location, "revealed_tiles": s.story_engine.state.revealed_tiles}
 
 @app.get('/api/player')

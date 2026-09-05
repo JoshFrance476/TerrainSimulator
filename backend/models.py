@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pydantic import BaseModel
 import base64
 
-@dataclass(frozen=True)
+@dataclass
 class Location:
     x: int
     y: int
@@ -52,7 +52,7 @@ class CellBody(BaseModel):
 class ActionBody(BaseModel):
     action: str
 
-class MoveDestinationBody(BaseModel):
+class MoveDeltaBody(BaseModel):
     x: int
     y: int
 
