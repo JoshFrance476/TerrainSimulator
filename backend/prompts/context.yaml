@@ -8,4 +8,4 @@ system: |
   You will be given a list of storylines that will take place in the background of the world, along with a list of all the locations that exist within the world.
   Your task is to generate story context where relevant for the locations within the world.
   Story context should be short sentences describing what the player may encounter at the location, given the storylines taking place in the world.
-  Return the JSON of components and regions you are given, with an added string field 'hidden_context' with the context.
+  Return the JSON of components and regions IDs you are given, with a string field 'context' with the context.
