@@ -181,21 +181,13 @@ function MapDisplay({
         }
         
         if (player) {
-            ctx.strokeStyle = 'white'
+            ctx.fillStyle = 'white'
             const lw = 1 / SCALE
-            ctx.lineWidth = lw
 
             const cx = player.x + 0.5
             const cy = player.y + 0.5
-            const armLengthPx = Math.round(0.35 * SCALE)   // whole device pixels
-            const armLength = armLengthPx / SCALE           // back into canvas-unit space
 
-            ctx.beginPath()
-            ctx.moveTo(cx - armLength, cy + lw / 2)
-            ctx.lineTo(cx + armLength, cy + lw / 2)
-            ctx.moveTo(cx + lw / 2, cy - armLength)
-            ctx.lineTo(cx + lw / 2, cy + armLength)
-            ctx.stroke()
+            ctx.fillRect(cx - lw, cy - lw, 2 * lw, 2 * lw)
         }
         ctx.restore()
         lastDrawn.current = [
