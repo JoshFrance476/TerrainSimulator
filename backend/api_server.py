@@ -39,7 +39,8 @@ from models import (
     to_data,
     StorySetup,
     StorylinesBody,
-    SetupDescriptionsBody
+    SetupDescriptionsBody,
+    StorylinesSetupBody
 )
 
 from world import World
@@ -331,7 +332,7 @@ def get_token_usage(s: Session = Depends(get_session)):
 # All setup information is sent to the server once when play setup is submitted
 
 @app.post("/api/setup/generate-storylines")
-async def generate_storylines(body: SetupBody, user=Depends(require_user), s: Session = Depends(get_session)):
+async def generate_storylines(body: StorylinesSetupBody, user=Depends(require_user), s: Session = Depends(get_session)):
     return EventSourceResponse(sse_events(s.story_engine.generate_storylines(body)))
 
 @app.post("/api/setup/generate-hidden-context")

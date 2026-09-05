@@ -79,6 +79,13 @@ class SetupBody(BaseModel):
     stats: list[dict]
     notebook: list
 
+class StorylinesSetupBody(BaseModel):
+    world_description: str
+    story_description: str
+    character_description: str
+    region_lookup: dict
+    component_lookup: dict
+
 class StorylinesBody(BaseModel):
     storylines: str
 
