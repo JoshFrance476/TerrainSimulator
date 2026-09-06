@@ -1,4 +1,5 @@
 import base64
+from fastapi.staticfiles import StaticFiles
 
 import os
 from dotenv import load_dotenv
@@ -430,3 +431,5 @@ def rgba_to_png(rgba: bytes, width: int, height: int) -> bytes:
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
