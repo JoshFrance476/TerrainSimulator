@@ -1,11 +1,9 @@
-pygame
-scikit-image
 numpy
 opensimplex
 pyyaml
-together
 noise
 pathfinding
 fastapi
 uvicorn
 sse_starlette
+python-dotenv
