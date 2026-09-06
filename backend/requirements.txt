@@ -11,3 +11,6 @@ Authlib
 itsdangerous
 psycopg[binary]
 psycopg-pool
+httpx
+Pillow
+huggingface_hub
