@@ -7,3 +7,6 @@ fastapi
 uvicorn
 sse_starlette
 python-dotenv
+Authlib
+itsdangerous
+psycopg[binary]
