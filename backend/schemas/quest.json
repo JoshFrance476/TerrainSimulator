@@ -1,0 +1,15 @@
+{
+    "type": "object",
+    "properties": {
+        "quest_description": {
+            "type": "string",
+            "description": "A single sentence describing the quest"
+        },
+        "component_id": {
+            "type": "number",
+            "description": "The id of the relevant location"
+        }
+    },
+    "required": ["quest_description", "component_id"],
+    "additionalProperties": false
+}
