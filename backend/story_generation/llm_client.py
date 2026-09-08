@@ -176,4 +176,18 @@ class LLMClient:
         context = {"scene": scene.to_dict()}
         response = await self._complete("scene-summary", context)
         return json.loads(response.choices[0].message.content)
+
+    async def prompt_quest(self, storylines, inventory, stats, character_notebook, component_lookup):
+        context = {
+            "background_storylines": storylines,
+            "character_data": {
+                "inventory": inventory,
+                "stats": stats,
+                "character_notebook": character_notebook
+            },
+            "component_lookup": component_lookup
+        }
+        response = await self._complete("quest", context)
+        print(response)
+        return json.loads(response.choices[0].message.content)
     
