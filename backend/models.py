@@ -78,6 +78,7 @@ class SetupBody(BaseModel):
     inventory: list
     stats: list[dict]
     notebook: list
+    storylines: str
 
 class StorylinesSetupBody(BaseModel):
     world_description: str
@@ -93,6 +94,16 @@ class SetupDescriptionsBody(BaseModel):
     character_description: str
     world_description: str
     story_description: str
+
+class CharacterData(BaseModel):
+    inventory: list
+    stats: list[dict]
+    notebook: list
+
+class QuestPromptData(BaseModel):
+    storylines: str
+    character_data: CharacterData
+    component_lookup: dict
 
 
 class WorldData(BaseModel):
