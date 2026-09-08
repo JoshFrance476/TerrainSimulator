@@ -11,6 +11,8 @@ class StoryState:
         self.stats: dict[str, int] = {} # stat name, value
         self.inventory: list[str] = []
 
+        self.storylines = []
+
         self.player_location = Location(0, 0)
 
         self.movement_history = [] # Dicts containing "direction" and "biome" 
