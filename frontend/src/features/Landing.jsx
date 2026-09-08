@@ -1,5 +1,5 @@
 import './landing.css'
-import { useWorldsQuery , useNewSessionMutation, useSessionSetupMutation } from '../queries/queries'
+import { useWorldsQuery , useNewSessionMutation } from '../queries/queries'
 import PlaySetupModal from './play-setup/PlaySetupModal'
 import { useState } from 'react';
 
@@ -8,7 +8,6 @@ function Landing({ onNavigate }) {
     const [showPlaySetupModal, setShowPlaySetupModal] = useState(false);
     const [worldMetadata, setWorldMetadata] = useState(null)
     const newSession = useNewSessionMutation()
-    const sessionSetup = useSessionSetupMutation()
 
     function handleLoadSession(world) {
         setWorldMetadata(world)
@@ -16,8 +15,7 @@ function Landing({ onNavigate }) {
         newSession.mutate(world.id)
     }
 
-    function handlePlay(worldDescription, character, storyFocus, regionLookup, componentLookup, inventory, stats, notebook) {
-        sessionSetup.mutate({ worldDescription, character, storyFocus, regionLookup, componentLookup, inventory, stats, notebook })
+    function handlePlay() {
         onNavigate({name: "play"})
     }
 
