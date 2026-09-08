@@ -1,8 +1,8 @@
 import { useEffect , useRef, useState } from "react"
 import "./PlaySetupModal.css"
-import StorylinesSetup from "./StorylinesSetup"
-import CharacterSetup from "./CharacterSetup"
-import WorldSetup from "./WorldSetup"
+import StorylinesSetup from "../features/play-setup/StorylinesSetup"
+import CharacterSetup from "../features/play-setup/CharacterSetup"
+import WorldSetup from "../features/play-setup/WorldSetup"
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 function PlaySetupModal({ 

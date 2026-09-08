@@ -1,6 +1,6 @@
 import './landing.css'
 import { useWorldsQuery , useNewSessionMutation } from '../queries/queries'
-import PlaySetupModal from './play-setup/PlaySetupModal'
+import PlaySetupModal from '../components/PlaySetupModal'
 import { useState } from 'react';
 
 function Landing({ onNavigate }) {
