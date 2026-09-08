@@ -206,6 +206,8 @@ def setup_session_story(body: SetupBody, s: Session = Depends(get_session)):
     s.story_engine.state.stats = body.stats
     s.story_engine.state.character_notebook = body.notebook
 
+    s.story_engine.state.storylines = body.storylines
+
     s.story_engine.setup(StorySetup(
         world_description=body.world_description,
         character_description=body.character_description,
