@@ -6,7 +6,7 @@ def upsert_save(owner_id, name, description, width, height, starting_location,
                 biome_lookup, region_lookup, story_setup, detail_lookup, component_lookup, detail, component):
     with pool.connection() as conn:
         conn.execute("""
-            INSERT INTO worlds_v2 (owner_id, name, description, width, height, starting_location,
+            INSERT INTO worlds (owner_id, name, description, width, height, starting_location,
                                 biome, elevation, region, map_png,
                                 biome_lookup, region_lookup, story_setup, detail_lookup, component_lookup, detail, component)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -33,18 +33,18 @@ def upsert_save(owner_id, name, description, width, height, starting_location,
 def get_world(world_id):
     with pool.connection() as conn:
         return conn.execute(
-            "SELECT * FROM worlds_v2 WHERE id = %s", (world_id,)
+            "SELECT * FROM worlds WHERE id = %s", (world_id,)
         ).fetchone()
 
 def list_worlds():
     with pool.connection() as conn:
         return conn.execute(
-            "SELECT id, name, description, biome_lookup, story_setup, region_lookup, component_lookup FROM worlds_v2 ORDER BY name"
+            "SELECT id, name, description, biome_lookup, story_setup, region_lookup, component_lookup FROM worlds ORDER BY name"
         ).fetchall()
 
 def get_world_png(world_id): 
     with pool.connection() as conn:
         row = conn.execute(
-            "SELECT map_png FROM worlds_v2 WHERE id = %s", (world_id,)
+            "SELECT map_png FROM worlds WHERE id = %s", (world_id,)
         ).fetchone()
         return row["map_png"] if row else None
