@@ -31,28 +31,6 @@ function PlaySetupModal({
     
     const characterSetupRef = useRef(null)
 
-    function useSessionSetupMutation() {
-        const queryClient = useQueryClient()
-        return useMutation({
-            mutationFn: async (payload) => {
-                const res = await fetch('/api/session/submit-setup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    credentials: 'include',
-                })
-                if (!res.ok) throw new Error(`/api/session/submit-setup failed: ${res.status}`)
-                return res.json()
-            },
-            onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['session'] });
-                onSubmit()
-            },
-        })
-    }
-
-    const sessionSetupMutation = useSessionSetupMutation()
-
 
     useEffect(() => {
         dialogRef.current.showModal()
@@ -73,17 +51,7 @@ function PlaySetupModal({
         const characterDescription = characterDescriptionRef.current.value
         const { inventory, stats, notebook } = characterSetupRef.current.getCharacterSetup()
 
-        sessionSetupMutation.mutate({
-            world_description: worldDescription,
-            character_description: characterDescription,
-            story_description: storyDescription,
-            region_lookup: regionLookup,
-            component_lookup: componentLookup,
-            inventory,
-            stats,
-            notebook,
-            storylines: storylines
-        })
+        onSubmit(worldDescription, characterDescription, storyDescription, regionLookup, componentLookup, inventory, stats, notebook)
     }
 
     async function generateHiddenContext(storylines) {
