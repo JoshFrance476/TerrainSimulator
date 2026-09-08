@@ -432,4 +432,5 @@ def rgba_to_png(rgba: bytes, width: int, height: int) -> bytes:
     image.save(buffer, format="PNG")
     return buffer.getvalue()
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+if os.path.isdir("static"):
+    app.mount("/", StaticFiles(directory="static", html=True), name="static")
