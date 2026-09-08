@@ -27,7 +27,11 @@ function Play({ user }) {
 
     function handleCellClick({x, y}) {
         if (interactionMode === 'move') {
-            movePlayer.mutate({ x, y })
+            for (const location of player.revealed_tiles) {
+                if (location[0] === x && location[1] === y) {
+                    movePlayer.mutate({ x, y })
+                }
+            }
         } else {
             setSelectedCell(getCellData(world, x, y, noRegionId))
         }
