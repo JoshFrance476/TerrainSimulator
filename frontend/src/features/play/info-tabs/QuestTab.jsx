@@ -1,7 +1,11 @@
 import { useStory } from "../../../hooks/useStory";
+import { useNewQuestMutation } from "../../../queries/queries";
 
 function QuestTab() {
     const { questsList, isLoading, isError } = useStory()
+    
+    const newQuestMutation = useNewQuestMutation()
+
     if (isLoading) {
         return <p>Loading quests...</p>;
     }
@@ -15,12 +19,12 @@ function QuestTab() {
             ) : (    
                 questsList.map((quest, index) => (
                     <div key={index} className="info-window-box">
-                        <h3 className="capitalise box-title">{quest.title}</h3>
-                        <p className="quest-visible-desc">{quest.visible_context}</p>
-                        <div className="quest-hidden-desc">{quest.hidden_context}</div>
+                        <h3 className="capitalise box-title">{quest.quest_description}</h3>
+                        <p className="quest-visible-desc">{quest.component_id}</p>
                     </div>
                 ))
             )}
+            <button onClick={() => newQuestMutation.mutate()}>Generate New Quest</button>
         </div>  
     );
 }
