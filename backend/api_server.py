@@ -234,6 +234,10 @@ async def prompt_interaction(user=Depends(require_user), s: Session = Depends(ge
 async def prompt_scene_summary(user=Depends(require_user), s: Session = Depends(get_session)):
     return await s.story_engine.generate_scene_summary()
 
+@app.post("/api/quest/generate")
+async def prompt_quest(s: Session = Depends(get_session)):
+    return await s.story_engine.generate_quest()
+
 async def sse_events(source):
     """Domain events -> sse_starlette's wire shape."""
     async for event in source:
