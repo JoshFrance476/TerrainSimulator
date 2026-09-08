@@ -68,6 +68,11 @@ class StoryEngine:
             "regions": temp_regions
         }
 
+    async def generate_quest(self):
+        response = await self.llm.prompt_quest(self.state.storylines, self.state.inventory, self.state.stats, self.state.character_notebook, self.world.component_lookup)
+        self.state.quest_list.append(response)
+        return response
+
     async def generate_character_setup(self, setup: SetupDescriptionsBody):
         response = await self.llm.prompt_character_setup(setup.character_description, setup.world_description, setup.story_description)
         return response
