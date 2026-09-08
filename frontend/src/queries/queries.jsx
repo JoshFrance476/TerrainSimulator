@@ -273,3 +273,22 @@ export function useGenerateSceneSummaryMutation() {
     }
   })
 }
+
+export function useNewQuestMutation() {
+        const queryClient = useQueryClient()
+        return useMutation({
+            mutationFn: async (payload) => {
+                const res = await fetch('/api/quest/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include',
+                })
+                if (!res.ok) throw new Error(`/api/quest/generate failed: ${res.status}`)
+                return res.json()
+            },
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['story'] });
+            },
+        })
+    }
