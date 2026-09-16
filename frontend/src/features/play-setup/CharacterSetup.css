@@ -39,7 +39,7 @@
 .stat-list-name {
     flex: 20;
     background-color: var(--colour-textbox-background);
-    color: white;
+    color: rgb(0, 0, 0);
 }
 
 .stat-list-value {
