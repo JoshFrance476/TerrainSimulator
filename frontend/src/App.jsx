@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import AccountWindow from './components/AccountWindow'
-import Landing from './features/Landing'
+import Landing from './features/landing/Landing'
 import Play from './features/play/Play'
 import WorldBuilder from './features/worldbuild/Worldbuilder'
 import Browser from './features/browser'
