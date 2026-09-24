@@ -4,6 +4,7 @@ import AccountWindow from './components/AccountWindow'
 import Landing from './features/Landing'
 import Play from './features/play/Play'
 import WorldBuilder from './features/worldbuild/Worldbuilder'
+import Browser from './features/browser'
 
 function App() {
 	const [user, setUser] = useState(undefined); // undefined = loading, null = logged out
@@ -55,6 +56,7 @@ function App() {
 			{page.name === "landing" && <Landing onLogout={handleLogout} user={user} onNavigate={setPage}/>}
 			{page.name === "play" && <Play user={user}/>} 
 			{page.name === "worldbuilder" && <WorldBuilder key={page.worldId} initialWorldId={page.worldId}/>}
+			{page.name === "browser" && <Browser onNavigate={setPage}/>}
 		</>
 	)
 }

@@ -1,0 +1,57 @@
+.thumbnail {
+    border-radius: 8px;
+    border: 2px solid var(--colour-border);
+    width: 300px;
+}
+
+.browser {
+    background-color: var(--colour-surface);
+    min-height: 100vh;
+}
+
+.world-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    list-style: none;
+    padding: 6px;
+}
+
+.world-list-item {
+    border: 2px solid var(--colour-border);
+    background-color: var(--colour-surface-browser);
+    border-radius: 8px;
+    padding: 4px 8px;
+    display: flex;
+}
+
+.world-list-item-body {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 8px;
+}
+
+.world-list-item-title {
+    margin: 6px 0 2px 0;
+}
+
+.world-list-item-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.world-list-item-button:hover {
+    background-color: var(--colour-button-hover);
+}
+
+.world-list-item-button {
+    padding: 4px 24px;
+    border-radius: 4px;
+    border: 1px solid var(--colour-border);
+    background-color: var(--colour-background);
+    color: var(--colour-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+}
