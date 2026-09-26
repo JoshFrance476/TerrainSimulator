@@ -1,0 +1,7 @@
+.landing-window {
+    background-color: var(--colour-surface);
+    border-radius: 8px;
+    border: 1px solid var(--colour-border);
+    align-self: stretch;
+    padding: 0 6px;
+}
