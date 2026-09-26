@@ -106,3 +106,38 @@
 .landing-footer a:hover {
     text-decoration: underline;
 }
+
+@media (max-width: 767px) {
+    .landing-page {
+        padding: 0 16px 48px 16px;
+    }
+ 
+    .header-section {
+        padding: 50px 0;
+        text-align: center;
+    }
+ 
+    .main-title {
+        font-size: 3.5rem;
+    }
+ 
+    .main-subtitle {
+        font-size: 1.1rem;
+    }
+ 
+    .main-navigation {
+        padding-top: 32px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+ 
+    .video-figure {
+        width: 100%;
+        margin: 16px 0;
+    }
+ 
+    .landing-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
