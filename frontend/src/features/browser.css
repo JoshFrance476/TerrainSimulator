@@ -55,3 +55,23 @@
     cursor: pointer;
     font-family: inherit;
 }
+
+@media (max-width: 767px) {
+    .world-list {
+        grid-template-columns: 1fr;
+        padding: 0;
+    }
+
+    .world-list-item {
+        flex-direction: column;
+    }
+
+    .thumbnail {
+        width: 100%;
+    }
+
+    .world-list-item-actions {
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+}

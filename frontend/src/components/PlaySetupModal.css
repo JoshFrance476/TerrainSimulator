@@ -148,3 +148,46 @@ input,button {
     height: 100%;
 }
 
+@media (max-width: 767px) {
+    /* Full-screen modal */
+    .play-setup-modal {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        margin: 0;
+    }
+
+    .modal {
+        border-width: 3px;
+        border-radius: 0;
+        overflow-y: auto;
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+    }
+
+    /* Stack columns and let content set its own height */
+    .modal-content,
+    .modal-container-vertical {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        flex: none;
+    }
+
+    .modal-container-left,
+    .modal-container-right,
+    .modal-container-three,
+    .modal-container-even {
+        grid-template-rows: auto;
+        gap: 12px;
+    }
+
+    .modal-text,
+    .modal-text.variable-height {
+        min-height: 6rem;
+    }
+}

@@ -400,3 +400,40 @@ body {
     padding: 12px;
     z-index: 1000; /* ensure it appears above other elements */
 }
+
+/* Mobile */
+@media (max-width: 767px) {
+    #root {
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .display {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .story-window {
+        grid-row: 1;
+        height: 50vh;
+    }
+
+    .map-viewport {
+        grid-column: 1;
+        grid-row: 2;
+        height: 50vh;
+    }
+
+    .info-window {
+        grid-row: 3;
+    }
+
+    .header {
+        gap: 8px;
+        padding: 0 8px;
+    }
+
+    .nav-btn {
+        padding: 6px 8px;
+    }
+}

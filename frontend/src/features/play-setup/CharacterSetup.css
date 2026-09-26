@@ -76,3 +76,10 @@
     background-color: var(--colour-textbox-background);
     color: var(--colour-primary);
 }
+
+@media (max-width: 767px) {
+    .character-content {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
